@@ -1,0 +1,486 @@
+/* readable - A minimal, conservative rendering for mere readability
+ *
+ *   This renderer does what's needed in order to present a complete, easily readable copy
+ *   of the wayscript for public viewing.  Otherwise it tries to preserve the layout
+ *   of the underlying source code as it would appear to a wayscribe.
+ *
+ * Anonymous element and prefix declarations
+ * -----------------------------------------
+ *   This renderer takes as anonymous any wayscript element in which the local part of the name
+ *   is encoded by a single underscore '_'.  It renders the element accordingly.  Likewise it gives
+ *   an element with a namespace prefix of '_' the same rendering as an element that has no prefix.
+ *
+ * Composition leader alignment
+ * ----------------------------
+ *   In the source, it may happen that a composer start tag is followed on the same line by text
+ *   or HTML content.  For example:
+ *
+ *       <cog:including>, as it may happen
+ *
+ *   When the renderer encounters this, it tries to reproduce a similar layout.
+ *
+ * Debugging
+ * ---------
+ *   The renderer reports problems it detects to the debugging console.  Further, when rendering
+ *   a local wayscript file (on a file-scheme URL, that is) it opens *alert* windows for problems
+ *   such as malformed wayscript, or anything else the user might be able to cope with directly.
+ *
+ *   When rendering a local file, readable.js may have a limited ability to peer into other files,
+ *   e.g. to resolve external waylinks (meantime marked ⮎) or to trace the way beyond the local file.
+ *   Chrome (59) rejects all such local requests; it logs the reason in the console as "Cross origin
+ *   requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https."
+ *   Firefox (52) is more lenient, forwarding at least the in-branch requests, viz. where
+ *   "the parent directory of the originating file is an ancestor directory of the target file." [FFU]
+ *   To enable even out-of-branch requests under Firefox, create a hard link to (or copy of)
+ *   the wayscript file in the waycast base directory and give it a name that starts with '_base_'.
+ *   E.g. hard link ~/way/_base_visionary.xht to ~/way/visionary/way.xht.
+ *   Then open that _base_ file in the browser.
+ *
+ * Special types of rendering markup added to the document
+ * -------------------------------------------------------
+ *   The renderer uses namespace 'data:,wayic/read' (prefixed rend|) for specialized markup that it
+ *   introduces to the document, which includes the following: (for notation, see key further below)
+ *
+ *      * html|body
+ *          * [rend|luminosity]     - Perceived background brightness, either 'bright' or 'dark'
+ *
+ *      * (wayscript element)
+ *          * [rend|hasLeader]          - Whether the element has leading, non-whitespace text [BA]
+ *          * [rend|hasPreviewString]   - Whether it's a waylink source node with a non-empty preview
+ *                                        of the target text
+ *          * [rend|hasShortName]   - Whether its rendered name is no longer than three characters
+ *          * [rend|isChangeable]   - Whether its rendering might later be changed
+ *          * [rend|isComposer]     - Whether it's a composer element
+ *          * [rend|isEntagment]    - Whether it's a waylink entagment
+ *          * [rend|isWaybitish]    - Whether it's a waybit or waybit-like
+ *          * [rend|isWayscript]    - Whether it's under a 'data:,wayscript.' namespace
+ *
+ *          * eSTag     - Start tag of an element, reproducing content that would otherwise
+ *                        be invisible except in the wayscript source
+ *              * html|a            - Wrapper for self-hyperlinking, if the element is a waylink target node
+ *                  * targetMarker  - Present if the element is a waylink target node
+ *                  * eQName                    - Qualified name [XMLN] of the element
+ *                      * [rend|isAnonymous]    - Whether the local part is declared to be anonymous
+ *                      * ePrefix                   - Namespace prefix, if any
+ *                          * [rend|isAnonymous]    - Whether the prefix is declared to be anonymous
+ *                      * eLocalPart                - Local part of the name
+ *
+ *          * rend|textAligner  - Present if the element is a step
+ *
+ *          * forelinker    - Hyperlink effector for a waylink source node
+ *              * html|a
+ *                  * preview           - Preview of the target text
+ *                  * verticalTruncator     - Basic indicator of the waylink as such
+ *                  * directionIndicator    - Hover indicator of the relative direction to the target node
+ *
+ *   Key to the markup notation above:
+ *
+ *      * element       - Element in namespace 'rend'.  Unless otherwise marked an element's
+ *                        namespace is rend|, while an attribute's is none.
+ *      * ns|element       - Element in namespace 'ns'
+ *          * [ns|attrib]  - Attribute of the element in namespace 'ns'
+ *          * [attrib]     - Attribute of the element in no namespace
+ *          * ns|element   - Component element
+ *
+ *      Unless otherwise marked, an element's namespace is rend| and an attribute's is none.
+ *
+ * Notes
+ * -----
+ *   See bottom.
+ */
+@namespace html 'http://www.w3.org/1999/xhtml';
+@namespace rend 'data:,wayic/read';
+@namespace  cog 'data:,wayscript.cog';
+@namespace step 'data:,wayscript.bit.step'; /*
+  The namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
+  Rather they share the general styling of waybits or waybitish elements. */
+
+
+html|body
+{
+    display: none; /* pending layout completion by readable.js */
+}
+
+
+@media screen
+{
+    html|html{ margin: 0; padding: 0; }
+    html|body
+    {
+        margin: 3em auto 5em auto; /* TRBL */
+        max-width: 50em;
+        padding: 0 0.7em 0 2.0em; /* TRBL - meeting constraints on BODY_L */
+    }
+}
+
+
+
+/* - composer --------------------------
+ */
+*[rend|isComposer]
+{
+    border-radius: 0.5em;
+    border-width: 0.1em;
+           left: -0.1em; /* despite the border, maintain a precise text margin for appearance sake */
+    margin-left:          -2.5em; /* meet constraints on COMPOSER_L */
+    padding: 0.2em 0.2em 0.2em 2.5em; /* TRBL */
+    position: relative;
+}
+
+body[rend|luminosity='bright']
+*[rend|isComposer]
+{
+    border-color: hsla( 0, 0%, 0%, 0.25 );
+    border-style: solid none none solid; /* TRBL */
+    box-shadow: 0.2em 0.3em 0.5em hsla(0,0%,0%,0.55); /* LR TB blur colour */
+    margin-top: 0.3em !important; /* accomodate the shadows */
+    margin-bottom: 0.7em !important;
+}
+body[rend|luminosity='dark']
+*[rend|isComposer]
+{
+    border-color: hsla( 0, 0%, 100%, 0.35 );
+    border-style: dashed;
+    margin-top: 0.2em !important; /* accomodate the borders */
+    margin-bottom: 0.3em !important;
+}
+
+*[rend|isComposer] [rend|isComposer] /* when nested */
+{
+    margin-right: 0.7em; /* space between adjacent, vertical border lines to better show the nesting */
+}
+
+
+*[rend|isComposer] > eSTag
+{
+    font-style: italic;
+    opacity: 0.6;
+    padding-left: 3em; /* ≥ NEST_INDENT, for any inline composition leader that flows to the next line */
+    text-indent: -3em; /* but not on the first line, rather maintain its alignment */
+}
+
+
+*[rend|isComposer] > eSTag eQName > ePrefix
+{
+    display: none; /* assume that it's uninformative */
+}
+
+
+*[rend|isComposer] > eSTag eQName::after
+{
+    content: ':';
+}
+
+
+
+/* - eSTag -----------------------------
+ */
+rend|eSTag
+{
+    display: block;
+    margin-left: -2em; /* -NEST_INDENT, undoing it */
+}
+
+
+
+/* - eSTag - inlined -------------------
+ *
+ * These rules render the start tag in line with the leading flow content if it's short enough to allow
+ * the flow content to rise alongside yet maintain its horizontal alignment.
+ *
+ * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
+ * If this method ever proves too difficult to maintain owing to the complications of the float layout,
+ * then consider switching to the simpler, more direct method used by composers, namely shipping
+ * the leading flow content into the start tag.  A drawback would be the loss of uniform left alignment
+ * of the first line of flow content from one waybit to another.
+ */
+*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybitish] > eSTag
+{
+    float: left; /* rendering the element's start tag in line with its leading text content */
+    margin-right: 0.5em;
+}
+
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    display: block;
+}
+
+body[rend|luminosity='bright']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.28em; /* = BRT_ST_MARG_T + ST_PAD_T + ST_BOR */
+}
+
+body[rend|luminosity='dark']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.30em; /* = DRK_ST_MARG_T + ST_PAD_T */
+}
+
+
+
+/* - step ------------------------------
+ */
+body[rend|luminosity='bright']
+step|* > eSTag
+{
+     margin-top:    0.10em; /* BRT_ST_MARG_T */
+    padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
+    padding-bottom: 0.23em; /* = ST_PAD_B + ST_BOR */
+     margin-bottom: 0.10em;
+}
+body[rend|luminosity='dark']
+step|* > eSTag
+{
+     margin-top:    0.20em; /* DRK_ST_MARG_T */
+    padding-top:    0.10em; /* = ST_PAD_T */
+    padding-bottom: 0.15em; /* = ST_PAD_B */
+     margin-bottom: 0.20em;
+}
+
+
+step|* > eSTag eQName
+{
+    border-radius: 0.15em / 15%; /* H / V */
+    padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is inline, */
+}        /* -------- -------- --------             but rather cause overlapping, ∴ constraints STEP_PAD_*.
+            ST_PAD_T ST_PAD_L ST_PAD_B */
+
+body[rend|luminosity='bright']
+step|* > eSTag eQName
+{
+    /* prominence for the steps, making them stand out at a glance from the other waybits */
+    background-color: hsla( 0, 0%, 100%, 0.40 );
+    border-color:     hsla( 0, 0%,   0%, 0.80 );
+    border-style: solid;
+    border-width: 0.08em; /* ST_BOR */
+    margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
+}
+body[rend|luminosity='dark']
+step|* > eSTag eQName
+{
+    background-color: hsla( 0, 0%, 100%, 0.45 );
+    color: #000;
+    margin-left: -0.20em; /* = -ST_PAD_L */
+}
+
+
+step|* > eSTag eQName > ePrefix,
+step|* > eSTag eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then */
+{                                                           /* it renders as a mere bullet */
+    font-weight: bold;
+}
+
+
+step|* > eSTag eQName > ePrefix[rend|isAnonymous],
+step|* > eSTag eQName:not([rend|isAnonymous]) > ePrefix
+{
+    display: none; /* let the local part stand alone */
+}
+
+
+step|* > eSTag eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLocalPart
+{
+    display: none; /* let the prefix stand alone */
+}
+
+
+
+/* - textAligner -----------------------
+ */
+rend|textAligner
+{
+    display: none;
+}
+
+
+
+/* - waybitish -------------------------
+ */
+*[rend|isWaybitish]
+{
+    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents, loop controls and such */
+}
+
+
+
+/* - waybitish non-step ----------------
+ */
+*[rend|isWaybitish]:not(step|*) > eSTag
+eQName > ePrefix
+{
+    display: none; /* assume that it's uninformative */
+}
+
+
+*[rend|isWaybitish]:not(step|*) > eSTag
+eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
+{
+    filter: contrast(1.4);
+    font-weight: bold;
+}
+
+
+
+/* - waylink source node ---------------
+ *
+ * See also readable.js prepareStyling which adds rules at runtime.
+ */
+rend|forelinker > a
+{
+    text-decoration: none;
+}
+
+
+rend|forelinker > a:focus:not(:active)
+{
+    outline: none; /* defeat (Firefox) ∵ its coverage of verticalTruncator is awkward and distracting */
+}
+
+
+rend|forelinker > a > preview[class~='truncated']::after /* [C] */
+{
+    content: ' …';
+    opacity: 0.7;
+}
+
+
+*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
+rend|forelinker > a > br
+{
+    display: none; /* this line has no preceding text content, so let it collapse to nothing */
+}
+*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
+rend|forelinker > a > verticalTruncator
+{
+    margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
+}
+
+
+rend|forelinker > a > verticalTruncator
+{
+    opacity: 0.4;
+    padding-left:  1em; /* extra click surface + indentation beneath the overlying preview text */
+}
+
+
+*[rend|isChangeable] >
+rend|forelinker[class~='shortContent'] > a > verticalTruncator /* [C] */
+{
+    visibility: hidden; /* It looks awkward and in most cases the short content itself will suffice
+    to indicate that a waylink is present, so hide it.  Yet don't remove it entirely because it'll
+    likely help preserve the stability of the layout in the event of the expected content change. */
+}
+
+
+rend|forelinker > a > directionIndicator /* content is an arrow */
+{
+    margin-left: 2em;
+    visibility: hidden;
+}
+
+
+rend|forelinker > a:focus > directionIndicator, /* fails either entirely (Chrome 59),
+                                     or when *href* is local to document (Firefox 52) */
+rend|forelinker > a:hover > directionIndicator
+{
+    visibility: visible;
+}
+
+
+
+/* - waylink target node ---------------
+ */
+rend|eSTag > a /* wrapper for self-hyperlinking */
+{
+    text-decoration: none;
+    position: relative; /* establish containing block for absolutely positioned descendants */
+
+    margin-left: -2.0em; /* make space for targetMarker, ∴ BODY_L ≥ 2.0em, q.v. */
+    padding-left: 2.0em;
+}
+rend|eSTag > a:link,   /* Specifying both pseudo-classes, link and visited, in order */
+rend|eSTag > a:visited /* to override any specific rules inserted by readable.js. */
+{
+    color: inherit;
+}
+
+[rend|isWaybitish] * > /* viz. when moreover it's an underbit */
+rend|eSTag > a
+{
+    margin-left: -3.5em; /* more space to better separate the targetMarker from overbit content */
+    padding-left: 3.5em;
+}
+
+[rend|isWaybitish] [rend|isComposer] > * > /* viz. when moreover it's a topmost component */
+rend|eSTag > a
+{
+    margin-left: -2.0em; /* tighten it back up in this case, as there's no direct overbit content, */
+    padding-left: 2.0em; /* and ∴ COMPOSER_L ≥ 2.0em, q.v. */
+}
+
+
+rend|eSTag > a > targetMarker
+{
+    position: absolute;
+    left: 0; /* leftmost in the padding */
+}
+
+body[rend|luminosity='bright']
+rend|eSTag > a > targetMarker
+{
+    opacity: 0.3;
+}
+body[rend|luminosity='dark']
+rend|eSTag > a > targetMarker
+{
+    opacity: 0.5;
+}
+
+
+*:target > /* when it's hyperlink-targeted */
+rend|eSTag > a > targetMarker
+{
+    border-radius: 50% / 50%; /* H / V */
+    cursor: default; /* Hyperlink *a* wrapper (with its cursor) are disabled by readable.js, bringing out
+      the text cursor instead.  Defeat it, else it flashes when the mouse passes over which distracts. */
+    opacity: 1 !important; /* indicate that it's targeted */
+}
+
+
+
+/* - wayscript -------------------------
+ */
+*[rend|isWayscript]
+{
+    clear: left;
+    display: block;
+    margin-top:    0.1em;
+    margin-bottom: 0.1em;
+}
+
+
+rend|eSTag eQName
+{
+    outline-offset: 0.2em;
+}
+*:target >
+rend|eSTag eQName
+{
+    animation: flashFade_outline 2s; /* keyframes from readable.js prepareStyling */
+}
+
+
+
+/* Notes
+ * -----
+ *  [BA]  A boolean attribute such as [rend|isFoo] either has the same value as the local part
+ *       of its name ('isFoo'), meaning true; or the attribute is not present, meaning false.
+ *
+ *  [C]  Class selectors are failing for non-HTML elements under Chrome (59).  Therefore this style
+ *      sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
+ *
+ *  [FFU]  https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+ *
+ *  [XMLN]  https://www.w3.org/TR/xml-names/
+ */

@@ -1,0 +1,29 @@
+/* pre_note - Informal notes in *pre* elements
+ */
+@namespace html 'http://www.w3.org/1999/xhtml';
+
+
+html|pre
+{
+    margin: 0;
+    opacity: 0.5; /* subdue it */
+}
+
+
+
+html|pre::first-line /* where the start tag is declared, and no note is expected */
+{
+    /* Apparently Firefox excludes the line termination characters from this pseudo-element.
+       Therefore the empty first line cannot be collapsed by zeroing the line-height
+       or the font-size properties.  Workaround: */
+    color: transparent; /* in case it contains text, prevent it obscuring the preceding content */
+}
+html|pre
+{
+    margin-top: -1em; /*  the content by the font height, which is likely near to the line height,
+      and so force the first line out the top of the *pre* box */
+
+    /* have it slide *beneath* preceding element, not to interfere with element's cursoring */
+    position: relative;
+    z-index: -1; /* causes loss of text-specific cursor, an unwanted side effect, but mild enough */
+}
