@@ -1,14 +1,34 @@
 /* readable - A minimal, conservative rendering for mere readability
  *
- *   This renderer does what's needed in order to present a complete, easily readable copy
+ *   This renderer does what’s needed in order to present a complete, easily readable copy
  *   of the wayscript for public viewing.  Otherwise it tries to preserve the layout
  *   of the underlying source code as it would appear to a wayscribe.
+ *
+ *   Tested on Chrome and Firefox only.
+ *
+ * Basic usage
+ * -----------
+ *   Insert this in the head element of the document:
+ *
+ *       <link rel='stylesheet' href='http://reluk.ca/project/wayic/read/readable.css'/> <!-- HERE CUSTOM -->
+ *
+ *   Append one of the following to the body element:
+ *
+ *            <script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
+ *       <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
+ *
+ *   Append the second form when the body’s default namespace is other than XHTML.  For example:
+ *
+ *       <html:body xmlns='data:,wayscript.bit' xmlns:html='http://www.w3.org/1999/xhtml'>
+ *                   ⋮
+ *           <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
+ *           </html:body>
  *
  * Anonymous element and prefix declarations
  * -----------------------------------------
  *   This renderer takes as anonymous any wayscript element in which the local part of the name
- *   is encoded by a single underscore '_'.  It renders the element accordingly.  Likewise it gives
- *   an element with a namespace prefix of '_' the same rendering as an element that has no prefix.
+ *   is encoded by a single underscore ‘_’.  It renders the element accordingly.  Likewise it gives
+ *   an element with a namespace prefix of ‘_’ the same rendering as an element that has no prefix.
  *
  * Composition leader alignment
  * ----------------------------
@@ -32,28 +52,28 @@
  *   Firefox (52) is more lenient, forwarding at least the in-branch requests, viz. where
  *   "the parent directory of the originating file is an ancestor directory of the target file." [FFU]
  *   To enable even out-of-branch requests under Firefox, create a hard link to (or copy of)
- *   the wayscript file in the waycast base directory and give it a name that starts with '_base_'.
+ *   the wayscript file in the waycast base directory and give it a name that starts with ‘_base_’.
  *   E.g. hard link ~/way/_base_visionary.xht to ~/way/visionary/way.xht.
  *   Then open that _base_ file in the browser.
  *
- * Special types of rendering markup added to the document
- * -------------------------------------------------------
- *   The renderer uses namespace 'data:,wayic/read' (prefixed rend|) for specialized markup that it
- *   introduces to the document, which includes the following: (for notation, see key further below)
+ * Rendering markup
+ * ----------------
+ *   The renderer introduces its own markup to the document which includes the following:
+ *   (for the notation, see the key further below)
  *
- *      * html|body
- *          * [rend|luminosity]     - Perceived background brightness, either 'bright' or 'dark'
+ *      * on body:
+ *          * [rend|luminosity]     - Perceived background brightness, either ‘bright’ or ‘dark’
  *
- *      * (wayscript element)
+ *      * on wayscript element:
  *          * [rend|hasLeader]          - Whether the element has leading, non-whitespace text [BA]
- *          * [rend|hasPreviewString]   - Whether it's a waylink source node with a non-empty preview
+ *          * [rend|hasPreviewString]   - Whether it’s a waylink source node with a non-empty preview
  *                                        of the target text
  *          * [rend|hasShortName]   - Whether its rendered name is no longer than three characters
  *          * [rend|isChangeable]   - Whether its rendering might later be changed
- *          * [rend|isComposer]     - Whether it's a composer element
- *          * [rend|isEntagment]    - Whether it's a waylink entagment
- *          * [rend|isWaybitish]    - Whether it's a waybit or waybit-like
- *          * [rend|isWayscript]    - Whether it's under a 'data:,wayscript.' namespace
+ *          * [rend|isComposer]     - Whether it’s a composer element
+ *          * [rend|isEntagment]    - Whether it’s a waylink entagment
+ *          * [rend|isWaybitish]    - Whether it’s a waybit or waybit-like
+ *          * [rend|isWayscript]    - Whether it’s under a ‘data:,wayscript.’ namespace
  *
  *          * eSTag     - Start tag of an element, reproducing content that would otherwise
  *                        be invisible except in the wayscript source
@@ -70,19 +90,21 @@
  *          * forelinker    - Hyperlink effector for a waylink source node
  *              * html|a
  *                  * preview           - Preview of the target text
+ *                  * html|br
  *                  * verticalTruncator     - Basic indicator of the waylink as such
  *                  * directionIndicator    - Hover indicator of the relative direction to the target node
  *
- *   Key to the markup notation above:
- *
- *      * element       - Element in namespace 'rend'.  Unless otherwise marked an element's
- *                        namespace is rend|, while an attribute's is none.
- *      * ns|element       - Element in namespace 'ns'
- *          * [ns|attrib]  - Attribute of the element in namespace 'ns'
+ *   Key to the notation above:
+ *   - - - - - - - - - - - - -
+ *      * element       - Element in namespace ‘rend’.  Unless otherwise marked an element’s
+ *                        namespace is rend|, while an attribute’s is none.
+ *      * ns|element       - Element in namespace ‘ns’
+ *          * [ns|attrib]  - Attribute of the element in namespace ‘ns’
  *          * [attrib]     - Attribute of the element in no namespace
  *          * ns|element   - Component element
  *
- *      Unless otherwise marked, an element's namespace is rend| and an attribute's is none.
+ *      Unless otherwise marked, an element’s namespace is ‘data:,wayic/read’ (prefixed ‘rend’)
+ *      and an attribute’s is none.
  *
  * Notes
  * -----
@@ -190,9 +212,9 @@ rend|eSTag
  *
  * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
  * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method used by composers, namely shipping
- * the leading flow content into the start tag.  A drawback would be the loss of uniform left alignment
- * of the first line of flow content from one waybit to another.
+ * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
+ * namely shipping the leading flow content into the start tag.  A drawback would be the loss
+ * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 *[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybitish] > eSTag
 {
@@ -345,10 +367,12 @@ rend|forelinker > a > preview[class~='truncated']::after /* [C] */
 }
 
 
-*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
+*:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
 rend|forelinker > a > br
 {
-    display: none; /* this line has no preceding text content, so let it collapse to nothing */
+    display: none; /* It happens that no text content precedes the injected *br* element.
+      Therefore let it collapse to nothing.  But not when the source node has a short name;
+      then the *br* is wanted to position the verticalTruncator below the node's start tag. */
 }
 *:not([rend|hasPreviewString]):not([rend|isChangeable]) >
 rend|forelinker > a > verticalTruncator
@@ -475,10 +499,12 @@ rend|eSTag eQName
 /* Notes
  * -----
  *  [BA]  A boolean attribute such as [rend|isFoo] either has the same value as the local part
- *       of its name ('isFoo'), meaning true; or the attribute is not present, meaning false.
+ *        (‘isFoo’) of its name, meaning true; or the attribute is not present, meaning false.
  *
  *  [C]  Class selectors are failing for non-HTML elements under Chrome (59).  Therefore this style
  *      sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
+ *
+ *  [COMP]  Defunct composer elements, http://reluk.ca/project/wayic/read/composer/
  *
  *  [FFU]  https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  *

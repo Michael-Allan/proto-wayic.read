@@ -1209,6 +1209,136 @@
    // ==================================================================================================
 
 
+    /** Runtime style rules and settings for the overall document.
+      */
+    const Styling = ( function()
+    {
+
+        const that = {}; // the public interface of Styling
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Appends style rules to the document and sets style attributes.
+          */
+        that.run = function()
+        {
+            const body = document.body;
+
+          // Attributes
+          // ----------
+            let luminosity; // perceived background brightness
+            let toOverrideColour; // whether to override the client's default colours
+            let defaultColour = window.getComputedStyle(body).getPropertyValue( 'color' );
+              // Want 'background-color' but it fails.  Reads as transparent on Firefox and black
+              // on Chrome when really it's white.  Therefore using foreground to infer background.
+            const cc = defaultColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
+            if( cc )
+            {
+                const red = cc[1], green = cc[2], blue = cc[3]; // each 0-255
+                const luma = red * 299 + green * 587 + blue * 114; // 0-255,000
+                  // formula: https://en.wikipedia.org/wiki/YIQ
+                if( luma < 127500 )
+                {
+                    // Here using luma as a quick measure of perceived brightness.
+                    // For more accuracy: https://www.w3.org/TR/WCAG20/#relativeluminancedef
+                    luminosity = 'bright';
+                    toOverrideColour = defaultColour == 'rgb(0, 0, 0)'
+                        && navigator.userAgent.includes('Chrome'); /* Override if client appears to be
+                      Chrome with its default colours (pure black and white) unchanged, because Chrome
+                      itself gives the user no easy way to change these unsatisfactory defaults
+                      and therefore this renderer will venture a change itself. */
+                 // defaultColour = 'hsl( 0, 0%, 93% )'; luminosity = 'dark'; // TEST
+                }
+                else
+                {
+                    toOverrideColour = false;
+                    luminosity = 'dark';
+                }
+            }
+            else // parse failed, default colour is unknown
+            {
+                toOverrideColour = true;
+                luminosity = 'bright';
+                defaultColour = 'hsl( 0, 0%, 7% )'; // near black, leaving room to blacken further
+            }
+            body.setAttributeNS( NS_REND, 'luminosity', luminosity );
+
+          // Rules
+          // -----
+            let e = body.appendChild( document.createElementNS( NS_HTML, 'style' ));
+            const sheet = e.sheet;
+            const rules = sheet.cssRules;
+            function insert( rule ) { sheet.insertRule( rule, rules.length ); }
+            insert( '@namespace cog "' + NS_COG + '"' );
+            insert( '@namespace rend "' + NS_REND + '"' );
+            if( toOverrideColour ) insert( '@namespace html "' + NS_HTML + '"' );
+
+          // Colour override
+          // - - - - - - - -
+            let defaultHyperlinkColour;
+            if( toOverrideColour )
+            {
+                insert( 'html|body { '
+                  + 'background-color: hsl( 0, 0%, 93% );' // near white, leaving room to whiten further
+               // + 'background-color: hsl( 0, 0%, 7% );' // TEST
+                  + 'color:' + defaultColour + '}' );
+                defaultHyperlinkColour = 'hsl( 240, 100%, 40% )'; // blue
+                insert( 'html|a:link { color:' + defaultHyperlinkColour + '}' );
+                insert( 'html|a:visited { color: hsl( 0, 100%, 40% ) }' ); // red
+            }
+            else
+            {
+                e = body.appendChild( document.createElementNS( NS_HTML, 'a' ));
+                e.setAttribute( 'href', '#dummyURL' ); // to be sure
+                e.appendChild( document.createTextNode( 'dummy hyperlink' )); // to be sure
+                defaultHyperlinkColour = window.getComputedStyle(e).getPropertyValue( 'color' );
+                body.removeChild( e );
+            }
+
+          // Fade
+          // - - -
+            insert( '@keyframes flashFade_outline{'
+              + 'from { outline: medium solid ' + defaultColour + '; animation-timing-function: linear }'
+              + ' 33% { outline: medium solid ' + defaultColour + '; animation-timing-function: ease-out }'
+              + '  to { outline: medium solid transparent }}' );
+
+          // Waylink source node
+          // - - - - - - - - - -
+            insert( 'rend|forelinker > a > preview { color:' + defaultColour + '}' );
+            insert( 'rend|forelinker > a > verticalTruncator { color:' + defaultColour + '}' );
+            insert( '[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart { '
+              + 'color:' + defaultHyperlinkColour + ';'
+           // + 'filter: hue-rotate( 180deg ) !important }' );
+           /// somehow Chrome 59 seems to render that as black, but this works well enough:
+              + 'filter: hue-rotate( 60deg ) !important }' );
+                   // Rotate to distinguish from hyperlinks.  This must be declared as 'important';
+                   // maybe because otherwise the colour setting gets applied late and clobbers it.
+
+          // Waylink target node
+          // - - - - - - - - - -
+            insert( 'rend|eSTag > a > eQName { outline-color:' + defaultColour + '}' );
+              // Cannot rely on the initial value of 'invert' here because that keyword is rejected
+              // in the keyframes of flashFade_outline (at least by Firefox 52).  Nor is 'currentColor'
+              // useful, because if this element happens to be a step, and so has inverted colours,
+              // then currentColor will be the opposite of what's needed for the outline.
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
     /** Styling and event handling for waylink target nodes.
       */
     const WaylinkSE = ( function()
@@ -1310,128 +1440,6 @@
    // ==================================================================================================
 
 
-    /** Runtime style rules and settings for the overall document.
-      */
-    const Styling = ( function()
-    {
-
-        const that = {}; // the public interface of Styling
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Appends style rules to the document and sets style attributes.
-          */
-        that.run = function()
-        {
-            const body = document.body;
-
-          // Attributes
-          // ----------
-            let luminosity; // perceived background brightness
-            let toOverrideColour; // whether to override the client's default colours
-            let defaultColour = window.getComputedStyle(body).getPropertyValue( 'color' );
-              // Want 'background-color' but it fails.  Reads as transparent on Firefox and black
-              // on Chrome when really it's white.  Therefore using foreground to infer background.
-            const cc = defaultColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
-            if( cc )
-            {
-                const red = cc[1], green = cc[2], blue = cc[3]; // each 0-255
-                const luma = red * 299 + green * 587 + blue * 114; // 0-255,000
-                  // formula: https://en.wikipedia.org/wiki/YIQ
-                if( luma < 127500 )
-                {
-                    // Here using luma as a quick measure of perceived brightness.
-                    // For more accuracy: https://www.w3.org/TR/WCAG20/#relativeluminancedef
-                    luminosity = 'bright';
-                    toOverrideColour = defaultColour == 'rgb(0, 0, 0)'
-                        && navigator.userAgent.includes('Chrome'); /* Override if client appears to be
-                      Chrome with its default colours (pure black and white) unchanged, because Chrome
-                      itself gives the user no easy way to change these unsatisfactory defaults. */
-                 // defaultColour = 'hsl( 0, 0%, 93% )'; luminosity = 'dark'; // TEST
-                }
-                else
-                {
-                    toOverrideColour = false;
-                    luminosity = 'dark';
-                }
-            }
-            else // parse failed, default colour is unknown
-            {
-                toOverrideColour = true;
-                luminosity = 'bright';
-                defaultColour = 'hsl( 0, 0%, 7% )'; // near black, leaving room to blacken further
-            }
-            body.setAttributeNS( NS_REND, 'luminosity', luminosity );
-
-          // Rules
-          // -----
-            let e = body.appendChild( document.createElementNS( NS_HTML, 'style' ));
-            const sheet = e.sheet;
-            const rules = sheet.cssRules;
-            function insert( rule ) { sheet.insertRule( rule, rules.length ); }
-            insert( '@namespace rend "' + NS_REND + '"' );
-            if( toOverrideColour ) insert( '@namespace html "' + NS_HTML + '"' );
-
-          // Colour override
-          // - - - - - - - -
-            let defaultHyperlinkColour;
-            if( toOverrideColour )
-            {
-                insert( 'html|body { '
-                  + 'background-color: hsl( 0, 0%, 93% );' // near white, leaving room to whiten further
-               // + 'background-color: hsl( 0, 0%, 7% );' // TEST
-                  + 'color:' + defaultColour + '}' );
-                defaultHyperlinkColour = 'hsl( 240, 100%, 40% )'; // blue
-                insert( 'html|a:link { color:' + defaultHyperlinkColour + '}' );
-                insert( 'html|a:visited { color: hsl( 0, 100%, 40% ) }' ); // red
-            }
-         // else
-         // {
-         //     e = body.appendChild( document.createElementNS( NS_HTML, 'a' ));
-         //     e.setAttribute( 'href', '#dummyURL' ); // to be sure
-         //     e.appendChild( document.createTextNode( 'dummy hyperlink' )); // to be sure
-         //     defaultHyperlinkColour = window.getComputedStyle(e).getPropertyValue( 'color' );
-         //     body.removeChild( e );
-         // }
-
-          // Fade
-          // - - -
-            insert( '@keyframes flashFade_outline{'
-              + 'from { outline: medium solid ' + defaultColour + '; animation-timing-function: linear }'
-              + ' 33% { outline: medium solid ' + defaultColour + '; animation-timing-function: ease-out }'
-              + '  to { outline: medium solid transparent }}' );
-
-          // Waylink source node
-          // - - - - - - - - - -
-            insert( 'rend|forelinker > a > preview { color:' + defaultColour + '}' );
-            insert( 'rend|forelinker > a > verticalTruncator { color:' + defaultColour + '}' );
-         // insert( 'rend|forelinker > a > directionIndicator { color:' + defaultHyperlinkColour + '}' );
-
-          // Waylink target node
-          // - - - - - - - - - -
-            insert( 'rend|eSTag > a > eQName { outline-color:' + defaultColour + '}' );
-              // Cannot rely on the initial value of 'invert' here because that keyword is rejected
-              // in the keyframes of flashFade_outline (at least by Firefox 52).  Nor is 'currentColor'
-              // useful, because if this element happens to be a step, and so has inverted colours,
-              // then currentColor will be the opposite of what's needed for the outline.
-        };
-
-
-
-       // - - -
-
-        return that;
-
-    }() );
-
-
-
-   // ==================================================================================================
-
-
     /** A device to decorate the rendered wayscript with information from a complete way trace.
       * It traces and it decorates.
       */
@@ -1476,5 +1484,5 @@
 //  [EP] This rendering places entagments before the first waybitish child.
 //       Code that depends on this refers here.
 //
-//  [F]  External documents won't reliably load when rendering a wayscript file on a file-scheme URL.
+//  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
 //      For the details, see readable.css § Debugging.
