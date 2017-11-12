@@ -72,7 +72,7 @@
  *          * [rend|isChangeable]   - Whether its rendering might later be changed
  *          * [rend|isComposer]     - Whether it’s a composer element
  *          * [rend|isEntagment]    - Whether it’s a waylink entagment
- *          * [rend|isWaybitish]    - Whether it’s a waybit or waybit-like
+ *          * [rend|isWaybit]       - Whether it’s a waybit
  *          * [rend|isWayscript]    - Whether it’s under a ‘data:,wayscript.’ namespace
  *
  *          * eSTag     - Start tag of an element, reproducing content that would otherwise
@@ -115,7 +115,7 @@
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
   The namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
-  Rather they share the general styling of waybits or waybitish elements. */
+  Rather they share the general styling of waybits in general. */
 
 
 html|body
@@ -216,7 +216,7 @@ rend|eSTag
  * namely shipping the leading flow content into the start tag.  A drawback would be the loss
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
-*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybitish] > eSTag
+*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
 {
     float: left; /* rendering the element's start tag in line with its leading text content */
     margin-right: 0.5em;
@@ -317,25 +317,25 @@ rend|textAligner
 
 
 
-/* - waybitish -------------------------
+/* - waybit ----------------------------
  */
-*[rend|isWaybitish]
+*[rend|isWaybit]
 {
-    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents, loop controls and such */
+    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
 }
 
 
 
-/* - waybitish non-step ----------------
+/* - waybit non-step -------------------
  */
-*[rend|isWaybitish]:not(step|*) > eSTag
+*[rend|isWaybit]:not(step|*) > eSTag
 eQName > ePrefix
 {
     display: none; /* assume that it's uninformative */
 }
 
 
-*[rend|isWaybitish]:not(step|*) > eSTag
+*[rend|isWaybit]:not(step|*) > eSTag
 eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
 {
     filter: contrast(1.4);
@@ -429,14 +429,14 @@ rend|eSTag > a:visited /* to override any specific rules inserted by readable.js
     color: inherit;
 }
 
-[rend|isWaybitish] * > /* viz. when moreover it's an underbit */
+[rend|isWaybit] * > /* viz. when moreover it's an underbit */
 rend|eSTag > a
 {
     margin-left: -3.5em; /* more space to better separate the targetMarker from overbit content */
     padding-left: 3.5em;
 }
 
-[rend|isWaybitish] [rend|isComposer] > * > /* viz. when moreover it's a topmost component */
+[rend|isWaybit] [rend|isComposer] > * > /* viz. when moreover it's a topmost component */
 rend|eSTag > a
 {
     margin-left: -2.0em; /* tighten it back up in this case, as there's no direct overbit content, */

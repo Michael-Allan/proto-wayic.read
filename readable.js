@@ -22,7 +22,7 @@
 
 
 
-    /** The subnamespace of markup specific to waybits simply, excluding steps.
+    /** The subnamespace of markup specific to waybits simply, excluding other waybits (such as steps).
       *
       *     @see #NS_WAYSCRIPT_DOT
       *     @see #NS_BIT
@@ -160,13 +160,13 @@
 
 
 
-    /** Returns the first child of the given node that is either a waybit or waybit-like.
+    /** Returns the first child of the given node that is a waybit.
       */
-    function firstWaybitishChild( node )
+    function firstWaybitChild( node )
     {
         const traversal = document.createTreeWalker( node, SHOW_ELEMENT );
         let t = traversal.nextNode();
-        for(; t != null; t = traversal.nextSibling() ) if( isWaybitish( t )) return t;
+        for(; t != null; t = traversal.nextSibling() ) if( isWaybit( t )) return t;
         return null;
     }
 
@@ -221,18 +221,16 @@
 
 
 
-    /** Answers whether given element is either a waybit or waybit-like.
+    /** Answers whether the given element is a waybit.
       */
-    function isWaybitish( e )
+    function isWaybit( e )
     {
-        // cf. transform() isWaybitish
+        // cf. transform() isWaybit
         const eNS = e.namespaceURI;
         if( !eNS.startsWith(NS_WAYSCRIPT_DOT) ) return false;
 
         const eSubNS = eNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
         if( isABitSubNS( eSubNS )) return true;
-
-        if( eSubNS == SUB_NS_COG && namesWaybitLikeCog(e.localName) ) return true;
 
         return false;
     }
@@ -273,16 +271,6 @@
         console.error( message );
         if( isUserScribe ) alert( message ); // see readable.css § Debugging
     }
-
-
-
-    /** Answers whether the given cog name designates a waybit-like element.
-      *
-      *     @param name (string) The local part of a qualified name,
-      *       the namespace of which is assumed to be NS_COG.
-      *     @see #isWaybitLike
-      */
-    function namesWaybitLikeCog( name ) { return name == 'loop'; }
 
 
 
@@ -453,7 +441,7 @@
 
             const tNS = t.namespaceURI;
             const tLocalPart = t.localName;
-            let isBit, isHTML, isWaybitish, isWaylinkable, isWayscript;
+            let isBit, isHTML, isWayscript;
             let tSubNS; // wayscript subnamespace, or null if element t is not wayscript
             if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // then element t is wayscript
             {
@@ -461,22 +449,12 @@
                 isWayscript = true;
                 t.setAttributeNS( NS_REND, 'isWayscript', 'isWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
-                if( isABitSubNS( tSubNS )) isBit = isWaybitish = isWaylinkable = true;
-                else
-                {
-                    isBit = false;
-                    if( tSubNS == SUB_NS_COG ) isWaybitish = isWaylinkable = namesWaybitLikeCog( tLocalPart );
-                    else
-                    {
-                        console.assert( false, A );
-                        isWaybitish = isWaylinkable = false;
-                    }
-                }
+                isBit = isABitSubNS( tSubNS );
             }
             else // element t is non-wayscript
             {
                 isHTML = tNS == NS_HTML;
-                isBit = isWaybitish = isWaylinkable = isWayscript = false;
+                isBit = isWayscript = false;
                 tSubNS = null;
             }
 
@@ -488,9 +466,9 @@
                 let v = t.getAttributeNS( NS_COG, attrName );
                 if( !v ) return null;
 
-                if( !isWaylinkable )
+                if( !isBit )
                 {
-                    mal( 'A non-waylinkable element with a waylink attribute: ' + a2s(attrName,v) );
+                    mal( 'A non-waybit element with a waylink attribute: ' + a2s(attrName,v) );
                     v = null;
                 }
                 return v;
@@ -519,8 +497,7 @@
                 const textAligner = document.createElementNS( NS_REND, 'textAligner' );
                 t.insertBefore( textAligner, t.firstChild );
             }
-            if( isWaybitish ) t.setAttributeNS( NS_REND, 'isWaybitish', 'isWaybitish' );
-            console.assert( isWaybitish == isWaylinkable, A ); // readable.css uses isWaybitish for both
+            if( isBit ) t.setAttributeNS( NS_REND, 'isWaybit', 'isWaybit' );
             const rendering = new PartRenderingC( t );
 
 
@@ -534,7 +511,7 @@
                   // Translate tagless declaration → entagment
                   // -----------------------------------------
                     const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_INHERIT );
-                    t.insertBefore( entagment, firstWaybitishChild(t) ); // [EP]
+                    t.insertBefore( entagment, firstWaybitChild(t) ); // [EP]
                     entagment.setAttributeNS( NS_COG, 'link', linkV );
                          t.removeAttributeNS( NS_COG, 'link' );
                     entagment.setAttributeNS( NS_REND, 'isEntagment', 'isEntagment' ); // if only as debug aid
@@ -1313,9 +1290,11 @@
               + 'color:' + defaultHyperlinkColour + ';'
            // + 'filter: hue-rotate( 180deg ) !important }' );
            /// somehow Chrome 59 seems to render that as black, but this works well enough:
-              + 'filter: hue-rotate( 60deg ) !important }' );
-                   // Rotate to distinguish from hyperlinks.  This must be declared as 'important';
-                   // maybe because otherwise the colour setting gets applied late and clobbers it.
+           // + 'filter: hue-rotate( 60deg ) !important }' );
+           //      // Rotate to distinguish from hyperlinks.  This must be declared as 'important';
+           //      // maybe because otherwise the colour setting gets applied late and clobbers it.
+           /// blind hue rotation is reckless, fall back to font-weight as the sole distinguisher
+              + '}' );
 
           // Waylink target node
           // - - - - - - - - - -
@@ -1481,7 +1460,7 @@
 // -----
 //  [C2] The constructor of PartRenderingC2 must remove all such markup.
 //
-//  [EP] This rendering places entagments before the first waybitish child.
+//  [EP] This rendering places entagments before the first waybit child.
 //       Code that depends on this refers here.
 //
 //  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
