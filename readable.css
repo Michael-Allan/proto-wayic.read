@@ -1,8 +1,8 @@
 /* readable - A minimal, conservative rendering for mere readability
  *
  *   This renderer does what’s needed in order to present a complete, easily readable copy
- *   of the wayscript for public viewing.  Otherwise it tries to preserve the layout
- *   of the underlying source code as it would appear to a wayscribe.
+ *   of a wayscript document for public viewing.  Otherwise it tries to preserve the layout
+ *   of the underlying wayscript source as it would appear to a wayscribe.
  *
  *   Tested on Chrome and Firefox only.
  *
