@@ -6,7 +6,9 @@
 ( function()
 {
 
-    /// preliminary declarations out of lexical order ///
+
+////  L e x i c a l l y   u n o r d e r e d   d e c l a r a t i o n s  /////////////////////////////////
+
 
 
     /** The leading string of all (URL form) wayscript namespaces.  A full XML namespace is formed
@@ -44,12 +46,102 @@
 
 
 
-   // --------------------------------------------------------------------------------------------------
+    /** The XML namespace of markup specific to cogs.
+      */
+    const NS_COG  = NS_WAYSCRIPT_DOT + SUB_NS_COG;
+
+
+
+   // ==================================================================================================
+
+
+    /** Dealing with Uniform Resource Identifiers.
+      *
+      *     @see https://tools.ietf.org/html/rfc3986
+      */
+    const URIs = ( function()
+    {
+
+        const that = {}; // the public interface of URIs
+
+
+
+        const hrefParserDiv = document.createElement( 'div' ); hrefParserDiv.innerHTML = '<a/>';
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** The pattern of a full URI (as opposed to a URI reference)
+          * which means a URI with a scheme component.
+          *
+          *     @see https://tools.ietf.org/html/rfc3986#section-1.1.1
+          *     @see https://tools.ietf.org/html/rfc3986#section-3
+          *     @see https://tools.ietf.org/html/rfc3986#section-3.1
+          */
+        that.FULL_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
+
+
+
+        /** Answers whether the given URI is detected to have an abnormal form,
+          * where such detection depends on whether *toEnforceCostlyConstraints*.
+          *
+          *     @see #normalize
+          */
+        that.isDetectedAbnormal = function( uri )
+        {
+            return toEnforceCostlyConstraints && uri != that.normalize(uri)
+        }
+
+
+
+        /** Returns a message that the given URI is not in normal form.
+          */
+        that.message_abnormal = function( uri ) { return 'Not in normal form:' + uri; };
+
+
+
+        /** Puts the given URI reference through the client's hyperlink *href* parser,
+          * thus converting any relative path to an absolute path (by resolving it against
+          * the location of the present document) and otherwise normalizing its form.
+          * Returns the normalized form.
+          *
+          *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          */
+        that.normalize = function( ref )
+        {
+            // Modified from Matt Mastracci.
+            // https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript/
+            //
+            // Apparently this cannot be adapted for use with other documents, to normalize their own,
+            // internally encoded references.  At least it fails when an equivalent function is
+            // constructed (with parser element, etc.) against another document obtained through the
+            // Documents reading facility.  Then the *href* always yields *undefined*.
+
+            const div = hrefParserDiv;
+            div.firstChild.href = ref; // escaping ref en passant
+            div.innerHTML = div.innerHTML; // reparsing it
+            return div.firstChild.href;
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
+
+
+
+////  S i m p l e   d e c l a r a t i o n s  ///////////////////////////////////////////////////////////
+
 
 
     /** The default message for console assertions.
       */
-    const A = 'Assertion failure';
+    const A = 'Failed assertion';
 
 
 
@@ -74,6 +166,49 @@
  //     var existingNames = element.className;
  //     element.className = existingNames? existingNames + ' ' + names: names );
  // }
+
+
+
+    /** The location of the waycast (string) in normal URL form, and with a trailing slash '/'.
+      *
+      *     @see URIs#normalize
+      */
+    let CAST_BASE_LOCATION; // init below, thence constant
+
+
+
+    /** The path to the base (root directory) of the waycast, without a trailing slash '/'.
+      */
+    const CAST_BASE_PATH = ( function()
+    {
+        let path = '__UNDEFINED_repo_href__';
+        const traversal = document.createTreeWalker( document.head, SHOW_ELEMENT );
+        for( let t = traversal.nextNode(); t != null; t = traversal.nextSibling() )
+        {
+            if( t.localName == 'cast' && t.namespaceURI == NS_COG )
+            {
+                const p = t.getAttribute( 'base' );
+                if( p )
+                {
+                    path = p;
+                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove the trailing slash
+                }
+                else mal( "Missing 'base' attribute in 'cast' element" );
+                return path;
+            }
+        }
+
+        mal( "Missing 'cast' element in document 'head'" );
+        return path;
+    }() );
+
+
+        {
+            let loc = URIs.normalize( CAST_BASE_PATH );
+            console.assert( !loc.includes('..'), A );
+            if( !loc.endsWith('/') ) loc = loc + '/';
+            CAST_BASE_LOCATION = loc;
+        }
 
 
 
@@ -107,7 +242,7 @@
             mal( 'Source node name (' + sourceLocalPart + ') differs from target node name ('
               + targetLocalPart + ') for waylink: ' + a2s('link',linkV) );
         }
-        if( isBit && sourceLocalPart == ELEMENT_NAME_INHERIT ) rendering.localPartOverride = targetLocalPart;
+        if( isBit && sourceLocalPart == ELEMENT_NAME_UNCHANGED ) rendering.localPartOverride = targetLocalPart;
           // thus rendering it with the same name as the target
     }
 
@@ -147,16 +282,34 @@
 
 
 
-    /** The string that means *inherit from target* when it encodes the local part of the name
-      * of a waylink souce node.
-      */
-    const ELEMENT_NAME_INHERIT = '_ι';
-
-
-
     /** The string that means *none* when it encodes the local part of a wayscript element's name.
       */
     const ELEMENT_NAME_NONE = '_';
+
+
+
+    /** The string that means *same as the target name* when it encodes the local part of the name
+      * of a waylink souce node.
+      */
+    const ELEMENT_NAME_UNCHANGED = '_iso';
+
+
+
+    const DELAY_SYMBOL = '⌚'; // '⌚' is Unicode 231a ('watch')
+
+
+
+    /** The location of present document (string) in normal URL form.
+      *
+      *     @see URIs#normalize
+      */
+    const DOCUMENT_LOCATION = ( function()
+    {
+        let loc = window.location.toString();
+        const hashLength = window.location.hash.length; // [WDL], including the '#' character
+        if( hashLength ) loc = loc.slice( 0, -hashLength );
+        return URIs.normalize( loc );
+    }() );
 
 
 
@@ -166,26 +319,16 @@
     {
         const traversal = document.createTreeWalker( node, SHOW_ELEMENT );
         let t = traversal.nextNode();
-        for(; t != null; t = traversal.nextSibling() ) if( isWaybit( t )) return t;
+        for(; t != null; t = traversal.nextSibling() ) if( isBitNS( t.namespaceURI )) return t;
         return null;
     }
 
 
 
-    /** Tries to find a target node by the *id* attribute which this script sets on it.
+    /** Tries quickly to find a target node by the *id* attribute which this script sets on it.
       * Returns the target node for the given *id*, or null if this script has yet to set it.
       */
-    function getTargetById( id )
-    {
-        let e = document.getElementById( id );
-        if( e )
-        {
-            const lidV = e.getAttributeNS( NS_COG, 'lid' );
-            if( lidV == id ) return e;
-        }
-
-        return null;
-    }
+    function getTargetById( id ) { return Documents.getTargetById( document, id ); }
 
 
 
@@ -195,7 +338,7 @@
       *
       *     @param ns (string)
       */
-    function isABitNS( ns )
+    function isBitNS( ns )
     {
         const nsBitLen = NS_BIT.length;
         return ns.startsWith(NS_BIT) && (ns.length == nsBitLen || ns.charAt(nsBitLen) == '.');
@@ -208,32 +351,28 @@
       *
       *     @param subNS (string) A wayscript namespace without the leading NS_WAYSCRIPT_DOT.
       */
-    function isABitSubNS( subNS )
+    function isBitSubNS( subNS )
     {
         return subNS.startsWith(SUB_NS_BIT) && (subNS.length == 3 || subNS.charAt(3) == '.');
     }
 
 
 
-    /** Whether the user reading the document might also write to it.
+    /** Whether the present document appears to be stored on the user's computer or local network.
       */
-    const isUserScribe = document.URL.startsWith( 'file:' );
+    const isDocumentLocallyStored = document.URL.startsWith( 'file:' );
 
 
 
-    /** Answers whether the given element is a waybit.
+    /** Whether it appears that the user would be unable to correct faults in this program.
       */
-    function isWaybit( e )
-    {
-        // cf. transform() isWaybit
-        const eNS = e.namespaceURI;
-        if( !eNS.startsWith(NS_WAYSCRIPT_DOT) ) return false;
+    const isUserNonProgrammer = !isDocumentLocallyStored;
 
-        const eSubNS = eNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
-        if( isABitSubNS( eSubNS )) return true;
 
-        return false;
-    }
+
+    /** Whether the user can likely edit the present document.
+      */
+    const isUserScribe = isDocumentLocallyStored;
 
 
 
@@ -267,41 +406,17 @@
       */
     function mal( message )
     {
-     // console.assert( message, AA + 'Mal message is not empty' );
+        if( !message ) throw "Null parameter";
+
         console.error( message );
-        if( isUserScribe ) alert( message ); // see readable.css § Debugging
+        if( isUserScribe ) alert( message ); // see readable.css § DEBUGGING
     }
-
-
-
-    /** Puts the given location through the client's hyperlink URL parser, resolving any relative path
-      * to an absolute path, and otherwise normalizing its form.  Returns the result.
-      */
-    function normalizeURL( loc )
-    {
-        // modified from Matt Mastracci, https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript/
-        const p = normalizeURL.parserElement;
-        p.firstChild.href = loc; // escaping the URL en passant
-        p.innerHTML = p.innerHTML; // reparsing it
-        return p.firstChild.href;
-    }
-
-        {
-            normalizeURL.parserElement = document.createElement( 'div' );
-            normalizeURL.parserElement.innerHTML = '<a/>';
-        }
 
 
 
     /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
       */
     const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
-
-
-
-    /** The XML namespace of markup specific to cogs.
-      */
-    const NS_COG  = NS_WAYSCRIPT_DOT + SUB_NS_COG;
 
 
 
@@ -313,7 +428,7 @@
 
     /** The XML namespace of markup specific to this renderer.
       */
-    const NS_REND = 'data:,wayic/read';
+    const NS_REND = 'data:,wayic.read';
 
 
 
@@ -345,52 +460,6 @@
 
 
 
-    /** The location of the waycast in normalized URL form, with a trailing slash '/'.
-      */
-    let CAST_BASE_LOC; // init below, thence constant
-
-
-
-    /** The path to the base (root directory) of the waycast, without a trailing slash '/'.
-      */
-    const CAST_BASE_PATH = ( function()
-    {
-        let path = '__UNDEFINED_repo_href__';
-        const traversal = document.createTreeWalker( document.head, SHOW_ELEMENT );
-        for( let t = traversal.nextNode(); t != null; t = traversal.nextSibling() )
-        {
-            if( t.localName == 'cast' && t.namespaceURI == NS_COG )
-            {
-                const p = t.getAttribute( 'base' );
-                if( p )
-                {
-                    path = p;
-                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove the trailing slash
-                }
-                else mal( "Missing 'base' attribute in 'cast' element" );
-                if( document.URL.includes( '/_base_' )) path = '.';
-                  // Almost certainly it's a hard link to (or copy of) the wayscript file placed
-                  // by the user in the waycast base for debugging purposes, as per readable.css.
-                  // We could have detected it earlier, avoiding the cost of the form checks above,
-                  // but normal code should run as far as possible when debugging, as a rule.
-                return path;
-            }
-        }
-
-        mal( "Missing 'cast' element in document 'head'" );
-        return path;
-    }() );
-
-
-        {
-            let loc = normalizeURL( CAST_BASE_PATH );
-            console.assert( !loc.includes('..'), A );
-            if( !loc.endsWith('/') ) loc = loc + '/';
-            CAST_BASE_LOC = loc;
-        }
-
-
-
     /** Runs this script.
       */
     function run()
@@ -398,15 +467,16 @@
         console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'), AA + 'Strict mode' );
           // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
           // credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-        Styling.run();
+        Styler.run();
         transform();
       // --------------------
-      // Layout is now stable
+      // Layout is now stable  (more or less)
       // --------------------
         document.body.style.display = 'block'; // overriding readable.css in order to lay out and show the page
         ExternalWaylinkResolver.start();
-        WayTracer.start();
+        WayTracer.start(); // start late, AFTER_TARGETS_IDD
     }
+
 
 
 
@@ -417,6 +487,12 @@
 
 
     const TEXT = Node.TEXT_NODE;
+
+
+
+    /** Whether to enforce program constraints whose violations are expensive to detect.
+      */
+    const toEnforceCostlyConstraints = !isUserNonProgrammer;
 
 
 
@@ -437,7 +513,7 @@
         tt: for( ;; )
         {
             const t = traversal.nextNode();
-            if( !t ) break;
+            if( t == null ) break;
 
             const tNS = t.namespaceURI;
             const tLocalPart = t.localName;
@@ -449,7 +525,7 @@
                 isWayscript = true;
                 t.setAttributeNS( NS_REND, 'isWayscript', 'isWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
-                isBit = isABitSubNS( tSubNS );
+                isBit = isBitSubNS( tSubNS );
             }
             else // element t is non-wayscript
             {
@@ -461,7 +537,7 @@
           // ============
           // Form testing of element t
           // ============
-            function waylinkAttribute( attrName ) // returns its value, or null
+            function waylinkAttributeV( attrName ) // returns its value, or null
             {
                 let v = t.getAttributeNS( NS_COG, attrName );
                 if( !v ) return null;
@@ -473,8 +549,8 @@
                 }
                 return v;
             }
-            const lidV = waylinkAttribute( 'lid' ); // target identifier, non-null if t is a target node
-            const linkV = waylinkAttribute( 'link' ); // waylink declaration, non-null if t is a source node
+            const lidV = waylinkAttributeV( 'lid' ); // target identifier, non-null if t is a target node
+            const linkV = waylinkAttributeV( 'link' ); // waylink declaration, non-null if t is a source node
 
           // ===================
           // Hyperlink targeting by element t
@@ -506,11 +582,11 @@
           // ==========
             source: if( linkV )
             {
-                if( !isDeclaredEmpty ) // tagless declaration of source node
+                if( !isDeclaredEmpty ) // then it's a tagless declaration of a source node
                 {
                   // Translate tagless declaration → entagment
                   // -----------------------------------------
-                    const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_INHERIT );
+                    const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_UNCHANGED );
                     t.insertBefore( entagment, firstWaybitChild(t) ); // [EP]
                     entagment.setAttributeNS( NS_COG, 'link', linkV );
                          t.removeAttributeNS( NS_COG, 'link' );
@@ -524,44 +600,35 @@
                     break source;
                 }
 
-                let targetDocLoc, targetID;
+                let link;
+                try { link = new LinkAttribute( linkV ); }
+                catch( unparseable )
                 {
-                    const c = linkV.indexOf( '#' );
-                    if( c == -1 )
+                    mal( unparseable );
+                    break source;
+                }
+
+                const preview = document.createElementNS( NS_REND, 'preview' );
+                const targetDocLoc = link.targetDocumentLocation;
+                let targetPreviewString, targetDirectionChar;
+                targeting:
+                {
+                    if( targetDocLoc.length > 0 )
                     {
-                        mal( "Link declaration without target identifier '#': " + a2s('link',linkV) );
-                        break source;
+                        const targetDocLocN = URIs.normalize( targetDocLoc );
+                        if( targetDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
+                        {
+                            ExternalWaylinkResolver.registerLink( t, targetDocLocN );
+                            targetDirectionChar = '→'; // '→' is Unicode 2192 ('rightwards arrow')
+                            rendering.isChangeable = true;
+                            targetPreviewString = DELAY_SYMBOL;
+                            break targeting;
+                        }
                     }
 
-                    targetDocLoc = linkV.slice( 0, c ); // without fragment
-                    targetID = linkV.slice( c + 1 );
-                }
-                const preview = document.createElementNS( NS_REND, 'preview' );
-                let targetPreviewString, targetDirectionChar;
-                if( targetDocLoc.length > 0 )
-                {
-                    if( targetDocLoc.startsWith( '/' )) targetDocLoc = CAST_BASE_PATH + targetDocLoc;
-                      // translating waycast space → universal space
-                    else if( targetDocLoc.includes( ':' ))
-                    {
-                        mal( "Target URL appears not to be relative to the waycast: " + a2s('link',linkV) );
-                    }
-                    else if( isUserScribe // so sparing others the cost of this slow test
-                      && !normalizeURL(targetDocLoc).startsWith(CAST_BASE_LOC) )
-                    {
-                        mal( "Target is outside of the waycast: " + a2s('link',linkV) );
-                    }
-                    if( targetDocLoc.endsWith('/') ) targetDocLoc += 'way.xht';
-                    ExternalWaylinkResolver.registerLink( t, targetDocLoc ); /* Either the target
-                      is outside of this document, or it's bizarrely specified.  No matter. */
-                    targetDirectionChar = '→'; /* [ → ⮕ ▸ ] */
-                    rendering.isChangeable = true;
-                    targetPreviewString = '⮎';
-                }
-                else // the target is within this document
-                {
-                    let target = getTargetById( targetID );
-                    if( target ) targetDirectionChar = '↑'; /* [ ↑ ⮭ ▴ ] */
+                    // the target is within this document
+                    let target = getTargetById( link.targetID );
+                    if( target ) targetDirectionChar = '↑'; // '↑' is Unicode 2191 ('upwards arrow')
                     else // it should be in nodes below, where transform has yet to reach it and set its 'id'
                     {
                         const traversal = document.createTreeWalker( body, SHOW_ELEMENT ); // search for it
@@ -575,10 +642,10 @@
                                 break source;
                             }
 
-                            if( u.getAttributeNS(NS_COG,'lid') == targetID )
+                            if( u.getAttributeNS(NS_COG,'lid') == link.targetID )
                             {
                                 target = u;
-                                targetDirectionChar = '↓'; /* [ ↓ ⮯ ▾ ] */
+                                targetDirectionChar = '↓'; // '↓' is Unicode 2193 ('downwards arrow')
                                 break;
                             }
                         }
@@ -589,7 +656,7 @@
                 }
                 const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
-                a.setAttribute( 'href', targetDocLoc + '#' + targetID );
+                a.setAttribute( 'href', targetDocLoc + '#' + link.targetID );
                 a.appendChild( preview );
                 preview.appendChild( document.createTextNode( targetPreviewString ));
                 configureForTargetPreview( t, forelinker, targetPreviewString );
@@ -610,15 +677,7 @@
             {
               // Hyperlink targeting
               // -------------------
-                const idV = t.getAttribute( 'id' );
-                if( idV )
-                {
-                    if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
-                    else mal( 'Element with ' + a2s('id',idV) + ' has non-matching ' + a2s('lid',lidV) );
-                }
-                const e = document.getElementById( lidV );
-                if( e ) mal( "Identifier already assigned to another element: " + a2s('lid',lidV) );
-                else t.setAttribute( 'id', lidV );
+                Documents.targetAsHyperlinkToo( t, lidV );
 
               // Self hyperlink
               // --------------
@@ -626,11 +685,11 @@
                 const eQName = eSTag.firstChild;
                 eSTag.insertBefore( a, eQName );
                 a.appendChild( document.createElementNS( NS_REND, 'targetMarker' ))
-                 .appendChild( document.createTextNode( '→' )); // alternatives → ⇉
+                 .appendChild( document.createTextNode( '→' )); // '→' is Unicode 2192 ('rightwards arrow')
                 a.appendChild( eQName ); // wrap it
 
               // ---
-                WaylinkSE.initTarget( eSTag, t, lidV );
+                Targets.initTarget( eSTag, t, lidV );
             }
             else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
             {
@@ -692,10 +751,78 @@
 
 
 
+    /** Answers whether the given HTML element is very likely to be rendered in line by the client.
+      */
+    function willDisplayInLine_likely( htmlElement ) // a workaround function for its caller, q.v.
+    {
+        switch( htmlElement.localName )
+        {
+            case 'a':
+            case 'abbr':
+            case 'b':
+            case 'bdi':
+            case 'bdo':
+            case 'br':
+            case 'cite':
+            case 'code':
+            case 'data':
+            case 'del':
+            case 'dfn':
+            case 'em':
+            case 'i':
+            case 'ins':
+            case 'kbd':
+            case 'mark':
+            case 'q':
+            case 's':
+            case 'samp':
+            case 'small':
+            case 'span':
+            case 'strong':
+            case 'sub':
+            case 'sup':
+            case 'u':
+            case 'var':
+            case 'wbr':
+                return true;
+        }
+
+        return false;
+    }
+
+
+
+////  C o m p l i c a t e d   d e c l a r a t i o n s  /////////////////////////////////////////////////
+
+
+
+    /** A reader of documents.
+      */
+    class DocumentReader
+    {
+
+        /** Closes this reader.
+          *
+          *     @param docReg (DocumentRegistration)
+          */
+        close( docReg ) {}
+
+
+        /** Reads the document.
+          *
+          *     @param docReg (DocumentRegistration)
+          *     @param doc (Document)
+          */
+        read( docReg, doc ) {}
+
+    }
+
+
+
    // ==================================================================================================
 
 
-    /** Documents external to this one.
+    /** Dealing with wayscript documents at large, not only the present document.
       */
     const Documents = ( function()
     {
@@ -704,56 +831,225 @@
 
 
 
-        /** Map of summons and summoned documents.  Each entry is keyed by the URL string
-          * of the summoned document.  It holds either the document itself or the array
-          * of summoning readers that await it.
+        function d_mal( doc, message )
+        {
+            if( !doc ) throw "Null parameter";
+
+            if( doc == document ) mal( message );
+        }
+
+
+
+        /** The generalized record of a wayscript document.
           */
-        const summonsRegistry = new Map();
+        class DocumentRegistration
+        {
+
+            constructor( location, doc = null )
+            {
+                this._location = location;
+                this._document = doc;
+            }
+
+
+            /** The registered document, or null if the document could not be retrieved.
+              */
+            get document() { return this._document; }
+            set document( d ) { this._document = d; }
+
+
+            /** The location of the document in normal form.
+              */
+            get location() { return this._location; }
+
+        }
+
+
+
+        function notifyReader( r, docReg, doc )
+        {
+            if( doc ) r.read( docReg, doc );
+            r.close( docReg );
+        }
+
+
+
+        const PRESENT_DOCUMENT_REGISTRATION = new DocumentRegistration( DOCUMENT_LOCATION, document );
+
+
+
+        /** Map of pending and complete document registrations, including that of the present document.
+          * The entry key is DocumentRegistration#location.  The value is either the registration itself
+          * or the readers (Array of DocumentReader) that await it.
+          */
+        const registry = new Map().set( DOCUMENT_LOCATION, PRESENT_DOCUMENT_REGISTRATION );
 
 
 
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** @param fromLocation (string) The document location in URL form.
-          * @param read (Function) A one-parameter consumer to take the summoned document either now,
-          *   later or never as the case may be.
+        /** Tries quickly to find a target node within the given document by its *id* attribute,
+          * for which purpose it assumes (AFTER_TARGETS_IDD) that the *id* attribute is equal to
+          * the *lid* attribute.  This assumption is guaranteed valid for any document *other than
+          * the present document* that was retrieved through this (Documents) interface.
+          *
+          *     @param doc (Document)
+          *     @param id (string)
+          *
+          *     @return The target node (Element) with the given *id*, or null if there is none.
           */
-        that.summonDocument = function( fromLocation, read )
+        that.getTargetById = function( doc, id )
         {
-            let entry = summonsRegistry.get( fromLocation );
-            let readFunctions;
-            if( entry === undefined )
+            let e = doc.getElementById( id );
+            if( e )
             {
-                entry = readFunctions = [];
-                summonsRegistry.set( fromLocation, entry );
-                const req = new XMLHttpRequest();
-             // req.overrideMimeType( 'application/xhtml+xml' );
-             /// still it parses to an XMLDocument (Firefox 52), unlike this document
-                req.open( 'GET', fromLocation, /*asynchronous*/true );
-                req.responseType = 'document';
-             // req.addEventListener( 'onload', function( e )
-             /// then somehow Firefox (52) rejects even the in-branch local requests [F], so instead:
-                req.onload = function( e )
-                {
-                    const externalDoc = e.target.response;
-                    summonsRegistry.set( fromLocation, externalDoc );
-                    for( const read of readFunctions ) read( externalDoc );
-                };
-                req.send();
+                const lidV = e.getAttributeNS( NS_COG, 'lid' );
+                if( lidV == id ) return e;
             }
-            else if( entry instanceof Document )
+
+            return null;
+        };
+
+
+
+        /** Tries to retrieve the indicated document for the given reader.
+          * If *docLoc* indicates the present document, then that is immediately passed to the reader.
+          * Otherwise this method may return early, leaving the retrieval-read process to finish later.
+          * On success, it calls reader.read; regardless, it always finishes by calling reader.close.
+          *
+          *     @param docLoc (string) The document location in normal URL form.
+          *     @param reader (DocumentReader)
+          *
+          *     @see URIs#normalize
+          */
+        that.readNowOrLater = function( docLoc, reader )
+        {
+            if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
+
+            const entry = registry.get( docLoc );
+            if( entry instanceof DocumentRegistration )
             {
-                read( entry );
+                notifyReader( reader, entry, entry.document );
                 return;
             }
 
-            else
+            let readers;
+            if( entry === undefined ) // then request the document
+            {
+                readers = [];
+                registry.set( docLoc, readers );
+
+
+              // ============================
+              // Configure a document request
+              // ============================
+                const req = new XMLHttpRequest();
+                req.open( 'GET', docLoc, /*asynchronous*/true ); // misnomer, opens nothing, only sets config
+             // req.overrideMimeType( 'application/xhtml+xml' );
+             /// still it parses to an XMLDocument (Firefox 52), unlike this document
+                req.responseType = 'document';
+                req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
+
+
+              // =========================
+              // Ready the event listeners
+              // =========================
+                const docReg = new DocumentRegistration( docLoc );
+
+              // Abort
+              // -----
+                req.onabort = function( e ) { console.warn( 'Document request aborted: ' + docLoc ); }
+
+              // Error
+              // -----
+                /** @param e (Event) Unfortunately this is a mere ProgressEvent, at least on Firefox,
+                  *   which contains no useful information on the specific cause of the error.
+                  */
+                req.onerror = function( e ) { console.warn( 'Document request failed: ' + docLoc ); }
+                  // occurs e.g. when the URI scheme is 'file' and the document file is missing
+
+              // Load
+              // ----
+                req.onload = function( e )
+                {
+                    // If this listener is registered instead by req.addEventListener,
+                    // then oddly Firefox (52) rejects even in-branch local requests. [F]
+                    const doc = e.target.response;
+                    docReg.document = doc;
+
+                  // Set the *id* attribute for each waylink target node
+                  // - - - - - - - - - - - - - - - - - - - - - - - - - -
+                    const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
+                    for( ;; )
+                    {
+                        const t = traversal.nextNode();
+                        if( t == null ) break;
+
+                        const lidV = t.getAttributeNS( NS_COG, 'lid' );
+                        if( lidV ) Documents.targetAsHyperlinkToo( t, lidV );
+                    }
+                };
+
+              // Load end
+              // --------
+                /** @param e (Event) This is a mere ProgressEvent, at least on Firefox,
+                  *   which itself contains no useful information.
+                  */
+                req.onloadend = function( e )
+                {
+                    // Parameter *e* is a ProgressEvent, which contains no useful information.
+                    // If more information is ever needed, then it might be obtained from req.status,
+                    // or the mere fact of a call to req.error (see listener req.onerror, above).
+                    registry.set( docLoc, docReg );
+                    const doc = docReg.document;
+                    for( const r of readers ) { notifyReader( r, docReg, doc ); }
+                }
+
+              // Ready state change
+              // ------------------
+             // req.onreadystatechange = function( e ) {}
+
+              // Time out
+              // --------
+                req.ontimeout = function( e ) { console.warn( 'Document request timed out: ' + docLoc ); }
+
+
+              // ================
+              // Send the request
+              // ================
+                req.send();
+            }
+            else // a prior request is pending
             {
                 console.assert( entry instanceof Array, A );
-                readFunctions = entry;
+                readers = entry;
             }
-            readFunctions.push( read );
+            readers.push( reader );
+        };
+
+
+
+        /** Ensures that the given target node has one of the following: either
+          * (1) an *id* attribute that is both equal to the *lid* attribute,
+          *     and unique within its document, as required for an XML *ID* type; or
+          * (2) no *id* attribute.
+          *
+          *     @param t (Element) A waylink target node.
+          *     @param lidV (string) The value of t's *lid* attribute.
+          */
+        that.targetAsHyperlinkToo = function( t, lidV )
+        {
+            const doc = t.ownerDocument;
+            const idV = t.getAttribute( 'id' );
+            if( idV )
+            {
+                if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
+                else d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
+            }
+            const e = doc.getElementById( lidV );
+            if( e ) d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
+            else t.setAttribute( 'id', lidV );
         };
 
 
@@ -781,10 +1077,11 @@
 
 
 
-        /** Map of source arrays, each source array keyed by the URL string of a document,
-          * which is the common document that its source elements all target.
+        /** Map of source-node arrays.  The entry key is the location of a document (string)
+          * in normal URL form.  The value is a list of all source nodes (Array of Element)
+          * within the *present* document that target the *keyed* document.
           */
-        const sourceRegistry = new Map();
+        const sourceNodeRegistry = new Map();
 
 
 
@@ -793,77 +1090,85 @@
 
         /** Tells this resolver of an external link to be resolved.
           *
-          *     @param node (Element) A source node that has an external target.
+          *     @param sourceNode (Element) A source node that has an external target.
+          *     @param targetDocLoc (string) The document location in normal URL form.
+          *
+          *     @see URIs#normalize
           */
         that.registerLink = function( sourceNode, targetDocLoc )
         {
-            let sourceNodes = sourceRegistry.get( targetDocLoc );
+            if( URIs.isDetectedAbnormal( targetDocLoc )) throw URIs.message_abnormal( targetDocLoc );
+
+            let sourceNodes = sourceNodeRegistry.get( targetDocLoc );
             if( sourceNodes === undefined )
             {
                 sourceNodes = [];
-                sourceRegistry.set( targetDocLoc, sourceNodes );
+                sourceNodeRegistry.set( targetDocLoc, sourceNodes );
             }
             sourceNodes.push( sourceNode );
         };
 
 
 
-        /** Starts resolving the registered links.  Runs to completion.
+        /** Starts this resolver.
           */
         that.start = function()
         {
-            if( sourceRegistry.size == 0 ) return;
+            if( sourceNodeRegistry.size == 0 ) return;
 
             const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
-            for( const entry of sourceRegistry )
+            for( const entry of sourceNodeRegistry )
             {
                 const targetDocLoc = entry[0];
                 const sourceNodes = entry[1];
-                Documents.summonDocument( targetDocLoc, /*read*/function( targetDoc )
+                Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
                 {
-                    const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
-                    tt: for( ;; ) // seek the target nodes in *that* document
+                    read( docReg, targetDoc )
                     {
-                        const target = traversal.nextNode();
-                        if( !target ) break tt;
-
-                        const lidV = target.getAttributeNS( NS_COG, 'lid' );
-                        if( !lidV ) continue;
-
-                        const lidVN = lidV.length;
-                        let s = sourceNodes.length - 1;
-                        ss: do // seek the source nodes in *this* document that match
+                        const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
+                        tt: for( ;; ) // seek the target nodes in *that* document [EWR]
                         {
-                            const source = sourceNodes[s];
+                            const target = traversal.nextNode();
+                            if( !target ) break;
+
+                            const lidV = target.getAttributeNS( NS_COG, 'lid' );
+                            if( !lidV ) continue;
+
+                            const lidVN = lidV.length;
+                            let s = sourceNodes.length - 1;
+                            ss: do // seek the source nodes in *this* document that match
+                            {
+                                const source = sourceNodes[s];
+                                const linkV = source.getAttributeNS( NS_COG, 'link' );
+                                if( !linkV.endsWith( lidV )
+                                  || linkV.charAt(linkV.length-lidVN-1) != '#' ) continue ss;
+
+                              // Amend the source node
+                              // ---------------------
+                                const sourceNS = source.namespaceURI;
+                                const reRendering = new PartRenderingC2( source );
+                                configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
+                                  target, reRendering );
+                                reRendering.render();
+                                const forelinker = source.lastChild;
+                                const preview = forelinker.firstChild/*a*/.firstChild;
+                                const previewText = preview.firstChild;
+                                const newPreviewString = readTargetPreview( target, preview );
+                                previewText.replaceData( 0, previewText.length, newPreviewString );
+                                configureForTargetPreview( source, forelinker, newPreviewString );
+
+                              // De-register it
+                              // --------------
+                                sourceNodes.splice( s, /*removal count*/1 );
+                                if( sourceNodes.length == 0 ) break tt; // done with this targetDoc
+
+                            } while( --s >= 0 )
+                        }
+                        for( const source of sourceNodes ) // for any that remain unmatched:
+                        {
                             const linkV = source.getAttributeNS( NS_COG, 'link' );
-                            if( !linkV.endsWith( lidV )
-                              || linkV.charAt(linkV.length-lidVN-1) != '#' ) continue ss;
-
-                          // Amend the source node
-                          // ---------------------
-                            const sourceNS = source.namespaceURI;
-                            const reRendering = new PartRenderingC2( source );
-                            configureForTarget( sourceNS, source.localName, linkV, isABitNS(sourceNS), target,
-                              reRendering );
-                            reRendering.render();
-                            const forelinker = source.lastChild;
-                            const preview = forelinker.firstChild/*a*/.firstChild;
-                            const previewText = preview.firstChild;
-                            const newPreviewString = readTargetPreview( target, preview );
-                            previewText.replaceData( 0, previewText.length, newPreviewString );
-                            configureForTargetPreview( source, forelinker, newPreviewString );
-
-                          // De-register it
-                          // --------------
-                            sourceNodes.splice( s, /*deletion count*/1 );
-                            if( sourceNodes.length == 0 ) break tt; // done with this targetDoc
-
-                        } while( --s >= 0 )
-                    }
-                    for( const source of sourceNodes ) // for any that remain unmatched:
-                    {
-                        const linkV = source.getAttributeNS( NS_COG, 'link' );
-                        mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
+                            mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
+                        }
                     }
                 });
             }
@@ -995,8 +1300,19 @@
                     else if( dNS.startsWith( NS_WAYSCRIPT_DOT )) break dive;
                     else
                     {
-                        const display = window.getComputedStyle( d ).getPropertyValue( 'display' );
-                        if( display != 'inline' ) break dive;
+                        const styleDeclarations = window.getComputedStyle( d );
+                        const displayStyle = styleDeclarations.getPropertyValue( 'display' );
+                        if( displayStyle == 'inline' ) continue dive;
+
+                        if( styleDeclarations.length == 0 ) // then something's wrong
+                        {
+                            // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
+                            // ties that are supported CSS properties" must be reported, ∴ length should
+                            // be > 0.  https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
+                            if( dNS == NS_HTML && willDisplayInLine_likely(d) ) continue dive;
+                        }
+
+                        break dive;
                     }
                 }
             }
@@ -1027,6 +1343,79 @@
    // ==================================================================================================
 
 
+    /** The parsed value of a waylink source node's *link* attribute.
+      */
+    class LinkAttribute
+    {
+
+
+        /** Constructs a LinkAttribute from its declared value.
+          *
+          *     @see #value
+          *     @throw (string) Error message if the value cannot be parsed.
+          */
+        constructor( value )
+        {
+            this._value = value;
+            let loc; // of document
+            {
+                const c = value.indexOf( '#' );
+                if( c == -1 ) throw "Missing target node identifier '#': " + a2s('link',value);
+
+                loc = value.slice( 0, c ); // without fragment
+                this._targetID = value.slice( c + 1 );
+            }
+            if( loc.length > 0 )
+            {
+                if( loc.charAt(0) == '/'
+                  && /*not a network-path reference*/(loc.length == 1 || loc.charAt(1) != '/') ) // [NPR]
+                {
+                    loc = CAST_BASE_PATH + loc; // waycast space → universal space
+                }
+                else if( !URIs.FULL_PATTERN.test( loc ))
+                {
+                    throw "Leading component must be either a URI scheme, or the waycast base '/': "
+                      + a2s('link',value);
+                }
+
+                if( loc.endsWith('/') ) loc += 'way.xht';
+            }
+            this._targetDocumentLocation = loc;
+        }
+
+
+
+       // ----------------------------------------------------------------------------------------------
+
+
+        /** The location of the targeted document as a URL string, or the empty string if the *link*
+          * attribute encodes a *same-document reference*.
+          *
+          *     @see https://tools.ietf.org/html/rfc3986#section-4.4
+          */
+        get targetDocumentLocation() { return this._targetDocumentLocation; }
+
+
+
+        /** The target identifier.
+          */
+        get targetID() { return this._targetID; }
+
+
+
+        /** The unparsed string value of the attribute, as declared.
+          */
+        get value() { return this._stringValue; }
+
+
+
+    }
+
+
+
+   // ==================================================================================================
+
+
     /** The part of the rendering of a wayscript element that is generally open to being re-rendered.
       * This is a disposable, single-use class.
       */
@@ -1034,7 +1423,7 @@
     {
 
 
-        /** Constructs an PartRenderingC.
+        /** Constructs a PartRenderingC.
           *
           *     @see #element
           */
@@ -1186,19 +1575,20 @@
    // ==================================================================================================
 
 
-    /** Runtime style rules and settings for the overall document.
+    /** Runtime enforcer of style rules and settings for the overall document.
+      * It appends style rules to the document and sets style attributes.
       */
-    const Styling = ( function()
+    const Styler = ( function()
     {
 
-        const that = {}; // the public interface of Styling
+        const that = {}; // the public interface of Styler
 
 
 
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Appends style rules to the document and sets style attributes.
+        /** Runs this styler.
           */
         that.run = function()
         {
@@ -1299,7 +1689,7 @@
           // Waylink target node
           // - - - - - - - - - -
             insert( 'rend|eSTag > a > eQName { outline-color:' + defaultColour + '}' );
-              // Cannot rely on the initial value of 'invert' here because that keyword is rejected
+              // Cannot rely on outline-color's initial value of 'invert' because that keyword is rejected
               // in the keyframes of flashFade_outline (at least by Firefox 52).  Nor is 'currentColor'
               // useful, because if this element happens to be a step, and so has inverted colours,
               // then currentColor will be the opposite of what's needed for the outline.
@@ -1318,12 +1708,12 @@
    // ==================================================================================================
 
 
-    /** Styling and event handling for waylink target nodes.
+    /** Dealing with waylink target nodes.
       */
-    const WaylinkSE = ( function()
+    const Targets = ( function()
     {
 
-        const that = {}; // the public interface of WaylinkSE
+        const that = {}; // the public interface of Targets
 
 
 
@@ -1350,7 +1740,7 @@
           */
         function readTargetedID()
         {
-            const hash = window.location.hash; // 'window' https://stackoverflow.com/a/2431375/2402790
+            const hash = window.location.hash; // [WDL]
             return hash.length == 0? null: hash.slice(1);
         }
 
@@ -1419,8 +1809,7 @@
    // ==================================================================================================
 
 
-    /** A device to decorate the rendered wayscript with information from a complete way trace.
-      * It traces and it decorates.
+    /** A device for tracing the way across multiple, way-linked documents.
       */
     const WayTracer = ( function()
     {
@@ -1429,14 +1818,255 @@
 
 
 
+        /** Answers whether the specified leg is already traced.
+          *
+          *     @see #newLegID
+          *     @see #shutLeg
+          */
+        function isShut( legID ) { return legsShut.includes(legID); }
+          // the likely efficiency of this test is asserted by INC FAST, q.v.
+
+
+
+        /** Array of leg identifiers (string), one for each leg of the trace in progress.
+          */
+        const legsOpen = [];
+
+
+
+        /** Array of leg identifiers (string), one for each leg that is done tracing.
+          */
+        const legsShut = [];
+
+
+
+        /** Constructs a trace leg identifier (string) for the given target.
+          *
+          *     @param targetDocLoc (string) The target document location in normal URL form.
+          *     @param targetID (string)
+          */
+        function newLegID( targetDocLoc, targetID )
+        {
+            if( targetDocLoc == ROOT_DOCUMENT_LOCATION ) return ROOT_LEG_ID;
+              // All targets of the root document are here assigned the same identifier.  This can be
+              // understood either (a) logically as a consequence of the exception of tracing the root
+              // document as a whole in a single leg, all of a piece; or (b) practically as a method of
+              // helping the code to isolate the root targets for special treatment (basically to ignore
+              // them) and so to shield itself from the consequences of this exception.
+
+            return targetDocLoc + '#' + targetID;
+        }
+
+
+
+        /** Adds the given leg identifier to legsOpen.
+          *
+          *     @see #newLegID
+          *     @see #wasOpened
+          */
+        function openLeg( legID )
+        {
+            legsOpen.push( legID );
+         // console.debug( legsOpen.length + '\t\tleg ' + legID ); // TEST
+              // spacing matters here, cf. shutLeg
+        }
+
+
+
+        /** The normal-form location (URL string) of the trace root document, which is the visionary
+          * document.  The visionary document as a whole formalizes the endmost goal, which grounds
+          * the way.  Therefore the whole of it is taken as the root leg of the way trace.
+          *
+          *     @see URIs#normalize
+          */
+        const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'visionary/way.xht';
+
+
+
+        /** The identifier of the root leg of the trace, which comprises the root document.
+          * All other legs are identified by target URL.
+          */
+        const ROOT_LEG_ID = 'ROOT';
+
+
+
+        /** Moves the given leg identifier from legsOpen to legsShut,
+          * then starts decorating if all legs are now shut.
+          *
+          *     @throw (string) Error message if legID is missing from legsOpen.
+          *
+          *     @see #newLegID
+          *     @see #isShut
+          */
+        function shutLeg( legID )
+        {
+            const o = legsOpen.indexOf( legID );
+            if( o < 0 ) throw "Leg is not open: " + legID;
+
+          // Shut the leg
+          // ------------
+            legsOpen.splice( o, /*removal count*/1 );
+         // console.debug( '\t' + legsOpen.length + '\tleg ' + legID + ' ·' ); // TEST
+              // spacing matters here, cf. openLeg
+            legsShut.push( legID );
+            if( legsOpen.length > 0 ) return;
+
+          // After all are shut
+          // ------------------
+            console.assert( legsShut.length < 200, AA + 'INC FAST, q.v.' );
+              // asserting the likely efficiency of the tests legsOpen and legsShut.includes
+         // console.debug( 'Way trace complete' ); // TEST
+        }
+
+
+
+        /** Ensures that the specified leg is fully traced before returning.  May return with any number
+          * of waylinks yet untraced, slated for later tracing as separate legs.
+          *
+          *     @see #newLegID
+          *     @param branch (Element) Base element of the branch that comprises the leg.
+          *     @param docReg (DocumentRegistration)
+          *     @param isEmbodied (boolean) Whether the branch lies leafward of the HTML body.
+          */
+        function traceLeg( legID, branch, docReg, isEmbodied = true )
+        {
+            const doc = branch.ownerDocument;
+        //  if( doc == document ) console.debug( '\t\t\t(in present document)' ); // TEST
+            const docLoc = docReg.location;
+
+          // Guard the entrance with a rootward scan
+          // ---------------------------------------
+            if( isEmbodied ) for( let r = branch;; )
+            {
+                r = r.parentNode;
+                const ns = r.namespaceURI;
+                if( ns == null ) // then r is the document node
+                {
+                    mal( 'Malformed document: Missing HTML *body* element: ' + docLoc );
+                    break;
+                }
+
+                if( isBitNS( ns ))
+                {
+                    const lidV = r.getAttributeNS( NS_COG, 'lid' );
+                    if( !lidV ) continue;
+
+                    if( isShut( newLegID( docLoc, lidV ))) return; /* If only for sake of efficiency,
+                      since the whole branch was already traced as part of a larger branch. */
+                }
+                else if( r.localName == 'body' && ns == NS_HTML ) break;
+            }
+
+          // Enter the branch
+          // ----------------
+            const traversal = doc.createTreeWalker( branch, SHOW_ELEMENT );
+            for( ;; )
+            {
+                const t = traversal.nextNode();
+                if( t == null ) break;
+
+              // Source node
+              // -----------
+                source:
+                {
+                    const linkV = t.getAttributeNS( NS_COG, 'link' );
+                    if( !linkV ) break source;
+
+                    let link;
+                    try { link = new LinkAttribute( linkV ); }
+                    catch( unparseable ) { break source; }
+
+                    // No need here to guard against other types of malformed declation, which are
+                    // guarded elsewhere.  Rather let the trace extend as the wayscribe intended.
+                    let targetDocLoc = link.targetDocumentLocation;
+                    if( !targetDocLoc ) targetDocLoc = docLoc;
+
+                    targetDocLoc = URIs.normalize( targetDocLoc );
+                    const targetID = link.targetID;
+                    const targetLegID = newLegID( targetDocLoc, targetID );
+                    if( wasOpened( targetLegID )) break source;
+
+                    openLeg( targetLegID );
+                    Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
+                    {
+                        close( docReg )
+                        {
+                            if( docReg.document == null ) shutLeg( targetLegID );
+                            // else readDirectly shuts it
+                        }
+
+                        read( docReg, targetDoc ) /* The call to this method might come now or later,
+                          but the method itself ensures that any actual reading is done only later,
+                          after the present leg is fully traced and marked shut.  Thus it enables
+                          optimizations elsewhere in the code that depend on such ordering. */
+                        {
+                            this.wasDocRetrieved = true;
+                            const wasCalledLate = isShut( legID );
+                            const readMethod = wasCalledLate? this.readDirectly: this.readLater;
+                            readMethod.call( this, docReg, targetDoc );
+                        }
+
+                        readDirectly( docReg, targetDoc )
+                        {
+                            const target = Documents.getTargetById( targetDoc, targetID );
+                              // assumes AFTER_TARGETS_IDD, q.v.
+                            if( target ) traceLeg( targetLegID, target, docReg );
+                            else console.warn( 'Broken waylink truncates trace at leg: ' + targetLegID );
+                            shutLeg( targetLegID );
+                        }
+
+                        readLater( docReg, targetDoc )
+                        {
+                         // setTimeout( this.readDirectly, /*delay*/0, docReg, targetDoc );
+                         /// but more efficiently (as a microtask) and properly bound as a method call:
+                            Promise.resolve().then( function()
+                            {
+                                this.readDirectly( docReg, targetDoc );
+                            }.bind( this ));
+
+                            // This merely postpones execution till (I think) the end of the current
+                            // event loop.  A more elegant and useful solution might be to specifically
+                            // await the shut state of the present leg.  Maybe that could be done using
+                            // the new Promise/async facility?
+                        }
+                    });
+                }
+
+              // Target node
+              // -----------
+                const lidV = t.getAttributeNS( NS_COG, 'lid' );
+                if( lidV && isShut(newLegID(docLoc,lidV)) ) lastNode( traversal ); /* Bypass sub-branch
+                  t, if only for efficiency's sake, as already it was traced in a separate leg. */
+            }
+        }
+
+
+
+        /** Answers whether the specified leg was ever opened.
+          *
+          *     @see #newLegID
+          *     @see #openLeg
+          */
+        function wasOpened( legID ) { return legsOpen.includes(legID) || legsShut.includes(legID); }
+          // the likely efficiency of these tests is asserted by INC FAST, q.v.
+
+
+
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Starts this tracer, which runs to completion.
+        /** Starts this tracer.  It assumes AFTER_TARGETS_IDD, q.v. in the source code.
           */
         that.start = function()
         {
-            // TODO
+            const id = ROOT_LEG_ID;
+            console.assert( !wasOpened(id), A );
+            openLeg( id );
+            Documents.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
+            {
+                close( docReg ) { shutLeg( id ); }
+                read( docReg, doc ) { traceLeg( id, doc.documentElement, docReg, /*isEmbodied*/false ); }
+            });
         };
 
 
@@ -1460,8 +2090,16 @@
 // -----
 //  [C2] The constructor of PartRenderingC2 must remove all such markup.
 //
-//  [EP] This rendering places entagments before the first waybit child.
-//       Code that depends on this refers here.
+//  [EP]  This rendering places entagments before the first waybit child.
+//        Code that depends on this refers here.
+//
+//  [EWR]  ExternalWaylinkResolver might run marginally faster if (instead) it began the traversal
+//         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
 //
 //  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
-//      For the details, see readable.css § Debugging.
+//       See support file _wayic.read_local_access.xht.
+//
+//  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
+//
+//  [WDL]  Either 'document.location' or 'window.location', they are identical.
+//         https://www.w3.org/TR/html5/browsers.html#the-location-interface
