@@ -4,9 +4,8 @@
  *   of a wayscript document for public viewing.  Otherwise it tries to preserve the layout
  *   of the underlying wayscript source as it would appear to a wayscribe.
  *
- *   Tested on Chrome and Firefox only.
  *
- * Basic usage
+ * BASIC USAGE
  * -----------
  *   Insert this in the head element of the document:
  *
@@ -24,13 +23,15 @@
  *           <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
  *           </html:body>
  *
- * Anonymous element and prefix declarations
+ *
+ * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
  * -----------------------------------------
  *   This renderer takes as anonymous any wayscript element in which the local part of the name
  *   is encoded by a single underscore ‘_’.  It renders the element accordingly.  Likewise it gives
  *   an element with a namespace prefix of ‘_’ the same rendering as an element that has no prefix.
  *
- * Composition leader alignment
+ *
+ * COMPOSITION LEADER ALIGNMENT
  * ----------------------------
  *   In the source, it may happen that a composer start tag is followed on the same line by text
  *   or HTML content.  For example:
@@ -39,25 +40,24 @@
  *
  *   When the renderer encounters this, it tries to reproduce a similar layout.
  *
- * Debugging
+ *
+ * DEBUGGING
  * ---------
- *   The renderer reports problems it detects to the debugging console.  Further, when rendering
- *   a local wayscript file (on a file-scheme URL, that is) it opens *alert* windows for problems
- *   such as malformed wayscript, or anything else the user might be able to cope with directly.
+ *   The renderer reports problems it detects to the debugging console.
  *
- *   When rendering a local file, readable.js may have a limited ability to peer into other files,
- *   e.g. to resolve external waylinks (meantime marked ⮎) or to trace the way beyond the local file.
- *   Chrome (59) rejects all such local requests; it logs the reason in the console as "Cross origin
- *   requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https."
- *   Firefox (52) is more lenient, forwarding at least the in-branch requests, viz. where
- *   "the parent directory of the originating file is an ancestor directory of the target file." [FFU]
- *   To enable even out-of-branch requests under Firefox, create a hard link to (or copy of)
- *   the wayscript file in the waycast base directory and give it a name that starts with ‘_base_’.
- *   E.g. hard link ~/way/_base_visionary.xht to ~/way/visionary/way.xht.
- *   Then open that _base_ file in the browser.
+ *   Local wayscript
+ *   - - - - - - - -
+ *   When wayscript is loaded on a file-scheme URL, the renderer assumes you are the author (wayscribe).
+ *   Then it will open *alert* windows for any problem such as malformed wayscript, or anything else
+ *   that the wayscribe might be able to cope with directly.
  *
- * Rendering markup
- * ----------------
+ *   Local rendering will cause failures in cross-file waylink resolution (marked '⌚')
+ *   and in way tracing.  See support file local_access/_wayic.read_local_access.html
+ *   for instructions on coping with this.
+ *
+ *
+ * SPECIAL MARKUP
+ * --------------
  *   The renderer introduces its own markup to the document which includes the following:
  *   (for the notation, see the key further below)
  *
@@ -103,15 +103,15 @@
  *          * [attrib]     - Attribute of the element in no namespace
  *          * ns|element   - Component element
  *
- *      Unless otherwise marked, an element’s namespace is ‘data:,wayic/read’ (prefixed ‘rend’)
+ *      Unless otherwise marked, an element’s namespace is ‘data:,wayic.read’ (prefixed ‘rend’)
  *      and an attribute’s is none.
  *
- * Notes
+ *
+ * NOTES  (see bottom)
  * -----
- *   See bottom.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
-@namespace rend 'data:,wayic/read';
+@namespace rend 'data:,wayic.read';
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
   The namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
@@ -491,22 +491,20 @@ rend|eSTag eQName
 *:target >
 rend|eSTag eQName
 {
-    animation: flashFade_outline 2s; /* keyframes from readable.js prepareStyling */
+    animation: flashFade_outline 2s; /* As a target locator.  Keyframes from readable.js prepareStyling. */
 }
 
 
 
-/* Notes
+/* NOTES
  * -----
  *  [BA]  A boolean attribute such as [rend|isFoo] either has the same value as the local part
  *        (‘isFoo’) of its name, meaning true; or the attribute is not present, meaning false.
  *
  *  [C]  Class selectors are failing for non-HTML elements under Chrome (59).  Therefore this style
- *      sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
+ *       sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
  *
  *  [COMP]  Defunct composer elements, http://reluk.ca/project/wayic/read/composer/
- *
- *  [FFU]  https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  *
  *  [XMLN]  https://www.w3.org/TR/xml-names/
  */
