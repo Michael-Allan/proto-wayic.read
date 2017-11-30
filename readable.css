@@ -51,9 +51,8 @@
  *   Then it will open *alert* windows for any problem such as malformed wayscript, or anything else
  *   that the wayscribe might be able to cope with directly.
  *
- *   Local rendering will cause failures in cross-file waylink resolution (marked '⌚')
- *   and in way tracing.  See support file local_access/_wayic.read_local_access.html
- *   for instructions on coping with this.
+ *   Cross-file waylinks may fail to resolve under a file-scheme URL, instead being marked '⋯?⋯'.
+ *   See support file local_access/_wayic.read_local_access.html for instructions on dealing with this.
  *
  *
  * SPECIAL MARKUP
@@ -360,13 +359,6 @@ rend|forelinker > a:focus:not(:active)
 }
 
 
-rend|forelinker > a > preview[class~='truncated']::after /* [C] */
-{
-    content: ' …';
-    opacity: 0.7;
-}
-
-
 *:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
 rend|forelinker > a > br
 {
@@ -391,7 +383,7 @@ rend|forelinker > a > verticalTruncator
 *[rend|isChangeable] >
 rend|forelinker[class~='shortContent'] > a > verticalTruncator /* [C] */
 {
-    visibility: hidden; /* It looks awkward and in most cases the short content itself will suffice
+ /* visibility: hidden; *//* It looks awkward and in most cases the short content itself will suffice
     to indicate that a waylink is present, so hide it.  Yet don't remove it entirely because it'll
     likely help preserve the stability of the layout in the event of the expected content change. */
 }

@@ -27,17 +27,18 @@
     <h2>Why this is needed</h2>
     <p>
          When rendering local wayscript (loaded from a ‘file’ scheme URL, that is),
-         wayic.read has a limited ability to resolve external waylinks (marked ‘⌚’ till resolved),
+         wayic.read has a limited ability to resolve external waylinks (marked ‘⋯?⋯’ when resolution fails),
          to trace the way across multiple files, or generally to read other way files.
          It’s possible to work around this limitation (depending on the browser)
          with the help of this support file.
         </p>
     <p>
-        It doesn’t work on Chrome.  Chrome (59) rejects all local read requests, logging the reason in
-        the console as “Cross origin requests are only supported for protocol schemes: http, data, chrome,
-        chrome-extension, https.”  Firefox (52) is more lenient.  It forwards at least
-        the in-branch requests, viz. where “the parent directory of the originating file is
-        an ancestor directory of the target file.”<a style='padding-right:0.4em'
+        It won’t work on Chrome, however.  Chrome (59) rejects all local read requests,
+        logging the reason in the console as “Cross origin requests are only supported
+        for protocol schemes: http, data, chrome, chrome-extension, https.”
+        Firefox (52) is more lenient.  It at least forwards the in-branch requests,
+        viz. where “the parent directory of the originating file is an ancestor directory
+        of the target file.”<a style='padding-right:0.4em'
           href='https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs'> *</a>
         </p>
     </section>

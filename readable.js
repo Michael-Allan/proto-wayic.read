@@ -169,6 +169,10 @@
 
 
 
+    const BROKEN_SYMBOL = '⋯!⋯'; // '—' is Unicode 2014 (em dash), '⋯' 22ef (midline horizontal ellipsis)
+
+
+
     /** The location of the waycast (string) in normal URL form, and with a trailing slash '/'.
       *
       *     @see URIs#normalize
@@ -260,10 +264,7 @@
         else
         {
             source.setAttributeNS( NS_REND, 'hasPreviewString', 'hasPreviewString' );
-            if( targetPreviewString.length <= 2 )
-            {
-                forelinker.className = 'shortContent';
-            }
+            if( targetPreviewString.length <= 2 ) forelinker.className = 'shortContent';
             else
             {
                 const c = forelinker.className;
@@ -295,7 +296,7 @@
 
 
 
-    const DELAY_SYMBOL = '⌚'; // '⌚' is Unicode 231a ('watch')
+    const DELAY_SYMBOL = '⌚'; // '⌚' is Unicode 231a (watch)
 
 
 
@@ -414,6 +415,10 @@
 
 
 
+    const MYSTERY_SYMBOL = '⋯?⋯'; // '⋯' is Unicode 22ef (midline horizontal ellipsis)
+
+
+
     /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
       */
     const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
@@ -438,22 +443,15 @@
 
 
 
-    /** Reads the previewable text content of the given target node, and sets the style class
-      * of the given preview element if the previewable text is truncated.
+    /** Reads the previewable text content of the given target node.
       *
       *     @param target (Element) The waylink target node.
-      *     @param preview (Element) The *preview* element that will contain the returned text.
-      *       It must have no style class set on it.
       *
       *     @return (string) The previewable text content for setting in the *preview* element,
       *       or an empty string if there is none.
       */
-    function readTargetPreview( target, preview )
+    function readTargetPreview( target )
     {
-     // LeaderReader.read( target, TARGET_PREVIEW_MAX_LENGTH );
-     // console.assert( !preview.className, A ); // style class never needs resetting, only setting
-     // if( LeaderReader.isTruncated ) preview.className = 'truncated';
-     //// truncation seems to serve no necessary purpose, and is sometimes unwanted, so try defeating it
         LeaderReader.read( target );
         return LeaderReader.leader;
     }
@@ -619,7 +617,7 @@
                         if( targetDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
                         {
                             ExternalWaylinkResolver.registerLink( t, targetDocLocN );
-                            targetDirectionChar = '→'; // '→' is Unicode 2192 ('rightwards arrow')
+                            targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
                             rendering.isChangeable = true;
                             targetPreviewString = DELAY_SYMBOL;
                             break targeting;
@@ -628,7 +626,7 @@
 
                     // the target is within this document
                     let target = getTargetById( link.targetID );
-                    if( target ) targetDirectionChar = '↑'; // '↑' is Unicode 2191 ('upwards arrow')
+                    if( target ) targetDirectionChar = '↑'; // '↑' is Unicode 2191 (upwards arrow)
                     else // it should be in nodes below, where transform has yet to reach it and set its 'id'
                     {
                         const traversal = document.createTreeWalker( body, SHOW_ELEMENT ); // search for it
@@ -639,20 +637,22 @@
                             {
                                 mal( "Broken link: Either this document has no matching 'lid', "
                                   + 'or it has an identifier conflict: ' + a2s('link',linkV) );
-                                break source;
+                                targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
+                                targetPreviewString = BROKEN_SYMBOL;
+                                break targeting;
                             }
 
                             if( u.getAttributeNS(NS_COG,'lid') == link.targetID )
                             {
                                 target = u;
-                                targetDirectionChar = '↓'; // '↓' is Unicode 2193 ('downwards arrow')
+                                targetDirectionChar = '↓'; // '↓' is Unicode 2193 (downwards arrow)
                                 break;
                             }
                         }
                     }
 
                     configureForTarget( tNS, tLocalPart, linkV, isBit, target, rendering );
-                    targetPreviewString = readTargetPreview( target, preview );
+                    targetPreviewString = readTargetPreview( target );
                 }
                 const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
@@ -685,7 +685,7 @@
                 const eQName = eSTag.firstChild;
                 eSTag.insertBefore( a, eQName );
                 a.appendChild( document.createElementNS( NS_REND, 'targetMarker' ))
-                 .appendChild( document.createTextNode( '→' )); // '→' is Unicode 2192 ('rightwards arrow')
+                 .appendChild( document.createTextNode( '→' )); // '→' is Unicode 2192 (rightwards arrow)
                 a.appendChild( eQName ); // wrap it
 
               // ---
@@ -928,49 +928,48 @@
             if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
 
             const entry = registry.get( docLoc );
-            if( entry instanceof DocumentRegistration )
+            if( entry )
             {
-                notifyReader( reader, entry, entry.document );
+                if( entry instanceof DocumentRegistration ) notifyReader( reader, entry, entry.document );
+                else // registration is still pending
+                {
+                    console.assert( entry instanceof Array, A );
+                    entry/*readers*/.push( reader ); // await the registration
+                }
                 return;
             }
 
-            let readers;
-            if( entry === undefined ) // then request the document
+            const readers = [];
+            registry.set( docLoc, readers );
+            readers.push( reader );
+
+          // Configure a document request
+          // ----------------------------
+            const req = new XMLHttpRequest();
+            req.open( 'GET', docLoc, /*asynchronous*/true ); // misnomer, opens nothing, only sets config
+         // req.overrideMimeType( 'application/xhtml+xml' );
+         /// still it parses to an XMLDocument (Firefox 52), unlike this document
+            req.responseType = 'document';
+            req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
+
+          // Stand by for the response
+          // -------------------------
             {
-                readers = [];
-                registry.set( docLoc, readers );
-
-
-              // ============================
-              // Configure a document request
-              // ============================
-                const req = new XMLHttpRequest();
-                req.open( 'GET', docLoc, /*asynchronous*/true ); // misnomer, opens nothing, only sets config
-             // req.overrideMimeType( 'application/xhtml+xml' );
-             /// still it parses to an XMLDocument (Firefox 52), unlike this document
-                req.responseType = 'document';
-                req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
-
-
-              // =========================
-              // Ready the event listeners
-              // =========================
                 const docReg = new DocumentRegistration( docLoc );
 
-              // Abort
-              // -----
+              // abort
+              // - - -
                 req.onabort = function( e ) { console.warn( 'Document request aborted: ' + docLoc ); }
 
-              // Error
-              // -----
+              // error
+              // - - -
                 /** @param e (Event) Unfortunately this is a mere ProgressEvent, at least on Firefox,
                   *   which contains no useful information on the specific cause of the error.
                   */
                 req.onerror = function( e ) { console.warn( 'Document request failed: ' + docLoc ); }
-                  // occurs e.g. when the URI scheme is 'file' and the document file is missing
 
-              // Load
-              // ----
+              // load
+              // - - -
                 req.onload = function( e )
                 {
                     // If this listener is registered instead by req.addEventListener,
@@ -978,8 +977,8 @@
                     const doc = e.target.response;
                     docReg.document = doc;
 
-                  // Set the *id* attribute for each waylink target node
-                  // - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  // Set the *id* attribute of each waylink target node
+                  // ----------------------
                     const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
                     for( ;; )
                     {
@@ -991,8 +990,8 @@
                     }
                 };
 
-              // Load end
-              // --------
+              // load end
+              // - - - - -
                 /** @param e (Event) This is a mere ProgressEvent, at least on Firefox,
                   *   which itself contains no useful information.
                   */
@@ -1001,31 +1000,25 @@
                     // Parameter *e* is a ProgressEvent, which contains no useful information.
                     // If more information is ever needed, then it might be obtained from req.status,
                     // or the mere fact of a call to req.error (see listener req.onerror, above).
+
+                  // Register the document
+                  // ---------------------
                     registry.set( docLoc, docReg );
+
+                  // Notify the waiting readers
+                  // --------------------------
                     const doc = docReg.document;
-                    for( const r of readers ) { notifyReader( r, docReg, doc ); }
+                    for( const r of readers ) notifyReader( r, docReg, doc );
                 }
 
-              // Ready state change
-              // ------------------
-             // req.onreadystatechange = function( e ) {}
-
-              // Time out
-              // --------
+              // time out
+              // - - - - -
                 req.ontimeout = function( e ) { console.warn( 'Document request timed out: ' + docLoc ); }
-
-
-              // ================
-              // Send the request
-              // ================
-                req.send();
             }
-            else // a prior request is pending
-            {
-                console.assert( entry instanceof Array, A );
-                readers = entry;
-            }
-            readers.push( reader );
+
+          // Send the request
+          // ----------------
+            req.send();
         };
 
 
@@ -1077,7 +1070,18 @@
 
 
 
-        /** Map of source-node arrays.  The entry key is the location of a document (string)
+        function setTargetPreview( sourceNode, newPreviewString )
+        {
+            const forelinker = sourceNode.lastChild;
+            const preview = forelinker.firstChild/*a*/.firstChild;
+            const previewText = preview.firstChild;
+            previewText.replaceData( 0, previewText.length, newPreviewString );
+            configureForTargetPreview( sourceNode, forelinker, newPreviewString );
+        }
+
+
+
+        /** Map of source nodes to resolve.  The entry key is the location of a document (string)
           * in normal URL form.  The value is a list of all source nodes (Array of Element)
           * within the *present* document that target the *keyed* document.
           */
@@ -1123,8 +1127,19 @@
                 const sourceNodes = entry[1];
                 Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
                 {
+                    close( docReg )
+                    {
+                        if( docReg.document == null )
+                        {
+                            for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
+                        }
+                        sourceNodeRegistry.delete( targetDocLoc );
+                    }
+
                     read( docReg, targetDoc )
                     {
+                      // Try to resolve waylinks, re-rendering the source node of each
+                      // -----------------------
                         const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
                         tt: for( ;; ) // seek the target nodes in *that* document [EWR]
                         {
@@ -1150,12 +1165,7 @@
                                 configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
                                   target, reRendering );
                                 reRendering.render();
-                                const forelinker = source.lastChild;
-                                const preview = forelinker.firstChild/*a*/.firstChild;
-                                const previewText = preview.firstChild;
-                                const newPreviewString = readTargetPreview( target, preview );
-                                previewText.replaceData( 0, previewText.length, newPreviewString );
-                                configureForTargetPreview( source, forelinker, newPreviewString );
+                                setTargetPreview( source, readTargetPreview(target) );
 
                               // De-register it
                               // --------------
@@ -1164,10 +1174,14 @@
 
                             } while( --s >= 0 )
                         }
-                        for( const source of sourceNodes ) // for any that remain unmatched:
+
+                      // Mark any remaining source nodes as broken
+                      // -----------------------------------------
+                        for( const s of sourceNodes )
                         {
-                            const linkV = source.getAttributeNS( NS_COG, 'link' );
+                            const linkV = s.getAttributeNS( NS_COG, 'link' );
                             mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
+                            setTargetPreview( s, BROKEN_SYMBOL );
                         }
                     }
                 });
@@ -1992,7 +2006,7 @@
                         close( docReg )
                         {
                             if( docReg.document == null ) shutLeg( targetLegID );
-                            // else readDirectly shuts it
+                            // else readDirectly has (or will) shut it
                         }
 
                         read( docReg, targetDoc ) /* The call to this method might come now or later,
