@@ -1,4 +1,4 @@
-/* readable - A minimal, conservative rendering for mere readability
+/* readable - Wayscript that’s readable on the web
  *
  *   This renderer does what’s needed in order to present a complete, easily readable copy
  *   of a wayscript document for public viewing.  Otherwise it tries to preserve the layout
@@ -106,7 +106,7 @@
  *      and an attribute’s is none.
  *
  *
- * NOTES  (see bottom)
+ * NOTES  (continued at bottom)
  * -----
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
@@ -457,7 +457,6 @@ rend|eSTag > a > targetMarker
 *:target > /* when it's hyperlink-targeted */
 rend|eSTag > a > targetMarker
 {
-    border-radius: 50% / 50%; /* H / V */
     cursor: default; /* Hyperlink *a* wrapper (with its cursor) are disabled by readable.js, bringing out
       the text cursor instead.  Defeat it, else it flashes when the mouse passes over which distracts. */
     opacity: 1 !important; /* indicate that it's targeted */

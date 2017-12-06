@@ -1,6 +1,43 @@
-/** readable - A minimal, conservative rendering for mere readability
+/** readable - Wayscript that’s readable on the web
   *
-  * See readable.css for an introduction.  This script begins executing at function *run*.
+  *   See readable.css for a general introduction.  The sections below are for programmers.
+  *
+  *
+  * ENTRY
+  * -----
+  *   This script starts itself at function *run*, q.v. below.  It declares no exports
+  *   but does extend the DOM (§ below).
+  *
+  *
+  * CONDITION
+  * ---------
+  *   The following named condition is asserted at whatever point in the code it applies:
+  *
+  *     TARGID  (of a document)  Every waylink target node of the document has an HTML *id* attribute
+  *             equal in value to its wayscript *lid* attribute.
+  *
+  *
+  * DATA TYPING
+  * -----------
+  *   Primitive types are named in lowercase, as for example ‘number’, while their corresponding
+  *   Object wrapper types are named in title case, e.g. ‘Number’.  A formal parameter that
+  *   is labeled as being of a primitive type (say ‘string’) is thereby contracted to accept
+  *   not only values of that type (string) but also references to its Object wrappers (String).
+  *
+  *
+  * DOM EXTENSION
+  * -------------
+  *   This script adds a property to the DOM.  It does this for internal purposes only.
+  *
+  *   Waylink target node (Element)
+  *   - - - - - - - - - -
+  *   * interlinkScene (number) The count of waylinks that are formed on this target node.
+  *       That's its temporary use.  Later this property will instead point to
+  *       the HTML *section* element that encodes this target node's *interlink scene*.
+  *
+  *
+  * NOTES  (continued at bottom)
+  * -----
   */
 'use strict';
 ( function()
@@ -169,7 +206,22 @@
 
 
 
-    const BROKEN_SYMBOL = '⋯!⋯'; // '—' is Unicode 2014 (em dash), '⋯' 22ef (midline horizontal ellipsis)
+    /** Returns the given node if it looks like an element and has the right name,
+      * otherwise returns null.
+      *
+      *     @param node (Node)
+      *     @param name (string) The expected value of the *localName* property.
+      */
+    function asElementNamed( node, name ) { return name == node.localName? node: null; }
+
+
+
+    const BROKEN_LINK_SYMBOL = String.fromCodePoint( 0x1f5d9 ); // Unicode 1f5d9 (cancellation X)
+
+
+
+    const BROKEN_SOURCE_NODE_STRING = '─' // '─' is Unicode 2500 (box drawings light horizontal)
+      + BROKEN_LINK_SYMBOL;
 
 
 
@@ -296,10 +348,6 @@
 
 
 
-    const DELAY_SYMBOL = '⌚'; // '⌚' is Unicode 231a (watch)
-
-
-
     /** The location of present document (string) in normal URL form.
       *
       *     @see URIs#normalize
@@ -415,10 +463,6 @@
 
 
 
-    const MYSTERY_SYMBOL = '⋯?⋯'; // '⋯' is Unicode 22ef (midline horizontal ellipsis)
-
-
-
     /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
       */
     const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
@@ -466,13 +510,13 @@
           // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
           // credit Noseratio, https://stackoverflow.com/a/18916788/2402790
         Styler.run();
-        transform();
+        transform(); // provides TARGID for the present document
       // --------------------
       // Layout is now stable  (more or less)
       // --------------------
         document.body.style.display = 'block'; // overriding readable.css in order to lay out and show the page
         ExternalWaylinkResolver.start();
-        WayTracer.start(); // start late, AFTER_TARGETS_IDD
+        WayTracer.start(); // needs TARGID for the present document
     }
 
 
@@ -494,7 +538,7 @@
 
 
 
-    /** Tranforms the document.
+    /** Tranforms the present document.  Provides TARGID.
       */
     function transform()
     {
@@ -585,7 +629,7 @@
                   // Translate tagless declaration → entagment
                   // -----------------------------------------
                     const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_UNCHANGED );
-                    t.insertBefore( entagment, firstWaybitChild(t) ); // [EP]
+                    t.insertBefore( entagment, firstWaybitChild(t) );
                     entagment.setAttributeNS( NS_COG, 'link', linkV );
                          t.removeAttributeNS( NS_COG, 'link' );
                     entagment.setAttributeNS( NS_REND, 'isEntagment', 'isEntagment' ); // if only as debug aid
@@ -619,7 +663,7 @@
                             ExternalWaylinkResolver.registerLink( t, targetDocLocN );
                             targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
                             rendering.isChangeable = true;
-                            targetPreviewString = DELAY_SYMBOL;
+                            targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
                             break targeting;
                         }
                     }
@@ -638,7 +682,7 @@
                                 mal( "Broken link: Either this document has no matching 'lid', "
                                   + 'or it has an identifier conflict: ' + a2s('link',linkV) );
                                 targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
-                                targetPreviewString = BROKEN_SYMBOL;
+                                targetPreviewString = BROKEN_SOURCE_NODE_STRING;
                                 break targeting;
                             }
 
@@ -889,12 +933,9 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Tries quickly to find a target node within the given document by its *id* attribute,
-          * for which purpose it assumes (AFTER_TARGETS_IDD) that the *id* attribute is equal to
-          * the *lid* attribute.  This assumption is guaranteed valid for any document *other than
-          * the present document* that was retrieved through this (Documents) interface.
+        /** Tries quickly to find a target node within the given document by its *id* attribute.
           *
-          *     @param doc (Document)
+          *     @param doc (Document) A TARGID document.
           *     @param id (string)
           *
           *     @return The target node (Element) with the given *id*, or null if there is none.
@@ -913,10 +954,14 @@
 
 
 
-        /** Tries to retrieve the indicated document for the given reader.
-          * If *docLoc* indicates the present document, then that is immediately passed to the reader.
-          * Otherwise this method may return early, leaving the retrieval-read process to finish later.
-          * On success, it calls reader.read; regardless, it always finishes by calling reader.close.
+        /** Tries to retrieve the indicated document for the given reader.  If *docLoc* indicates
+          * the present document, then immediately the reader is given the present document, as is.
+          *
+          * <p>Otherwise this method starts a retrieval process.  It may return early and leave
+          * the process to finish later.  On success, it ensures the document has TARGID.
+          * Then it calls reader.read.</p>
+          *
+          * <p>Regardless of the outcome, this method finishes by calling reader.close.</p>
           *
           *     @param docLoc (string) The document location in normal URL form.
           *     @param reader (DocumentReader)
@@ -1070,6 +1115,10 @@
 
 
 
+        const MYSTERY_SYMBOL = '─\u202f?\u202f─'; // '\u202f' is Unicode (narrow no-break space)
+                                                 // '─' is 2500 (box drawings light horizontal)
+
+
         function setTargetPreview( sourceNode, newPreviewString )
         {
             const forelinker = sourceNode.lastChild;
@@ -1181,7 +1230,7 @@
                         {
                             const linkV = s.getAttributeNS( NS_COG, 'link' );
                             mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
-                            setTargetPreview( s, BROKEN_SYMBOL );
+                            setTargetPreview( s, BROKEN_SOURCE_NODE_STRING );
                         }
                     }
                 });
@@ -1571,8 +1620,8 @@
         constructor( element )
         {
             super( element );
-            const eSTag = element.firstChild;
-            if( eSTag.localName != 'eSTag' ) throw 'Missing eSTag';
+            const eSTag = asElementNamed( element.firstChild, 'eSTag' );
+            if( !eSTag ) throw 'Missing eSTag';
 
             element.removeChild( eSTag );
 
@@ -1823,12 +1872,45 @@
    // ==================================================================================================
 
 
-    /** A device for tracing the way across multiple, way-linked documents.
+    /** A device for tracing the way across multiple, way-linked documents.  Based on the results,
+      * it decorates the *present* document.
       */
     const WayTracer = ( function()
     {
 
         const that = {}; // the public interface of WayTracer
+
+
+
+        /** Called on completion of a full trace, this method ensures that the present document
+          * is fully decorated according to the results.
+          */
+        function finish()
+        {
+            const traversal = document.createNodeIterator( document.body, SHOW_ELEMENT );
+            for( ;; )
+            {
+                const t = traversal.nextNode();
+                if( t == null ) break;
+
+                const lidV = t.getAttributeNS( NS_COG, 'lid' );
+                if( !lidV ) continue;
+
+                if( t.interlinkScene ) continue;
+
+              // Mark orphaned target
+              // --------------------
+                let e = t;
+                if( (e = asElementNamed(e.firstChild,'eSTag'))
+                 && (e = asElementNamed(e.firstChild,'a'))
+                 && (e = asElementNamed(e.firstChild,'targetMarker')) )
+                {
+                    const markText = e.firstChild;
+                    markText.replaceData( 0, markText.length, BROKEN_LINK_SYMBOL );
+                }
+            }
+         // console.debug( 'Trace run complete' ); // TEST
+        }
 
 
 
@@ -1929,7 +2011,7 @@
           // ------------------
             console.assert( legsShut.length < 200, AA + 'INC FAST, q.v.' );
               // asserting the likely efficiency of the tests legsOpen and legsShut.includes
-         // console.debug( 'Way trace complete' ); // TEST
+            finish();
         }
 
 
@@ -1981,11 +2063,9 @@
 
               // Source node
               // -----------
-                source:
+                const linkV = t.getAttributeNS( NS_COG, 'link' );
+                source: if( linkV )
                 {
-                    const linkV = t.getAttributeNS( NS_COG, 'link' );
-                    if( !linkV ) break source;
-
                     let link;
                     try { link = new LinkAttribute( linkV ); }
                     catch( unparseable ) { break source; }
@@ -1997,6 +2077,18 @@
 
                     targetDocLoc = URIs.normalize( targetDocLoc );
                     const targetID = link.targetID;
+                    interlink: if( targetDocLoc == DOCUMENT_LOCATION ) // then it targets the present document
+                    {
+                      // Register an interlink
+                      // ---------------------
+                        const target = document.getElementById( targetID ); // assumes TARGID
+                        if( !target) break interlink;
+
+                        let linkCount = target.interlinkScene;
+                        if( linkCount === undefined ) linkCount = 0;
+                        ++linkCount;
+                        target.interlinkScene = linkCount;
+                    }
                     const targetLegID = newLegID( targetDocLoc, targetID );
                     if( wasOpened( targetLegID )) break source;
 
@@ -2014,7 +2106,6 @@
                           after the present leg is fully traced and marked shut.  Thus it enables
                           optimizations elsewhere in the code that depend on such ordering. */
                         {
-                            this.wasDocRetrieved = true;
                             const wasCalledLate = isShut( legID );
                             const readMethod = wasCalledLate? this.readDirectly: this.readLater;
                             readMethod.call( this, docReg, targetDoc );
@@ -2022,8 +2113,7 @@
 
                         readDirectly( docReg, targetDoc )
                         {
-                            const target = Documents.getTargetById( targetDoc, targetID );
-                              // assumes AFTER_TARGETS_IDD, q.v.
+                            const target = Documents.getTargetById( targetDoc, targetID ); // assumes TARGID
                             if( target ) traceLeg( targetLegID, target, docReg );
                             else console.warn( 'Broken waylink truncates trace at leg: ' + targetLegID );
                             shutLeg( targetLegID );
@@ -2069,7 +2159,7 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Starts this tracer.  It assumes AFTER_TARGETS_IDD, q.v. in the source code.
+        /** Starts this tracer.  It requires TARGID for the present document.
           */
         that.start = function()
         {
@@ -2100,20 +2190,18 @@
 }() );
 
 
-// Notes
-// -----
-//  [C2] The constructor of PartRenderingC2 must remove all such markup.
-//
-//  [EP]  This rendering places entagments before the first waybit child.
-//        Code that depends on this refers here.
-//
-//  [EWR]  ExternalWaylinkResolver might run marginally faster if (instead) it began the traversal
-//         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
-//
-//  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
-//       See support file _wayic.read_local_access.xht.
-//
-//  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
-//
-//  [WDL]  Either 'document.location' or 'window.location', they are identical.
-//         https://www.w3.org/TR/html5/browsers.html#the-location-interface
+/** NOTES
+  * -----
+  *  [C2] The constructor of PartRenderingC2 must remove all such markup.
+  *
+  *  [EWR]  ExternalWaylinkResolver might run marginally faster if (instead) it began the traversal
+  *         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
+  *
+  *  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
+  *       See support file _wayic.read_local_access.xht.
+  *
+  *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
+  *
+  *  [WDL]  Either 'document.location' or 'window.location', they are identical.
+  *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
+  */
