@@ -14,6 +14,11 @@
         <li>Load it into your browser, and from there:</li>
         <li>Follow this link: <a href='visionary/way.xht'>visionary/way.xht</a></li>
         </ol>
+    <!--- - - - -
+    - another method is to load a sequence of two bookmarks:
+        * file:/PATH/TO/WAYCAST/
+        * javascript:(function(){location='visionary/way.xht'})();
+        - - - - -->
     </section>
 <section>
     <h2>Supported browsers</h2>
@@ -26,11 +31,21 @@
 <section>
     <h2>Why this is needed</h2>
     <p>
-         When rendering local wayscript (loaded from a ‘file’ scheme URL, that is),
-         wayic.read has a limited ability to resolve external waylinks (marked ‘⋯?⋯’ when resolution fails),
-         to trace the way across multiple files, or generally to read other way files.
-         It’s possible to work around this limitation (depending on the browser)
-         with the help of this support file.
+        When a wayscript document is loaded [into the client] on a ‘file’ scheme URL,
+        wayic.read has a limited ability to resolve external waylinks (marked ‘⋯?⋯’ when resolution fails),
+        to trace the way across multiple files, or generally to read other way files.
+        <!--- - - - -
+        - unlikely to be a problem for a *remote* waylink
+            - once that kind of targeting is allowed
+                - viz. a full URI with a proper web scheme, such as 'http'
+            - such a target would be served with a response header of 'Access-Control-Allow-Origin: *'
+                - that then being the standard for waycast service
+                ( cf. http://reluk.ca/project/wayic/lex/#web_serving
+            - but ofc that won't help for the *local* waylinks that remain
+                ( typically the majority, I imagine
+            - - - - -->
+        It’s possible to work around this limitation (depending on the browser)
+        with the help of this support file.
         </p>
     <p>
         It won’t work on Chrome, however.  Chrome (59) rejects all local read requests,
