@@ -45,13 +45,13 @@
  * ---------
  *   The renderer reports problems it detects to the debugging console.
  *
- *   Local wayscript
- *   - - - - - - - -
- *   When wayscript is loaded on a file-scheme URL, the renderer assumes you are the author (wayscribe).
- *   Then it will open *alert* windows for any problem such as malformed wayscript, or anything else
- *   that the wayscribe might be able to cope with directly.
+ *   Direct rendering from the file system
+ *   - - - - - - - - - - - - - - - - - - -
+ *   When a wayscript document is loaded into the client on a ‘file’ scheme URL, the renderer assumes
+ *   you are its author.  Then it will open an *alert* window for any problem such as
+ *   malformed content, or anything else that an author might be able to remedy.
  *
- *   Cross-file waylinks may fail to resolve under a file-scheme URL, instead being marked '⋯?⋯'.
+ *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked '⋯?⋯'.
  *   See support file local_access/_wayic.read_local_access.html for instructions on dealing with this.
  *
  *
@@ -113,7 +113,7 @@
 @namespace rend 'data:,wayic.read';
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
-  The namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
+      Namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
   Rather they share the general styling of waybits in general. */
 
 
@@ -136,8 +136,64 @@ html|body
 
 
 
-/* - composer --------------------------
+/* ---  e - S - T a g  ---------------------------------------------------------------------------------
  */
+
+rend|eSTag
+{
+    display: block;
+    margin-left: -2em; /* -NEST_INDENT, undoing it */
+}
+
+
+
+/* ---  e - S - T a g  --  i n l i n e d  --------------------------------------------------------------
+ *
+ * These rules render the start tag in line with the leading flow content if it's short enough to allow
+ * the flow content to rise alongside yet maintain its horizontal alignment.
+ *
+ * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
+ * If this method ever proves too difficult to maintain owing to the complications of the float layout,
+ * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
+ * namely shipping the leading flow content into the start tag.  A drawback would be the loss
+ * of uniform left alignment of the first line of flow content from one waybit to another.
+ */
+
+*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
+{
+    float: left; /* rendering the element's start tag in line with its leading text content */
+    margin-right: 0.5em;
+}
+
+
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    display: block;
+}
+
+
+/* - - -  bright   - - - - - - - - - - -
+ */
+body[rend|luminosity='bright']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.28em; /* = BRT_ST_MARG_T + ST_PAD_T + ST_BOR */
+}
+
+
+/* - - -  dark   - - - - - - - - - - - -
+ */
+body[rend|luminosity='dark']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.30em; /* = DRK_ST_MARG_T + ST_PAD_T */
+}
+
+
+
+/* ---  i s - C o m p o s e r  -------------------------------------------------------------------------
+ */
+
 *[rend|isComposer]
 {
     border-radius: 0.5em;
@@ -148,23 +204,6 @@ html|body
     position: relative;
 }
 
-body[rend|luminosity='bright']
-*[rend|isComposer]
-{
-    border-color: hsla( 0, 0%, 0%, 0.25 );
-    border-style: solid none none solid; /* TRBL */
-    box-shadow: 0.2em 0.3em 0.5em hsla(0,0%,0%,0.55); /* LR TB blur colour */
-    margin-top: 0.3em !important; /* accomodate the shadows */
-    margin-bottom: 0.7em !important;
-}
-body[rend|luminosity='dark']
-*[rend|isComposer]
-{
-    border-color: hsla( 0, 0%, 100%, 0.35 );
-    border-style: dashed;
-    margin-top: 0.2em !important; /* accomodate the borders */
-    margin-bottom: 0.3em !important;
-}
 
 *[rend|isComposer] [rend|isComposer] /* when nested */
 {
@@ -193,72 +232,61 @@ body[rend|luminosity='dark']
 }
 
 
-
-/* - eSTag -----------------------------
+/* - - -  bright   - - - - - - - - - - -
  */
-rend|eSTag
+body[rend|luminosity='bright'] *[rend|isComposer]
 {
-    display: block;
-    margin-left: -2em; /* -NEST_INDENT, undoing it */
+    border-color: hsla( 0, 0%, 0%, 0.25 );
+    border-style: solid none none solid; /* TRBL */
+    box-shadow: 0.2em 0.3em 0.5em hsla(0,0%,0%,0.55); /* LR TB blur colour */
+    margin-top: 0.3em !important; /* accomodate the shadows */
+    margin-bottom: 0.7em !important;
 }
 
 
-
-/* - eSTag - inlined -------------------
- *
- * These rules render the start tag in line with the leading flow content if it's short enough to allow
- * the flow content to rise alongside yet maintain its horizontal alignment.
- *
- * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
- * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
- * namely shipping the leading flow content into the start tag.  A drawback would be the loss
- * of uniform left alignment of the first line of flow content from one waybit to another.
+/* - - -  dark   - - - - - - - - - - - -
  */
-*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
+body[rend|luminosity='dark'] *[rend|isComposer]
 {
-    float: left; /* rendering the element's start tag in line with its leading text content */
-    margin-right: 0.5em;
-}
-
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
-{
-    display: block;
-}
-
-body[rend|luminosity='bright']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
-{
-    padding-top: 0.28em; /* = BRT_ST_MARG_T + ST_PAD_T + ST_BOR */
-}
-
-body[rend|luminosity='dark']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
-{
-    padding-top: 0.30em; /* = DRK_ST_MARG_T + ST_PAD_T */
+    border-color: hsla( 0, 0%, 100%, 0.35 );
+    border-style: dashed;
+    margin-top: 0.2em !important; /* accomodate the borders */
+    margin-bottom: 0.3em !important;
 }
 
 
 
-/* - step ------------------------------
+/* ---  i s - W a y b i t  -----------------------------------------------------------------------------
  */
-body[rend|luminosity='bright']
-step|* > eSTag
+
+*[rend|isWaybit]
 {
-     margin-top:    0.10em; /* BRT_ST_MARG_T */
-    padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
-    padding-bottom: 0.23em; /* = ST_PAD_B + ST_BOR */
-     margin-bottom: 0.10em;
-}
-body[rend|luminosity='dark']
-step|* > eSTag
-{
-     margin-top:    0.20em; /* DRK_ST_MARG_T */
-    padding-top:    0.10em; /* = ST_PAD_T */
-    padding-bottom: 0.15em; /* = ST_PAD_B */
-     margin-bottom: 0.20em;
+    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
 }
 
+
+
+/* ---  i s - W a y b i t  --  n o n - s t e p  --------------------------------------------------------
+ */
+
+*[rend|isWaybit]:not(step|*) > eSTag
+eQName > ePrefix
+{
+    display: none; /* assume that it's uninformative */
+}
+
+
+*[rend|isWaybit]:not(step|*) > eSTag
+eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
+{
+    filter: contrast(1.4);
+    font-weight: bold;
+}
+
+
+
+/* ---  S t e p  ---------------------------------------------------------------------------------------
+ */
 
 step|* > eSTag eQName
 {
@@ -266,25 +294,6 @@ step|* > eSTag eQName
     padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is inline, */
 }        /* -------- -------- --------             but rather cause overlapping, ∴ constraints STEP_PAD_*.
             ST_PAD_T ST_PAD_L ST_PAD_B */
-
-body[rend|luminosity='bright']
-step|* > eSTag eQName
-{
-    /* prominence for the steps, making them stand out at a glance from the other waybits */
-    background-color: hsla( 0, 0%, 100%, 0.40 );
-    border-color:     hsla( 0, 0%,   0%, 0.80 );
-    border-style: solid;
-    border-width: 0.08em; /* ST_BOR */
-    margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
-}
-body[rend|luminosity='dark']
-step|* > eSTag eQName
-{
-    background-color: hsla( 0, 0%, 100%, 0.45 );
-    color: #000;
-    margin-left: -0.20em; /* = -ST_PAD_L */
-}
-
 
 step|* > eSTag eQName > ePrefix,
 step|* > eSTag eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then */
@@ -306,9 +315,51 @@ step|* > eSTag eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLoc
 }
 
 
-
-/* - textAligner -----------------------
+/* - - -  bright   - - - - - - - - - - -
  */
+body[rend|luminosity='bright'] step|* > eSTag
+{
+     margin-top:    0.10em; /* BRT_ST_MARG_T */
+    padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
+    padding-bottom: 0.23em; /* = ST_PAD_B + ST_BOR */
+     margin-bottom: 0.10em;
+}
+
+
+body[rend|luminosity='bright'] step|* > eSTag eQName
+{
+    /* prominence for the steps, making them stand out at a glance from the other waybits */
+    background-color: hsla( 0, 0%, 100%, 0.40 );
+    border-color:     hsla( 0, 0%,   0%, 0.80 );
+    border-style: solid;
+    border-width: 0.08em; /* ST_BOR */
+    margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
+}
+
+
+/* - - -  dark   - - - - - - - - - - - -
+ */
+body[rend|luminosity='dark'] step|* > eSTag
+{
+     margin-top:    0.20em; /* DRK_ST_MARG_T */
+    padding-top:    0.10em; /* = ST_PAD_T */
+    padding-bottom: 0.15em; /* = ST_PAD_B */
+     margin-bottom: 0.20em;
+}
+
+
+body[rend|luminosity='dark'] step|* > eSTag eQName
+{
+    background-color: hsla( 0, 0%, 100%, 0.45 );
+    color: #000;
+    margin-left: -0.20em; /* = -ST_PAD_L */
+}
+
+
+
+/* ---  t e x t - A l i g n e r  -----------------------------------------------------------------------
+ */
+
 rend|textAligner
 {
     display: none;
@@ -316,37 +367,11 @@ rend|textAligner
 
 
 
-/* - waybit ----------------------------
- */
-*[rend|isWaybit]
-{
-    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
-}
-
-
-
-/* - waybit non-step -------------------
- */
-*[rend|isWaybit]:not(step|*) > eSTag
-eQName > ePrefix
-{
-    display: none; /* assume that it's uninformative */
-}
-
-
-*[rend|isWaybit]:not(step|*) > eSTag
-eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
-{
-    filter: contrast(1.4);
-    font-weight: bold;
-}
-
-
-
-/* - waylink source node ---------------
+/* ---  W a y l i n k   s o u r c e   n o d e  ---------------------------------------------------------
  *
  * See also readable.js prepareStyling which adds rules at runtime.
  */
+
 rend|forelinker > a
 {
     text-decoration: none;
@@ -405,8 +430,9 @@ rend|forelinker > a:hover > directionIndicator
 
 
 
-/* - waylink target node ---------------
+/* ---  W a y l i n k   t a r g e t   n o d e  ---------------------------------------------------------
  */
+
 rend|eSTag > a /* wrapper for self-hyperlinking */
 {
     text-decoration: none;
@@ -442,17 +468,6 @@ rend|eSTag > a > targetMarker
     left: 0; /* leftmost in the padding */
 }
 
-body[rend|luminosity='bright']
-rend|eSTag > a > targetMarker
-{
-    opacity: 0.3;
-}
-body[rend|luminosity='dark']
-rend|eSTag > a > targetMarker
-{
-    opacity: 0.5;
-}
-
 
 *:target > /* when it's hyperlink-targeted */
 rend|eSTag > a > targetMarker
@@ -463,9 +478,26 @@ rend|eSTag > a > targetMarker
 }
 
 
-
-/* - wayscript -------------------------
+/* - - -  bright   - - - - - - - - - - -
  */
+body[rend|luminosity='bright'] rend|eSTag > a > targetMarker
+{
+    opacity: 0.3;
+}
+
+
+/* - - -  dark   - - - - - - - - - - - -
+ */
+body[rend|luminosity='dark'] rend|eSTag > a > targetMarker
+{
+    opacity: 0.5;
+}
+
+
+
+/* ---  W a y s c r i p t  -----------------------------------------------------------------------------
+ */
+
 *[rend|isWayscript]
 {
     clear: left;
@@ -499,3 +531,6 @@ rend|eSTag eQName
  *
  *  [XMLN]  https://www.w3.org/TR/xml-names/
  */
+
+
+/* Copyright © 2017 Michael Allan and contributors.  Licence MIT. */
