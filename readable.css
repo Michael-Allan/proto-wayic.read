@@ -23,6 +23,12 @@
  *           <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
  *           </html:body>
  *
+ * APPEARANCE
+ * ----------
+ *   This renderer automatically chooses one of two overall lighting modes for the display:
+ *   either a black-on-white *paper* mode. or a reverse video *neon* mode.  It bases the choice
+ *   on what it detects of the browser settings, which it takes to be the user’s preference.
+ *
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
  * -----------------------------------------
@@ -41,69 +47,18 @@
  *   When the renderer encounters this, it tries to reproduce a similar layout.
  *
  *
- * DEBUGGING
- * ---------
- *   The renderer reports problems it detects to the debugging console.
+ * TROUBLESHOOTING
+ * ---------------
+ *   This renderer reports problems it detects to the browser’s debugging console. [CONS]
  *
  *   Direct rendering from the file system
  *   - - - - - - - - - - - - - - - - - - -
- *   When a wayscript document is loaded into the client on a ‘file’ scheme URL, the renderer assumes
+ *   When a wayscript document is loaded into the browser on a ‘file’ scheme URL, the renderer assumes
  *   you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
  *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked '⋯?⋯'.
  *   See support file local_access/_wayic.read_local_access.html for instructions on dealing with this.
- *
- *
- * SPECIAL MARKUP
- * --------------
- *   The renderer introduces its own markup to the document which includes the following:
- *   (for the notation, see the key further below)
- *
- *      * on body:
- *          * [rend|luminosity]     - Perceived background brightness, either ‘bright’ or ‘dark’
- *
- *      * on wayscript element:
- *          * [rend|hasLeader]          - Whether the element has leading, non-whitespace text [BA]
- *          * [rend|hasPreviewString]   - Whether it’s a waylink source node with a non-empty preview
- *                                        of the target text
- *          * [rend|hasShortName]   - Whether its rendered name is no longer than three characters
- *          * [rend|isChangeable]   - Whether its rendering might later be changed
- *          * [rend|isComposer]     - Whether it’s a composer element
- *          * [rend|isEntagment]    - Whether it’s a waylink entagment
- *          * [rend|isWaybit]       - Whether it’s a waybit
- *          * [rend|isWayscript]    - Whether it’s under a ‘data:,wayscript.’ namespace
- *
- *          * eSTag     - Start tag of an element, reproducing content that would otherwise
- *                        be invisible except in the wayscript source
- *              * html|a            - Wrapper for self-hyperlinking, if the element is a waylink target node
- *                  * targetMarker  - Present if the element is a waylink target node
- *                  * eQName                    - Qualified name [XMLN] of the element
- *                      * [rend|isAnonymous]    - Whether the local part is declared to be anonymous
- *                      * ePrefix                   - Namespace prefix, if any
- *                          * [rend|isAnonymous]    - Whether the prefix is declared to be anonymous
- *                      * eLocalPart                - Local part of the name
- *
- *          * rend|textAligner  - Present if the element is a step
- *
- *          * forelinker    - Hyperlink effector for a waylink source node
- *              * html|a
- *                  * preview           - Preview of the target text
- *                  * html|br
- *                  * verticalTruncator     - Basic indicator of the waylink as such
- *                  * directionIndicator    - Hover indicator of the relative direction to the target node
- *
- *   Key to the notation above:
- *   - - - - - - - - - - - - -
- *      * element       - Element in namespace ‘rend’.  Unless otherwise marked an element’s
- *                        namespace is rend|, while an attribute’s is none.
- *      * ns|element       - Element in namespace ‘ns’
- *          * [ns|attrib]  - Attribute of the element in namespace ‘ns’
- *          * [attrib]     - Attribute of the element in no namespace
- *          * ns|element   - Component element
- *
- *      Unless otherwise marked, an element’s namespace is ‘data:,wayic.read’ (prefixed ‘rend’)
- *      and an attribute’s is none.
  *
  *
  * NOTES  (continued at bottom)
@@ -113,7 +68,7 @@
 @namespace rend 'data:,wayic.read';
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
-      Namespace 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
+    Namespace ↗ 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
   Rather they share the general styling of waybits in general. */
 
 
@@ -135,63 +90,94 @@ html|body
 }
 
 
+html|a
+{
+    color: inherit; /* defeat, avoid the distraction and colour interference */
+    text-decoration-color: transparent; /* redundant but for enabling a transition effect */
+ /* text-decoration-skip: ink; *//* no support in Firefox, no matter, but avoid the console warning */
+    transition-property: color, text-decoration-color;
+}
+html|a:hover
+{
+    text-decoration-line: underline;
+}
+html|a,
+html|a::after
+{
+    transition: 0.2s ease-out 0.1s; /* Transit duration, timing function, onset delay.
+      Delay to avoid distracting flash on passing. */
+}
 
-/* ---  e - S - T a g  ---------------------------------------------------------------------------------
+
+html|a::after
+{
+    content: '*';
+    font-size: 0.9em;
+    line-height: 0.5em; /* preserve the original line spacing despite the *vertical-align* of 'super' */
+    text-decoration: none !important; /* defeat Chrome's staggered underline (fails, ignored) */
+    transition-property: color;
+    vertical-align: super;
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
  */
-
-rend|eSTag
+html[rend|lighting='neon'] > html|body
 {
-    display: block;
-    margin-left: -2em; /* -NEST_INDENT, undoing it */
+    background-color: hsl( 0, 0%, 20% ); /* night time */
+               color: hsla( 0, 0%, 80% /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */, .5 );
+}                                                       /* generally rendered as OFF_WAY by default ↑ */
+html[rend|lighting='neon'] *[rend|isOnWayBranch]
+{
+               color: hsl(  0, 0%, 80% );               /*                        ON_WAY here         */
 }
 
 
+html[rend|lighting='neon'] html|a:hover
+{
+    text-decoration-color: hsl( 190/*∼cyan*/, 100%, 60% ); /* BRIGHT_HYPERLINK */
+}
+html[rend|lighting='neon'] html|a::after
+{
+                   color: hsla( 190         , 100%, 60%, 0.5 ); /* = BRIGHT_HYPERLINK, OFF_WAY */
+}
+html[rend|lighting='neon'] *[rend|isOnWayBranch] html|a::after, /*                   ,  ON_WAY */
+html[rend|lighting='neon'] html|a:hover::after
+{
+                   color: hsl(  190         , 100%, 60% );
+}
 
-/* ---  e - S - T a g  --  i n l i n e d  --------------------------------------------------------------
- *
- * These rules render the start tag in line with the leading flow content if it's short enough to allow
- * the flow content to rise alongside yet maintain its horizontal alignment.
- *
- * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
- * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
- * namely shipping the leading flow content into the start tag.  A drawback would be the loss
- * of uniform left alignment of the first line of flow content from one waybit to another.
+
+/* - - -  paper  - - - - - - - - - - - -
  */
-
-*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
+html[rend|lighting='paper'] > html|body
 {
-    float: left; /* rendering the element's start tag in line with its leading text content */
-    margin-right: 0.5em;
+    background-color: hsl( 0, 0%, 93% ); /* bright white, yet allowing brighter touches here and there */
+               color: hsla( 0, 0%, 7% /* DARK_TEXT, yet allowing darker effects elsewhere */, .4 );
+}                                                  /* generally rendered as OFF_WAY by default ↑ */
+html[rend|lighting='paper'] *[rend|isOnWayBranch]
+{
+               color: hsl(  0, 0%, 7% );           /*                        ON_WAY here         */
 }
 
 
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+html[rend|lighting='paper'] html|a:hover
 {
-    display: block;
+    text-decoration-color: hsl( 240/*blue*/, 100%, 50% ); /* DARK_HYPERLINK */
 }
-
-
-/* - - -  bright   - - - - - - - - - - -
- */
-body[rend|luminosity='bright']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+html[rend|lighting='paper']                       html|a::after
 {
-    padding-top: 0.28em; /* = BRT_ST_MARG_T + ST_PAD_T + ST_BOR */
+                   color: hsla( 240        , 100%, 50%, 0.4 ); /* = DARK_HYPERLINK, OFF_WAY */
 }
-
-
-/* - - -  dark   - - - - - - - - - - - -
- */
-body[rend|luminosity='dark']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+html[rend|lighting='paper'] *[rend|isOnWayBranch] html|a::after, /*               ,  ON_WAY */
+html[rend|lighting='paper'] html|a:hover::after
 {
-    padding-top: 0.30em; /* = DRK_ST_MARG_T + ST_PAD_T */
+                   color: hsl(  240        , 100%, 50% );
 }
 
 
 
-/* ---  i s - C o m p o s e r  -------------------------------------------------------------------------
+/* ---  C o m p o s e r  -------------------------------------------------------------------------------
  */
 
 *[rend|isComposer]
@@ -232,9 +218,20 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 }
 
 
-/* - - -  bright   - - - - - - - - - - -
+/* - - -  neon   - - - - - - - - - - - -
  */
-body[rend|luminosity='bright'] *[rend|isComposer]
+html[rend|lighting='neon'] *[rend|isComposer]
+{
+    border-color: hsla( 0, 0%, 100%, 0.35 );
+    border-style: dashed;
+    margin-top: 0.2em !important; /* accomodate the borders */
+    margin-bottom: 0.3em !important;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] *[rend|isComposer]
 {
     border-color: hsla( 0, 0%, 0%, 0.25 );
     border-style: solid none none solid; /* TRBL */
@@ -244,43 +241,112 @@ body[rend|luminosity='bright'] *[rend|isComposer]
 }
 
 
-/* - - -  dark   - - - - - - - - - - - -
+
+/* ---  F l a s h   f a d e  ---------------------------------------------------------------------------
  */
-body[rend|luminosity='dark'] *[rend|isComposer]
+
+@keyframes flashFade_outline_bright
 {
-    border-color: hsla( 0, 0%, 100%, 0.35 );
-    border-style: dashed;
-    margin-top: 0.2em !important; /* accomodate the borders */
-    margin-bottom: 0.3em !important;
+    from { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: linear }
+     33% { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: ease-out }
+      to { outline: medium solid transparent }
+}
+
+
+@keyframes flashFade_outline_dark
+{
+    from { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: linear }
+     33% { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: ease-out }
+      to { outline: medium solid transparent }
 }
 
 
 
-/* ---  i s - W a y b i t  -----------------------------------------------------------------------------
+/* ---  S t a r t   t a g  -----------------------------------------------------------------------------
  */
 
-*[rend|isWaybit]
+rend|eSTag
 {
-    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
+    display: block;
+    margin-left: -2em; /* -NEST_INDENT, undoing it */
+}
+
+
+rend|eSTag eQName
+{
+    outline-offset: 0.2em;
+}
+
+
+rend|eSTag eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
+{
+    cursor: default; /* defeat text cursor to avoid flash on passing, which distracts */
+}
+
+
+*:target > rend|eSTag eQName /* for a targeted waybit, whether targeted as a waylink or hyperlink */
+{
+    animation-duration: 2s;
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon'] *:target > rend|eSTag eQName
+{
+    animation-name: flashFade_outline_bright; /* as a target locator */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] *:target > rend|eSTag eQName
+{
+    animation-name: flashFade_outline_dark; /* as a target locator */
 }
 
 
 
-/* ---  i s - W a y b i t  --  n o n - s t e p  --------------------------------------------------------
+/* ---  S t a r t   t a g  --  i n l i n e d  ----------------------------------------------------------
+ *
+ * These rules render the start tag in line with the leading flow content if it's short enough to allow
+ * the flow content to rise alongside yet maintain its horizontal alignment.
+ *
+ * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
+ * If this method ever proves too difficult to maintain owing to the complications of the float layout,
+ * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
+ * namely shipping the leading flow content into the start tag.  A drawback would be the loss
+ * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 
-*[rend|isWaybit]:not(step|*) > eSTag
-eQName > ePrefix
+*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
 {
-    display: none; /* assume that it's uninformative */
+    float: left; /* rendering the element's start tag in line with its leading text content */
+    margin-right: 0.5em;
 }
 
 
-*[rend|isWaybit]:not(step|*) > eSTag
-eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
 {
-    filter: contrast(1.4);
-    font-weight: bold;
+    display: block;
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.30em; /* = NEO_ST_MARG_T + ST_PAD_T */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper']
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+{
+    padding-top: 0.28em; /* = PAP_ST_MARG_T + ST_PAD_T + ST_BOR */
 }
 
 
@@ -315,44 +381,58 @@ step|* > eSTag eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLoc
 }
 
 
-/* - - -  bright   - - - - - - - - - - -
+/* - - -  neon   - - - - - - - - - - - -
  */
-body[rend|luminosity='bright'] step|* > eSTag
+html[rend|lighting='neon'] step|* > eSTag
 {
-     margin-top:    0.10em; /* BRT_ST_MARG_T */
-    padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
-    padding-bottom: 0.23em; /* = ST_PAD_B + ST_BOR */
-     margin-bottom: 0.10em;
-}
-
-
-body[rend|luminosity='bright'] step|* > eSTag eQName
-{
-    /* prominence for the steps, making them stand out at a glance from the other waybits */
-    background-color: hsla( 0, 0%, 100%, 0.40 );
-    border-color:     hsla( 0, 0%,   0%, 0.80 );
-    border-style: solid;
-    border-width: 0.08em; /* ST_BOR */
-    margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
-}
-
-
-/* - - -  dark   - - - - - - - - - - - -
- */
-body[rend|luminosity='dark'] step|* > eSTag
-{
-     margin-top:    0.20em; /* DRK_ST_MARG_T */
+     margin-top:    0.20em; /* NEO_ST_MARG_T */
     padding-top:    0.10em; /* = ST_PAD_T */
     padding-bottom: 0.15em; /* = ST_PAD_B */
      margin-bottom: 0.20em;
 }
 
 
-body[rend|luminosity='dark'] step|* > eSTag eQName
+html[rend|lighting='neon'] step|*                            > eSTag eQName
 {
-    background-color: hsla( 0, 0%, 100%, 0.45 );
-    color: #000;
     margin-left: -0.20em; /* = -ST_PAD_L */
+
+    background-color: hsla( 0, 0%, 100%, 0.22/* = .45 × .5 */ ); /* OFF_WAY */
+               color: hsla( 0, 0%,   0%, 0.5 );
+}
+html[rend|lighting='neon']      *[rend|isOnWayBranch] step|* > eSTag eQName,
+html[rend|lighting='neon'] step|*[rend|isOnWayBranch]        > eSTag eQName
+{
+    background-color: hsla( 0, 0%, 100%, 0.45/* = .45      */ ); /*  ON_WAY */
+               color: hsl(  0, 0%,   0%      );
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] step|* > eSTag
+{
+     margin-top:    0.10em; /* PAP_ST_MARG_T */
+    padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
+    padding-bottom: 0.23em; /* = ST_PAD_B + ST_BOR */
+     margin-bottom: 0.10em;
+}
+
+
+html[rend|lighting='paper'] step|*                            > eSTag eQName
+{
+    /* prominence for the steps, making them stand out at a glance from the other waybits */
+    border-style: solid;
+    border-width: 0.08em; /* ST_BOR */
+    margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
+
+    background-color: hsla( 0, 0%, 100%, 0.16/* = .40 × .4 */ ); /* OFF_WAY */
+        border-color: hsla( 0, 0%,   0%, 0.32/* = .80 × .4 */ );
+}
+html[rend|lighting='paper']      *[rend|isOnWayBranch] step|* > eSTag eQName,
+html[rend|lighting='paper'] step|*[rend|isOnWayBranch]        > eSTag eQName
+{
+    background-color: hsla( 0, 0%, 100%, 0.40/* = .40      */ ); /*  ON_WAY */
+        border-color: hsla( 0, 0%,   0%, 0.80/* = .80      */ );
 }
 
 
@@ -367,14 +447,46 @@ rend|textAligner
 
 
 
-/* ---  W a y l i n k   s o u r c e   n o d e  ---------------------------------------------------------
- *
- * See also readable.js prepareStyling which adds rules at runtime.
+/* ---  W a y b i t  -----------------------------------------------------------------------------------
  */
 
-rend|forelinker > a
+*[rend|isWaybit]
 {
-    text-decoration: none;
+    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
+}
+
+
+
+/* ---  W a y b i t  --  n o n - s t e p  --------------------------------------------------------------
+ */
+
+*[rend|isWaybit]:not(step|*) > eSTag
+eQName > ePrefix
+{
+    display: none; /* assume that it's uninformative */
+}
+
+
+*[rend|isWaybit]:not(step|*) > eSTag
+eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
+{
+    filter: contrast(1.4);
+    font-weight: bold;
+}
+
+
+
+/* ---  W a y l i n k   s o u r c e   n o d e  ---------------------------------------------------------
+ */
+
+rend|forelinker > a,     /* override of the browser's default *a* styling */
+rend|forelinker > a:hover /* override [OVGA] */
+{
+    text-decoration: none; /* symbols in the forelinker suffice */
+}
+rend|forelinker > a::after
+{
+    content: normal; /* [OVGA] */
 }
 
 
@@ -403,6 +515,10 @@ rend|forelinker > a > verticalTruncator
     opacity: 0.4;
     padding-left:  1em; /* extra click surface + indentation beneath the overlying preview text */
 }
+rend|forelinker > a:hover > verticalTruncator
+{
+    opacity: 1;
+}
 
 
 *[rend|isChangeable] >
@@ -417,7 +533,11 @@ rend|forelinker[class~='shortContent'] > a > verticalTruncator /* [C] */
 rend|forelinker > a > directionIndicator /* content is an arrow */
 {
     margin-left: 2em;
-    visibility: hidden;
+
+ /* visibility: hidden; */ /* but prefer opacity, as it allows for a more useful transition */
+    opacity: 0;
+    transition: opacity 0.2s ease-out 0.3s; /* Property, transit duration, timing function, onset delay.
+      Delay to avoid distracting flash on passing. */
 }
 
 
@@ -425,7 +545,73 @@ rend|forelinker > a:focus > directionIndicator, /* fails either entirely (Chrome
                                      or when *href* is local to document (Firefox 52) */
 rend|forelinker > a:hover > directionIndicator
 {
-    visibility: visible;
+    opacity: 1;
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon']
+*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+{
+    color: hsla( 36/*orange*/, 100%, 50%, 0.5 ); /* OFF_WAY */
+}
+html[rend|lighting='neon']                                      *[rend|isOnWayBranch]
+*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+{
+    color: hsl(  36          , 100%, 50%      ); /*  ON_WAY */
+}
+
+
+html[rend|lighting='neon']                       rend|forelinker > a > preview,
+html[rend|lighting='neon']                       rend|forelinker > a > verticalTruncator
+{
+    color: hsla( 0, 0%, 80%, 0.5 ); /* = BRIGHT_TEXT, OFF_WAY */
+}
+html[rend|lighting='neon'] *[rend|isOnWayBranch] rend|forelinker > a > preview,
+html[rend|lighting='neon'] *[rend|isOnWayBranch] rend|forelinker > a > verticalTruncator
+{
+    color: hsl(  0, 0%, 80%      ); /*              ,  ON_WAY */
+}
+
+
+html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
+html[rend|lighting='neon'] rend|forelinker > a > directionIndicator
+{
+    color: hsl( 190/*∼cyan*/, 100%, 60% ); /* = BRIGHT_HYPERLINK */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper']
+*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+{
+    color: hsla( 0/*red*/, 100%, 35%, 0.4 ); /* OFF_WAY */
+}
+html[rend|lighting='paper']                                     *[rend|isOnWayBranch]
+*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+{
+    color: hsl(  0       , 100%, 35%      ); /*  ON_WAY */
+}
+
+
+html[rend|lighting='paper']                       rend|forelinker > a > preview,
+html[rend|lighting='paper']                       rend|forelinker > a > verticalTruncator
+{
+    color: hsla( 0, 0%, 7%, 0.4 ); /* = DARK_TEXT, OFF_WAY */
+}
+html[rend|lighting='paper'] *[rend|isOnWayBranch] rend|forelinker > a > preview,
+html[rend|lighting='paper'] *[rend|isOnWayBranch] rend|forelinker > a > verticalTruncator
+{
+    color: hsl(  0, 0%, 7%      ); /*            ,  ON_WAY */
+}
+
+
+html[rend|lighting='paper'] rend|forelinker > a:hover > verticalTruncator,
+html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
+{
+    color: hsl( 240/*blue*/, 100%, 50% ); /* = DARK_HYPERLINK */
 }
 
 
@@ -435,17 +621,21 @@ rend|forelinker > a:hover > directionIndicator
 
 rend|eSTag > a /* wrapper for self-hyperlinking */
 {
-    text-decoration: none;
     position: relative; /* establish containing block for absolutely positioned descendants */
 
     margin-left: -2.0em; /* make space for targetMarker, ∴ BODY_L ≥ 2.0em, q.v. */
     padding-left: 2.0em;
 }
-rend|eSTag > a:link,   /* Specifying both pseudo-classes, link and visited, in order */
-rend|eSTag > a:visited /* to override any specific rules inserted by readable.js. */
+rend|eSTag > a,     /* override of the browser's default *a* styling */
+rend|eSTag > a:hover /* override [OVGA] */
 {
-    color: inherit;
+    text-decoration: none; /* eSTag's targetMarker suffices */
 }
+rend|eSTag > a::after
+{
+    content: normal; /* [OVGA] */
+}
+
 
 [rend|isWaybit] * > /* viz. when moreover it's an underbit */
 rend|eSTag > a
@@ -453,6 +643,7 @@ rend|eSTag > a
     margin-left: -3.5em; /* more space to better separate the targetMarker from overbit content */
     padding-left: 3.5em;
 }
+
 
 [rend|isWaybit] [rend|isComposer] > * > /* viz. when moreover it's a topmost component */
 rend|eSTag > a
@@ -473,24 +664,39 @@ rend|eSTag > a > targetMarker
 rend|eSTag > a > targetMarker
 {
     cursor: default; /* Hyperlink *a* wrapper (with its cursor) are disabled by readable.js, bringing out
-      the text cursor instead.  Defeat it, else it flashes when the mouse passes over which distracts. */
+      the text cursor instead.  Defeat it to avoid flash on passing, which distracts. */
     opacity: 1 !important; /* indicate that it's targeted */
 }
 
 
-/* - - -  bright   - - - - - - - - - - -
+/* - - -  neon   - - - - - - - - - - - -
  */
-body[rend|luminosity='bright'] rend|eSTag > a > targetMarker
+html[rend|lighting='neon'] rend|eSTag > a > targetMarker
+{
+    opacity: 0.5;
+}
+
+
+html[rend|lighting='neon'] rend|eSTag > a > eQName
+{
+    outline-color: hsl( 0, 0%, 80% ); /* = BRIGHT_TEXT.  Cannot rely on outline-color's initial value
+      of 'invert' because that keyword is rejected in the keyframes of flashFade_outline_* (at least by
+      Firefox 52).  Nor is 'currentColor' useful, because if this element happens to be a step, and so
+      has inverted colours, then currentColor will be the opposite of what's needed for the outline. */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] rend|eSTag > a > targetMarker
 {
     opacity: 0.3;
 }
 
 
-/* - - -  dark   - - - - - - - - - - - -
- */
-body[rend|luminosity='dark'] rend|eSTag > a > targetMarker
+html[rend|lighting='paper'] rend|eSTag > a > eQName
 {
-    opacity: 0.5;
+    outline-color: hsl( 0, 0%,  7% ); /* = DARK_TEXT.  See comment on namesake above. */
 }
 
 
@@ -507,17 +713,6 @@ body[rend|luminosity='dark'] rend|eSTag > a > targetMarker
 }
 
 
-rend|eSTag eQName
-{
-    outline-offset: 0.2em;
-}
-*:target >
-rend|eSTag eQName
-{
-    animation: flashFade_outline 2s; /* As a target locator.  Keyframes from readable.js prepareStyling. */
-}
-
-
 
 /* NOTES
  * -----
@@ -528,6 +723,10 @@ rend|eSTag eQName
  *       sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
  *
  *  [COMP]  Defunct composer elements, http://reluk.ca/project/wayic/read/composer/
+ *
+ *  [CONS]  https://console.spec.whatwg.org/
+ *
+ *  [OVGA]  Here overriding the general 'html|a' rule at top.
  *
  *  [XMLN]  https://www.w3.org/TR/xml-names/
  */
