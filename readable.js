@@ -68,9 +68,9 @@
   *
   *   Waylink target node (Element)
   *   - - - - - - - - - -
-  *   * interlinkScene (number) The count of waylinks that are formed on this target node.
-  *       That's its temporary use.  Later this property will instead point to
-  *       the HTML *section* element that encodes this target node's *interlink scene*.
+  *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
+  *       That's only its temporary use; later this property will instead point to
+  *       the HTML *section* element that encodes the target node's *interlink scene*.
   *
   *
   * CONDITION
@@ -78,7 +78,8 @@
   *   The following named condition is asserted at whatever point in the code it applies:
   *
   *     TARGID  (of a document)  Every waylink target node of the document has an HTML *id* attribute
-  *             equal in value to its wayscript *lid* attribute.
+  *             equal in value to its wayscript *lid* attribute.  Where the document is unspecified,
+  *         this condition refers to the present document.
   *
   *
   * NOTES  (continued at bottom)
@@ -353,7 +354,7 @@
       * @param linkV (string) The value of the source node's *link* attribute.
       * @param isBit (boolean) Whether the source node is a waybit.
       * @param target (Element) The target node.  The target node may be situated in this document,
-      *   or a separate document in the case of an external link.
+      *   or a separate document in the case of an outer link.
       * @param rendering (PartRenderingC)
       */
     function configureForTarget( sourceNS, sourceLocalPart, linkV, isBit, target, rendering )
@@ -472,7 +473,7 @@
 
 
     /** Answers whether subNS is a subnamespace of waybits.  That means either 'bit' itself
-      * or another subnamespace that starts with "bit.".
+      * or another subnamespace that starts with 'bit.'.
       *
       *     @param subNS (string) A wayscript namespace without the leading NS_WAYSCRIPT_DOT.
       */
@@ -513,7 +514,7 @@
       */
     function mal( message )
     {
-        if( !message ) throw "Null parameter";
+        if( !message ) throw 'Null parameter';
 
         console.error( message );
         if( isUserEditor ) alert( message ); // see readable.css § TROUBLESHOOTING
@@ -569,11 +570,12 @@
           // credit Noseratio, https://stackoverflow.com/a/18916788/2402790
         transform(); // provides TARGID for the present document
       // --------------------
-      // Layout is now stable  (more or less)
+      // Layout is now stable, more or less
       // --------------------
         showDocument();
-        ExternalWaylinkResolver.start();
-        WayTracer.start(); // needs TARGID for the present document
+        InterdocScanner.start(); // needs TARGID
+        OuterWaylinkResolver.start();
+        WayTracer.start(); // needs TARGID
     }
 
 
@@ -611,6 +613,14 @@
 
 
 
+    const TARGET_MARK = '→'; // '→' is Unicode 2192 (rightwards arrow)
+
+
+
+    const TARGET_ORPHAN_MARK = BROKEN_LINK_SYMBOL;
+
+
+
     /** The maximum number of characters in a forelinker target preview.
       */
     const TARGET_PREVIEW_MAX_LENGTH = 36;
@@ -621,7 +631,7 @@
 
 
 
-    /** Tranforms the present document.  Provides TARGID.
+    /** Tranforms the present document.  Provides TARGID for it.
       */
     function transform()
     {
@@ -743,7 +753,7 @@
                         const targetDocLocN = URIs.normalized( targetDocLoc );
                         if( targetDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
                         {
-                            ExternalWaylinkResolver.registerLink( t, targetDocLocN );
+                            OuterWaylinkResolver.registerLink( t, targetDocLocN );
                             targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
                             rendering.isChangeable = true;
                             targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
@@ -812,7 +822,7 @@
                 const eQName = eSTag.firstChild;
                 eSTag.insertBefore( a, eQName );
                 a.appendChild( document.createElementNS( NS_REND, 'targetMarker' ))
-                 .appendChild( document.createTextNode( '→' )); // '→' is Unicode 2192 (rightwards arrow)
+                 .appendChild( document.createTextNode( TARGET_ORPHAN_MARK )); // till proven otherwise
                 a.appendChild( eQName ); // wrap it
 
               // ---
@@ -991,7 +1001,7 @@
 
         function d_mal( doc, message )
         {
-            if( !doc ) throw "Null parameter";
+            if( !doc ) throw 'Null parameter';
 
             if( doc == document ) mal( message );
         }
@@ -1003,6 +1013,11 @@
             if( doc ) r.read( docReg, doc );
             r.close( docReg );
         }
+
+
+        /** The reader of all documents as registered by *addReader*, or null if there is none.
+          */
+        let omnireader = null;
 
 
 
@@ -1019,6 +1034,29 @@
 
 
        // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Registers a reader of all documents.  Immediately the reader is given the present document,
+          * and all documents that were retrieved in the past.  Any documents retrieved in future will
+          * be given as they arrive.
+          *
+          *     @throws (string) Error message if one reader was already registered;
+          *       the support for multiple readers is not yet coded.
+          */
+        that.addReader = function( reader )
+        {
+            if( omnireader !== null ) throw 'Cannot add reader, one was already added';
+
+            omnireader = reader;
+            for( const mapping of registry )
+            {
+                const entry = mapping[1];
+                if( !( entry instanceof DocumentRegistration )) continue; // registration is pending
+
+                notifyReader( reader, entry, entry.document );
+            }
+        };
+
 
 
         /** Tries quickly to find a target node within the given document by its *id* attribute.
@@ -1063,7 +1101,7 @@
             if( entry )
             {
                 if( entry instanceof DocumentRegistration ) notifyReader( reader, entry, entry.document );
-                else // registration is still pending
+                else // registration is pending
                 {
                     console.assert( entry instanceof Array, A );
                     entry/*readers*/.push( reader ); // await the registration
@@ -1141,6 +1179,7 @@
                   // --------------------------
                     const doc = docReg.document;
                     for( const r of readers ) notifyReader( r, docReg, doc );
+                    if( omnireader !== null ) notifyReader( omnireader, docReg, doc )
                 }
 
               // time out
@@ -1188,140 +1227,88 @@
 
 
 
+
+
    // ==================================================================================================
 
 
-    /** A device to complete the rendering of external waylinks, those whose target nodes are external
-      * to this document.  It fetches external documents, reads their target nodes and amends
-      * the rendered wayscript accordingly.
+    /** A scanner of related documents.  It discovers related documents, scans them for references
+      * to the present document, and updates the rendering of the present document based on the results.
       */
-    const ExternalWaylinkResolver = ( function()
+    const InterdocScanner = ( function()
     {
 
-        const that = {}; // the public interface of ExternalWaylinkResolver
+        const that = {}; // the public interface of InterdocScanner
 
 
 
-        const MYSTERY_SYMBOL = '─\u202f?\u202f─'; // '\u202f' is Unicode (narrow no-break space)
-                                                 // '─' is 2500 (box drawings light horizontal)
-
-
-        function setTargetPreview( sourceNode, newPreviewString )
-        {
-            const forelinker = sourceNode.lastChild;
-            const preview = forelinker.firstChild/*a*/.firstChild;
-            const previewText = preview.firstChild;
-            previewText.replaceData( 0, previewText.length, newPreviewString );
-            configureForTargetPreview( sourceNode, forelinker, newPreviewString );
-        }
-
-
-
-        /** Map of source nodes to resolve.  The entry key is the location of a document (string)
-          * in normal URL form.  The value is a list of all source nodes (Array of Element)
-          * within the *present* document that target the *keyed* document.
+        /** @param doc (Document) The document to scan.
+          * @param docLoc (String) The location of the document in normal form.
           */
-        const sourceNodeRegistry = new Map();
+        function scan( doc, docLoc )
+        {
+            const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
+            for( ;; )
+            {
+                const t = traversal.nextNode();
+                if( t == null ) break;
+
+                const linkV = t.getAttributeNS( NS_COG, 'link' );
+                if( !linkV ) continue;
+
+                let link;
+                try { link = new LinkAttribute( linkV ); }
+                catch( unparseable ) { continue; }
+
+                // No need here to guard against other types of malformed link declaration,
+                // which are guarded elsewhere.  Rather take it as the wayscribe intended.
+                let targetDocLoc = link.targetDocumentLocation;
+                if( !targetDocLoc ) targetDocLoc = docLoc;
+
+                targetDocLoc = URIs.normalized( targetDocLoc );
+                if( targetDocLoc != DOCUMENT_LOCATION ) continue;
+
+                const target = document.getElementById( link.targetID ); // assumes TARGID
+                if( !target) continue;
+
+                if( target.interlinkScene ) continue; // the work is already done
+
+              // Replace the orphan mark
+              // -----------------------
+                let e = target;
+                if( (e = asElementNamed(e.firstChild,'eSTag'))
+                 && (e = asElementNamed(e.firstChild,'a'))
+                 && (e = asElementNamed(e.firstChild,'targetMarker')) )
+                {
+                    const markText = e.firstChild;
+                    markText.replaceData( 0, markText.length, TARGET_MARK );
+                }
+                else console.assert( false, AA + 'Misplaced *targetMarker* element' );
+                target.interlinkScene = true;
+            }
+        }
 
 
 
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Tells this resolver of an external link to be resolved.
-          *
-          *     @param sourceNode (Element) A source node that has an external target.
-          *     @param targetDocLoc (string) The document location in normal URL form.
-          *
-          *     @see URIs#normalized
-          */
-        that.registerLink = function( sourceNode, targetDocLoc )
-        {
-            if( URIs.isDetectedAbnormal( targetDocLoc )) throw URIs.message_abnormal( targetDocLoc );
-
-            let sourceNodes = sourceNodeRegistry.get( targetDocLoc );
-            if( sourceNodes === undefined )
-            {
-                sourceNodes = [];
-                sourceNodeRegistry.set( targetDocLoc, sourceNodes );
-            }
-            sourceNodes.push( sourceNode );
-        };
-
-
-
-        /** Starts this resolver.
+        /** Starts this scanner.  It requires TARGID for the present document.
           */
         that.start = function()
         {
-            if( sourceNodeRegistry.size == 0 ) return;
-
-            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
-            for( const entry of sourceNodeRegistry )
+          // Enable passive discovery
+          // ------------------------
+            Documents.addReader( new class extends DocumentReader
             {
-                const targetDocLoc = entry[0];
-                const sourceNodes = entry[1];
-                Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
-                {
-                    close( docReg )
-                    {
-                        if( docReg.document == null )
-                        {
-                            for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
-                        }
-                        sourceNodeRegistry.delete( targetDocLoc );
-                    }
+                read( docReg, doc ) { scan( doc, docReg.location ); }
+            });
 
-                    read( docReg, targetDoc )
-                    {
-                      // Try to resolve waylinks, re-rendering the source node of each
-                      // -----------------------
-                        const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
-                        tt: for( ;; ) // seek the target nodes in *that* document [EWR]
-                        {
-                            const target = traversal.nextNode();
-                            if( !target ) break;
-
-                            const lidV = target.getAttributeNS( NS_COG, 'lid' );
-                            if( !lidV ) continue;
-
-                            const lidVN = lidV.length;
-                            let s = sourceNodes.length - 1;
-                            ss: do // seek the source nodes in *this* document that match
-                            {
-                                const source = sourceNodes[s];
-                                const linkV = source.getAttributeNS( NS_COG, 'link' );
-                                if( !linkV.endsWith( lidV )
-                                  || linkV.charAt(linkV.length-lidVN-1) != '#' ) continue ss;
-
-                              // Amend the source node
-                              // ---------------------
-                                const sourceNS = source.namespaceURI;
-                                const reRendering = new PartRenderingC2( source );
-                                configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
-                                  target, reRendering );
-                                reRendering.render();
-                                setTargetPreview( source, readTargetPreview(target) );
-
-                              // De-register it
-                              // --------------
-                                sourceNodes.splice( s, /*removal count*/1 );
-                                if( sourceNodes.length == 0 ) break tt; // done with this targetDoc
-
-                            } while( --s >= 0 )
-                        }
-
-                      // Mark any remaining source nodes as broken
-                      // -----------------------------------------
-                        for( const s of sourceNodes )
-                        {
-                            const linkV = s.getAttributeNS( NS_COG, 'link' );
-                            mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
-                            setTargetPreview( s, BROKEN_SOURCE_NODE_STRING );
-                        }
-                    }
-                });
-            }
+          // Start active discovery
+          // ----------------------
+          //// TODO.  Start by traversing the waycast directory indeces.
+            // Though the DOM for these on a 'file' scheme URL is self generated by the browser,
+            // still it seems to be accessible (console tests, Chrome and Firefox).
         };
 
 
@@ -1502,7 +1489,7 @@
         /** Constructs a LinkAttribute from its declared value.
           *
           *     @see #value
-          *     @throw (string) Error message if the value cannot be parsed.
+          *     @throws (string) Error message if the value cannot be parsed.
           */
         constructor( value )
         {
@@ -1560,6 +1547,153 @@
 
 
     }
+
+
+
+
+   // ==================================================================================================
+
+
+    /** A device to complete the rendering of outer waylinks, those whose target nodes are outside
+      * of the present document.  It fetches the documents, reads their target nodes and amends
+      * the rendered wayscript accordingly.
+      */
+    const OuterWaylinkResolver = ( function()
+    {
+
+        const that = {}; // the public interface of OuterWaylinkResolver
+
+
+
+        const MYSTERY_SYMBOL = '─\u202f?\u202f─'; // '\u202f' is Unicode (narrow no-break space)
+                                                 // '─' is 2500 (box drawings light horizontal)
+
+
+        function setTargetPreview( sourceNode, newPreviewString )
+        {
+            const forelinker = sourceNode.lastChild;
+            const preview = forelinker.firstChild/*a*/.firstChild;
+            const previewText = preview.firstChild;
+            previewText.replaceData( 0, previewText.length, newPreviewString );
+            configureForTargetPreview( sourceNode, forelinker, newPreviewString );
+        }
+
+
+
+        /** Map of source nodes to resolve.  The entry key is the location of a document (string)
+          * in normal URL form.  The value is a list of all source nodes (Array of Element)
+          * within the *present* document that target the *keyed* document.
+          */
+        const sourceNodeRegistry = new Map();
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Tells this resolver of an outer link to be resolved.
+          *
+          *     @param sourceNode (Element) A source node that has an outer target.
+          *     @param targetDocLoc (string) The document location in normal URL form.
+          *
+          *     @see URIs#normalized
+          */
+        that.registerLink = function( sourceNode, targetDocLoc )
+        {
+            if( URIs.isDetectedAbnormal( targetDocLoc )) throw URIs.message_abnormal( targetDocLoc );
+
+            let sourceNodes = sourceNodeRegistry.get( targetDocLoc );
+            if( sourceNodes === undefined )
+            {
+                sourceNodes = [];
+                sourceNodeRegistry.set( targetDocLoc, sourceNodes );
+            }
+            sourceNodes.push( sourceNode );
+        };
+
+
+
+        /** Starts this resolver.
+          */
+        that.start = function()
+        {
+            if( sourceNodeRegistry.size == 0 ) return;
+
+            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
+            for( const entry of sourceNodeRegistry )
+            {
+                const targetDocLoc = entry[0];
+                const sourceNodes = entry[1];
+                Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
+                {
+                    close( docReg )
+                    {
+                        if( docReg.document == null )
+                        {
+                            for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
+                        }
+                        sourceNodeRegistry.delete( targetDocLoc );
+                    }
+
+                    read( docReg, targetDoc )
+                    {
+                      // Try to resolve waylinks, re-rendering the source node of each
+                      // -----------------------
+                        const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
+                        tt: for( ;; ) // seek the target nodes in *that* document [OWR]
+                        {
+                            const target = traversal.nextNode();
+                            if( !target ) break;
+
+                            const lidV = target.getAttributeNS( NS_COG, 'lid' );
+                            if( !lidV ) continue;
+
+                            const lidVN = lidV.length;
+                            let s = sourceNodes.length - 1;
+                            ss: do // seek the source nodes in *this* document that match
+                            {
+                                const source = sourceNodes[s];
+                                const linkV = source.getAttributeNS( NS_COG, 'link' );
+                                if( !linkV.endsWith( lidV )
+                                  || linkV.charAt(linkV.length-lidVN-1) != '#' ) continue ss;
+
+                              // Amend the source node
+                              // ---------------------
+                                const sourceNS = source.namespaceURI;
+                                const reRendering = new PartRenderingC2( source );
+                                configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
+                                  target, reRendering );
+                                reRendering.render();
+                                setTargetPreview( source, readTargetPreview(target) );
+
+                              // De-register it
+                              // --------------
+                                sourceNodes.splice( s, /*removal count*/1 );
+                                if( sourceNodes.length == 0 ) break tt; // done with this targetDoc
+
+                            } while( --s >= 0 )
+                        }
+
+                      // Mark any remaining source nodes as broken
+                      // -----------------------------------------
+                        for( const s of sourceNodes )
+                        {
+                            const linkV = s.getAttributeNS( NS_COG, 'link' );
+                            mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
+                            setTargetPreview( s, BROKEN_SOURCE_NODE_STRING );
+                        }
+                    }
+                });
+            }
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
 
 
 
@@ -1734,7 +1868,7 @@
 
 
 
-        function formAsTargeted( eSTag ) // companion to "target:" rules in readable.css
+        function formAsTargeted( eSTag ) // companion to 'target:' rules in readable.css
         {
             const a = eSTag.firstChild;
             a.removeAttribute( 'href' );
@@ -1836,38 +1970,6 @@
 
 
 
-        /** Called on completion of a full trace, this method ensures that the present document
-          * is fully decorated according to the results.
-          */
-        function finish()
-        {
-            const traversal = document.createNodeIterator( document.body, SHOW_ELEMENT );
-            for( ;; )
-            {
-                const t = traversal.nextNode();
-                if( t == null ) break;
-
-                const lidV = t.getAttributeNS( NS_COG, 'lid' );
-                if( !lidV ) continue;
-
-                if( t.interlinkScene ) continue;
-
-              // Mark orphaned target
-              // --------------------
-                let e = t;
-                if( (e = asElementNamed(e.firstChild,'eSTag'))
-                 && (e = asElementNamed(e.firstChild,'a'))
-                 && (e = asElementNamed(e.firstChild,'targetMarker')) )
-                {
-                    const markText = e.firstChild;
-                    markText.replaceData( 0, markText.length, BROKEN_LINK_SYMBOL );
-                }
-            }
-         // console.debug( 'Trace run complete' ); // TEST
-        }
-
-
-
         /** Answers whether the specified leg is already traced.
           *
           *     @see #newLegID
@@ -1943,7 +2045,7 @@
         /** Moves the given leg identifier from legsOpen to legsShut,
           * then starts decorating if all legs are now shut.
           *
-          *     @throw (string) Error message if legID is missing from legsOpen.
+          *     @throws (string) Error message if legID is missing from legsOpen.
           *
           *     @see #newLegID
           *     @see #isShut
@@ -1951,7 +2053,7 @@
         function shutLeg( legID )
         {
             const o = legsOpen.indexOf( legID );
-            if( o < 0 ) throw "Leg is not open: " + legID;
+            if( o < 0 ) throw 'Leg is not open: ' + legID;
 
           // Shut the leg
           // ------------
@@ -1965,7 +2067,7 @@
           // ------------------
             console.assert( legsShut.length < 200, AA + 'INC FAST, q.v.' );
               // asserting the likely efficiency of the tests legsOpen and legsShut.includes
-            finish();
+         // console.debug( 'Trace run complete' ); // TEST
         }
 
 
@@ -2029,25 +2131,13 @@
                     try { link = new LinkAttribute( linkV ); }
                     catch( unparseable ) { break source; }
 
-                    // No need here to guard against other types of malformed declation, which are
+                    // No need here to guard against other types of malformed declaration, which are
                     // guarded elsewhere.  Rather let the trace extend as the wayscribe intended.
                     let targetDocLoc = link.targetDocumentLocation;
                     if( !targetDocLoc ) targetDocLoc = docLoc;
 
                     targetDocLoc = URIs.normalized( targetDocLoc );
                     const targetID = link.targetID;
-                    interlink: if( targetDocLoc == DOCUMENT_LOCATION ) // then it targets the present document
-                    {
-                      // Register an interlink
-                      // ---------------------
-                        const target = document.getElementById( targetID ); // assumes TARGID
-                        if( !target) break interlink;
-
-                        let linkCount = target.interlinkScene;
-                        if( linkCount === undefined ) linkCount = 0;
-                        ++linkCount;
-                        target.interlinkScene = linkCount;
-                    }
                     const targetLegID = newLegID( targetDocLoc, targetID );
                     if( wasOpened( targetLegID )) break source;
 
@@ -2171,15 +2261,15 @@
   * -----
   *  [C2] The constructor of PartRenderingC2 must remove all such markup.
   *
-  *  [EWR]  ExternalWaylinkResolver might run marginally faster if (instead) it began the traversal
-  *         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
-  *
-  *  [F]  External documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
+  *  [F]  Documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
   *       See support file _wayic.read_local_access.xht.
   *
   *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
   *
   *  [ONW]  http://reluk.ca/project/wayic/lex/way#on_way
+  *
+  *  [OWR]  OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
+  *         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
   *
   *  [WDL]  Either 'document.location' or 'window.location', they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
