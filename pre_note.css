@@ -27,3 +27,6 @@ html|pre
     position: relative;
     z-index: -1; /* causes loss of text-specific cursor, an unwanted side effect, but mild enough */
 }
+
+
+/* Copyright © 2017 Michael Allan and contributors.  Licence MIT. */
