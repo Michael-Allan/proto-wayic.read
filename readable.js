@@ -26,19 +26,18 @@
   *          * [rend:isComposer]    - Whether it’s a composer element
   *          * [rend:isEntagment]   - Whether it’s a waylink entagment
   *          * [rend:isOnWayBranch] - Whether it (together with all of its descendants) is on way [ONW]
+  *          * [rend:isTarget]      - Whether it’s a waylink target node
   *          * [rend:isWaybit]      - Whether it’s a waybit
   *          * [rend:isWayscript]   - Whether it’s under a ‘data:,wayscript.’ namespace
   *
-  *          * eSTag        - Start tag of an element, reproducing content that would otherwise
-  *                           be invisible except in the wayscript source
-  *              * html:a           - Wrapper for self-hyperlinking, if the element is
-  *                                   a waylink target node
-  *                  * targetMarker - Present if the element is a waylink target node
-  *                  * eQName                   - Qualified name [XMLN] of the element
-  *                      * [rend:isAnonymous]   - Whether the local part is declared to be anonymous
-  *                      * ePrefix                  - Namespace prefix, if any
-  *                          * [rend:isAnonymous]   - Whether the prefix is declared to be anonymous
-  *                      * eLocalPart               - Local part of the name
+  *          * eSTag            - Start tag of an element, reproducing content that would otherwise
+  *                               be invisible except in the wayscript source
+  *              * targetMarker - Present if the element is a waylink target node
+  *              * eQName                   - Qualified name [XMLN] of the element
+  *                  * [rend:isAnonymous]   - Whether the local part is declared to be anonymous
+  *                  * ePrefix                  - Namespace prefix, if any
+  *                      * [rend:isAnonymous]   - Whether the prefix is declared to be anonymous
+  *                  * eLocalPart               - Local part of the name
   *
   *          * textAligner  - Present if the element is a step
   *
@@ -77,9 +76,9 @@
   * ---------
   *   The following named condition is asserted at whatever point in the code it applies:
   *
-  *     TARGID  (of a document)  Every waylink target node of the document has an HTML *id* attribute
-  *             equal in value to its wayscript *lid* attribute.  Where the document is unspecified,
-  *         this condition refers to the present document.
+  *     TARGID  (of a document)  Every waylink target node of the document has
+  *             an HTML *id* attribute equal in value to its wayscript *lid* attribute.
+  *         Where the document is unspecified, this condition refers to the present document.
   *
   *
   * NOTES  (continued at bottom)
@@ -180,6 +179,18 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
+        /** Returns the same URI, but without a fragment.
+          */
+        that.defragmented = function( uri )
+        {
+            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+            const c = uri.lastIndexOf( '#' );
+            if( c >= 0 ) uri = uri.slice( 0, c );
+            return uri;
+        };
+
+
+
         /** The pattern of a full URI (as opposed to a URI reference)
           * which means a URI with a scheme component.
           *
@@ -199,7 +210,7 @@
         that.isDetectedAbnormal = function( uri )
         {
             return toEnforceCostlyConstraints && uri != that.normalized(uri)
-        }
+        };
 
 
 
@@ -432,8 +443,7 @@
         // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
         const wloc = window.location; // [WDL]
         let loc = wloc.toString();
-        const fragmentLength = wloc.hash.length; // which includes the '#' character
-        if( fragmentLength ) loc = loc.slice( 0, -fragmentLength );
+        if( wloc.hash ) loc = URIs.defragmented( loc );
         return URIs.normalized( loc ); // to be sure
     }() );
 
@@ -451,10 +461,11 @@
 
 
 
-    /** Tries quickly to find a target node by the *id* attribute which this program sets on it.
-      * Returns the target node for the given *id*, or null if this program has yet to set it.
+    /** Tries quickly to find a waylink target node by its *id* attribute.
+      * Returns the target node for the given *id*, or null if there is none.
+      * A null result is unreliable until the present document has TARGID.
       */
-    function getTargetById( id ) { return Documents.getTargetById( document, id ); }
+    function getTargetById( id ) { return Documents.getTargetById( id, document ); }
 
 
 
@@ -812,21 +823,12 @@
             const eSTag = rendering.eSTag;
             if( lidV ) // then t is a waylink target node
             {
-              // Hyperlink targeting
-              // -------------------
-                Documents.targetAsHyperlinkToo( t, lidV );
-
-              // Self hyperlink
-              // --------------
-                const a = document.createElementNS( NS_HTML, 'a' );
-                const eQName = eSTag.firstChild;
-                eSTag.insertBefore( a, eQName );
-                a.appendChild( document.createElementNS( NS_REND, 'targetMarker' ))
-                 .appendChild( document.createTextNode( TARGET_ORPHAN_MARK )); // till proven otherwise
-                a.appendChild( eQName ); // wrap it
-
-              // ---
-                Targets.initTarget( eSTag, t, lidV );
+                t.setAttributeNS( NS_REND, 'isTarget', 'isTarget' );
+                Documents.idAsHyperlinkToo( t, lidV );
+                const tM = document.createElementNS( NS_REND, 'targetMarker' );
+                tM.appendChild( document.createTextNode( TARGET_ORPHAN_MARK )); // till proven otherwise
+                eSTag.insertBefore( tM, eSTag.firstChild );
+                Targets.initTarget( t, eSTag, /*idV*/lidV ); // idV = lidV ensured by ↖ idAsHyperlinkToo
             }
             else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
             {
@@ -1015,7 +1017,7 @@
         }
 
 
-        /** The reader of all documents as registered by *addReader*, or null if there is none.
+        /** The reader of all documents as registered by *addOmnireader*, or null if there is none.
           */
         let omnireader = null;
 
@@ -1043,7 +1045,7 @@
           *     @throws (string) Error message if one reader was already registered;
           *       the support for multiple readers is not yet coded.
           */
-        that.addReader = function( reader )
+        that.addOmnireader = function( reader )
         {
             if( omnireader !== null ) throw 'Cannot add reader, one was already added';
 
@@ -1059,14 +1061,13 @@
 
 
 
-        /** Tries quickly to find a target node within the given document by its *id* attribute.
+        /** Returns the waylink target node (Element) with the given *id* attribute,
+          * or null if the given document has none.
           *
-          *     @param doc (Document) A TARGID document.
           *     @param id (string)
-          *
-          *     @return The target node (Element) with the given *id*, or null if there is none.
+          *     @param doc (Document) A TARGID document.
           */
-        that.getTargetById = function( doc, id )
+        that.getTargetById = function( id, doc )
         {
             let e = doc.getElementById( id );
             if( e )
@@ -1076,6 +1077,30 @@
             }
 
             return null;
+        };
+
+
+
+        /** Ensures that the given target node has one of the following: either
+          * (1) an *id* attribute that is both equal to the *lid* attribute,
+          *     and unique within its document, as required for an XML *ID* type; or
+          * (2) no *id* attribute.
+          *
+          *     @param t (Element) A waylink target node.
+          *     @param lidV (string) The value of t's *lid* attribute.
+          */
+        that.idAsHyperlinkToo = function( t, lidV )
+        {
+            const doc = t.ownerDocument;
+            const idV = t.getAttribute( 'id' );
+            if( idV )
+            {
+                if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
+                else d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
+            }
+            const e = doc.getElementById( lidV );
+            if( e ) d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
+            else t.setAttribute( 'id', lidV );
         };
 
 
@@ -1129,14 +1154,14 @@
 
               // abort
               // - - -
-                req.onabort = function( e ) { console.warn( 'Document request aborted: ' + docLoc ); }
+                req.onabort = function( e ) { console.warn( 'Document request aborted: ' + docLoc ); };
 
               // error
               // - - -
                 /** @param e (Event) Unfortunately this is a mere ProgressEvent, at least on Firefox,
                   *   which contains no useful information on the specific cause of the error.
                   */
-                req.onerror = function( e ) { console.warn( 'Document request failed: ' + docLoc ); }
+                req.onerror = function( e ) { console.warn( 'Document request failed: ' + docLoc ); };
 
               // load
               // - - -
@@ -1156,7 +1181,7 @@
                         if( t == null ) break;
 
                         const lidV = t.getAttributeNS( NS_COG, 'lid' );
-                        if( lidV ) Documents.targetAsHyperlinkToo( t, lidV );
+                        if( lidV ) Documents.idAsHyperlinkToo( t, lidV );
                     }
                 };
 
@@ -1180,40 +1205,16 @@
                     const doc = docReg.document;
                     for( const r of readers ) notifyReader( r, docReg, doc );
                     if( omnireader !== null ) notifyReader( omnireader, docReg, doc )
-                }
+                };
 
               // time out
               // - - - - -
-                req.ontimeout = function( e ) { console.warn( 'Document request timed out: ' + docLoc ); }
+                req.ontimeout = function( e ) { console.warn( 'Document request timed out: ' + docLoc ); };
             }
 
           // Send the request
           // ----------------
             req.send();
-        };
-
-
-
-        /** Ensures that the given target node has one of the following: either
-          * (1) an *id* attribute that is both equal to the *lid* attribute,
-          *     and unique within its document, as required for an XML *ID* type; or
-          * (2) no *id* attribute.
-          *
-          *     @param t (Element) A waylink target node.
-          *     @param lidV (string) The value of t's *lid* attribute.
-          */
-        that.targetAsHyperlinkToo = function( t, lidV )
-        {
-            const doc = t.ownerDocument;
-            const idV = t.getAttribute( 'id' );
-            if( idV )
-            {
-                if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
-                else d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
-            }
-            const e = doc.getElementById( lidV );
-            if( e ) d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
-            else t.setAttribute( 'id', lidV );
         };
 
 
@@ -1260,8 +1261,8 @@
                 try { link = new LinkAttribute( linkV ); }
                 catch( unparseable ) { continue; }
 
-                // No need here to guard against other types of malformed link declaration,
-                // which are guarded elsewhere.  Rather take it as the wayscribe intended.
+                // No need here to fend against other types of malformed link declaration.
+                // Rather take it as the wayscribe intended.
                 let targetDocLoc = link.targetDocumentLocation;
                 if( !targetDocLoc ) targetDocLoc = docLoc;
 
@@ -1275,15 +1276,9 @@
 
               // Replace the orphan mark
               // -----------------------
-                let e = target;
-                if( (e = asElementNamed(e.firstChild,'eSTag'))
-                 && (e = asElementNamed(e.firstChild,'a'))
-                 && (e = asElementNamed(e.firstChild,'targetMarker')) )
-                {
-                    const markText = e.firstChild;
-                    markText.replaceData( 0, markText.length, TARGET_MARK );
-                }
-                else console.assert( false, AA + 'Misplaced *targetMarker* element' );
+                const targetMarker = asElementNamed( target.firstChild/*eSTag*/.firstChild, 'targetMarker' );
+                const markText = targetMarker.firstChild;
+                markText.replaceData( 0, markText.length, TARGET_MARK );
                 target.interlinkScene = true;
             }
         }
@@ -1299,7 +1294,7 @@
         {
           // Enable passive discovery
           // ------------------------
-            Documents.addReader( new class extends DocumentReader
+            Documents.addOmnireader( new class extends DocumentReader
             {
                 read( docReg, doc ) { scan( doc, docReg.location ); }
             });
@@ -1494,13 +1489,12 @@
         constructor( value )
         {
             this._value = value;
-            let loc; // of document
+            let loc = URIs.defragmented( value ); // document location
             {
-                const c = value.indexOf( '#' );
-                if( c == -1 ) throw "Missing target node identifier '#': " + a2s('link',value);
+                const fragment = value.slice( loc.length + 1 );
+                if( !fragment ) throw "Missing target node identifier '#': " + a2s('link',value);
 
-                loc = value.slice( 0, c ); // without fragment
-                this._targetID = value.slice( c + 1 );
+                this._targetID = fragment;
             }
             if( loc.length > 0 )
             {
@@ -1572,7 +1566,7 @@
         function setTargetPreview( sourceNode, newPreviewString )
         {
             const forelinker = sourceNode.lastChild;
-            const preview = forelinker.firstChild/*a*/.firstChild;
+            const preview = asElementNamed( forelinker.firstChild/*a*/.firstChild, 'preview' );
             const previewText = preview.firstChild;
             previewText.replaceData( 0, previewText.length, newPreviewString );
             configureForTargetPreview( sourceNode, forelinker, newPreviewString );
@@ -1868,46 +1862,78 @@
 
 
 
-        function formAsTargeted( eSTag ) // companion to 'target:' rules in readable.css
-        {
-            const a = eSTag.firstChild;
-            a.removeAttribute( 'href' );
-        }
-
-
-
-        function formAsUntargeted( eSTag, target )
-        {
-            const a = eSTag.firstChild;
-            a.setAttribute( 'href', '#' + target.getAttributeNS(NS_COG,'lid') );
-        }
-
-
-
-        /** Returns the fragment part of window.location without a preceding hash '#' symbol,
-          * or null if the fragment part is missing.
-          *
-          *     @see #targetedID
+        /** Returns the fragment part of window.location without the preceding delimiter character '#',
+          * or null if the fragment part is missing.  Caches the return value in *idActuallyTargetedC*.
           */
-        function readTargetedID()
+        function idActuallyTargeted()
         {
             const hash = window.location.hash; // [WDL]
-            return hash.length == 0? null: hash.slice(1);
+            idActuallyTargetedC = hash.length == 0? null: hash.slice(1);
+            return idActuallyTargetedC;
         }
 
 
 
-        /** The target node that is formed as targeted, or null if there is none.
+        /** Cache of the last value returned from *idActuallyTargeted*.
           */
-        let targetedFormed = null;
+        let idActuallyTargetedC; { idActuallyTargeted(); }
 
 
 
-        /** The latest value of the targeted identifier, cached for reuse.
+        function formAsTargeted( target ) // companion to 'target:' rules in readable.css
+        {
+            // Pending a distinction of targeted and untargeted forms, which is expected in future,
+            // simply register the formal fact:
+            targetFormallyTargeted = target;
+        }
+
+
+
+        function formAsUntargeted( target )
+        {
+            if( target == targetFormallyTargeted ) targetFormallyTargeted = null;
+        }
+
+
+
+        function handleClick( event )
+        {
+            const view = document.scrollingElement;
+            const scrollTopWas = view.scrollTop;
+            const scrollLeftWas = view.scrollLeft;
+
+            let eSTag = event.target;
+            while( eSTag.localName != 'eSTag' ) eSTag = eSTag.parentNode; // rising from the clicked child
+            const targetNode = eSTag.parentNode;
+
+          // Toggle the browser location  targeted ⇄ untargeted
+          // ---------------------------
+            const wloc = window.location; // [WDL]
+            if( targetNode == targetFormallyTargeted ) // then transit targeted → untargeted
+            {
+                wloc.hash = ''; // navigating to the untargeted location, no URI fragment in address bar
+                const loc = wloc.toString();
+                if( loc.endsWith( '#' )) // Then it left the fragment delimiter hanging there, visible,
+                {                 // like the grin of the Cheshire Cat (Firefox, Chrome).  Remove it:
+                    history.replaceState( /*same*/history.state, /*same*/document.title, loc.slice(0,-1) );
+                }
+            }
+            else wloc.hash = targetNode.getAttribute( 'id' ); // untargeted → targeted
+
+          // Stabilize the view
+          // ------------------
+            view.scrollTop = scrollTopWas;
+            view.scrollLeft = scrollLeftWas;
+        }
+
+
+
+        /** The waylink target node that was actually hyperlink targeted by the browser
+          * and remains visibly formed as such, or null if there is none.
           *
-          *     @see #readTargetedID
+          *     @see #idActuallyTargeted
           */
-        let targetedID = readTargetedID();
+        let targetFormallyTargeted = null;
 
 
 
@@ -1916,38 +1942,26 @@
 
         /** Initializes a target node.
           *
-          *     @param lidV (string) The identifier declared by the target node.
+          *     @param idV (string) The value of the target node's *id* attribute.
           */
-        that.initTarget = function( eSTag, target, lidV )
+        that.initTarget = function( target, eSTag, idV )
         {
-            if( lidV == targetedID )
-            {
-                console.assert( targetedFormed === null, A );
-                targetedFormed = target;
-             // formAsTargeted( eSTag );
-             /// redundant, it happens to start in that form
-            }
-            else formAsUntargeted( eSTag, target );
+            eSTag.addEventListener( 'click', handleClick );
+            if( idV == idActuallyTargetedC ) formAsTargeted( target );
+            else formAsUntargeted( target );
         };
 
 
 
        // - - -
 
-        window.addEventListener( 'hashchange', function()
+        window.addEventListener( 'hashchange', function( _event/*ignored*/ )
         {
-            targetedID = readTargetedID();
-            let target = targetedFormed;
-            if( target )
+            if( targetFormallyTargeted ) formAsUntargeted( targetFormallyTargeted );
+            if( idActuallyTargeted() )
             {
-                targetedFormed = null;
-                formAsUntargeted( /*eSTag*/target.firstChild, target );
-            }
-            target = getTargetById( targetedID );
-            if( target )
-            {
-                targetedFormed = target;
-                formAsTargeted( /*eSTag*/target.firstChild );
+                const target = getTargetById( idActuallyTargetedC );
+                if( target ) formAsTargeted( target );
             }
         });
 
@@ -1960,8 +1974,13 @@
    // ==================================================================================================
 
 
-    /** A device for tracing the way across multiple, way-linked documents.  Based on the results,
-      * it decorates the *present* document.
+    /** A device for tracing the way across multiple waylinked documents.  It traces the root document's
+      * waylinks to their target documents, thence onward till it traces the full network of waylinks.
+      * The trace serves two purposes: (1) to discover documents for omnireaders; and (2) to adjust the
+      * rendering of the present document based on the results.
+      *
+      *     @see http://reluk.ca/project/wayic/lex/root#root_document
+      *     @see Documents#addOmnireader
       */
     const WayTracer = ( function()
     {
@@ -2087,8 +2106,8 @@
         //  if( doc == document ) console.debug( '\t\t\t(in present document)' ); // TEST
             const docLoc = docReg.location;
 
-          // Guard the trace work with a rootward scan
-          // -----------------------------------------
+          // Shield the trace work with a rootward scan
+          // ------------------------------------------
             if( isEmbodied ) for( let r = branch;; )
             {
                 r = r.parentNode;
@@ -2131,8 +2150,8 @@
                     try { link = new LinkAttribute( linkV ); }
                     catch( unparseable ) { break source; }
 
-                    // No need here to guard against other types of malformed declaration, which are
-                    // guarded elsewhere.  Rather let the trace extend as the wayscribe intended.
+                    // No need here to fend against other types of malformed declaration.
+                    // Rather let the trace extend as the wayscribe intended.
                     let targetDocLoc = link.targetDocumentLocation;
                     if( !targetDocLoc ) targetDocLoc = docLoc;
 
@@ -2162,7 +2181,7 @@
 
                         readDirectly( docReg, targetDoc )
                         {
-                            const target = Documents.getTargetById( targetDoc, targetID ); // assumes TARGID
+                            const target = Documents.getTargetById( targetID, targetDoc ); // assumes TARGID
                             if( target ) traceLeg( targetLegID, target, docReg );
                             else console.warn( 'Broken waylink truncates trace at leg: ' + targetLegID );
                             shutLeg( targetLegID );
@@ -2264,12 +2283,14 @@
   *  [F]  Documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
   *       See support file _wayic.read_local_access.xht.
   *
+  *  [HI]  https://www.w3.org/TR/html5/browsers.html#the-history-interface
+  *
   *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
   *
   *  [ONW]  http://reluk.ca/project/wayic/lex/way#on_way
   *
   *  [OWR]  OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
-  *         with the source nodes and sought the target of each using (the new) Documents.getTargetById.
+  *         with the source nodes and sought the target of each using (new) Documents.getTargetById.
   *
   *  [WDL]  Either 'document.location' or 'window.location', they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface

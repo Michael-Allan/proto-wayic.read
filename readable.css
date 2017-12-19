@@ -619,65 +619,52 @@ html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
 /* ---  W a y l i n k   t a r g e t   n o d e  ---------------------------------------------------------
  */
 
-rend|eSTag > a /* wrapper for self-hyperlinking */
+[rend|isTarget] > eSTag
 {
+    cursor: pointer; /* readable.js makes it a hyperlink */
     position: relative; /* establish containing block for absolutely positioned descendants */
-
-    margin-left: -2.0em; /* make space for targetMarker, ∴ BODY_L ≥ 2.0em, q.v. */
-    padding-left: 2.0em;
-}
-rend|eSTag > a,     /* override of the browser's default *a* styling */
-rend|eSTag > a:hover /* override [OVGA] */
-{
-    text-decoration: none; /* eSTag's targetMarker suffices */
-}
-rend|eSTag > a::after
-{
-    content: normal; /* [OVGA] */
 }
 
 
-[rend|isWaybit] * > /* viz. when moreover it's an underbit */
-rend|eSTag > a
-{
-    margin-left: -3.5em; /* more space to better separate the targetMarker from overbit content */
-    padding-left: 3.5em;
-}
-
-
-[rend|isWaybit] [rend|isComposer] > * > /* viz. when moreover it's a topmost component */
-rend|eSTag > a
-{
-    margin-left: -2.0em; /* tighten it back up in this case, as there's no direct overbit content, */
-    padding-left: 2.0em; /* and ∴ COMPOSER_L ≥ 2.0em, q.v. */
-}
-
-
-rend|eSTag > a > targetMarker
+[rend|isTarget] > eSTag > targetMarker
 {
     position: absolute;
-    left: 0; /* leftmost in the padding */
+    left:         -2.0em; /* ∴ BODY_L ≥ 2.0em */
+    padding-right: 2.0em; /* ensure overlap with eSTag parent, avoid distraction of cursor change across gap */
 }
 
 
-*:target > /* when it's hyperlink-targeted */
-rend|eSTag > a > targetMarker
+[rend|isWaybit]
+[rend|isTarget] > eSTag > targetMarker /* when it's an underbit: */
 {
-    cursor: default; /* Hyperlink *a* wrapper (with its cursor) are disabled by readable.js, bringing out
-      the text cursor instead.  Defeat it to avoid flash on passing, which distracts. */
+    left:         -3.5em; /* farther to better separate from overbit content */
+    padding-right: 3.5em;
+}
+
+
+[rend|isWaybit] [rend|isComposer] >
+[rend|isTarget] > eSTag > targetMarker /* when moreover it's a topmost component: */
+{
+    left:         -2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no farther, as there's no direct overbit content */
+    padding-right: 2.0em;
+}
+
+
+[rend|isTarget]:target > eSTag > targetMarker /* when it's hyperlink-targeted: */
+{
     opacity: 1 !important; /* indicate that it's targeted */
 }
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] rend|eSTag > a > targetMarker
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
 {
     opacity: 0.5;
 }
 
 
-html[rend|lighting='neon'] rend|eSTag > a > eQName
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > eQName
 {
     outline-color: hsl( 0, 0%, 80% ); /* = BRIGHT_TEXT.  Cannot rely on outline-color's initial value
       of 'invert' because that keyword is rejected in the keyframes of flashFade_outline_* (at least by
@@ -688,13 +675,13 @@ html[rend|lighting='neon'] rend|eSTag > a > eQName
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] rend|eSTag > a > targetMarker
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
 {
     opacity: 0.3;
 }
 
 
-html[rend|lighting='paper'] rend|eSTag > a > eQName
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > eQName
 {
     outline-color: hsl( 0, 0%,  7% ); /* = DARK_TEXT.  See comment on namesake above. */
 }
