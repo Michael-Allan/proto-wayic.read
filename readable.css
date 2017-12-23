@@ -25,9 +25,9 @@
  *
  * APPEARANCE
  * ----------
- *   This renderer automatically chooses one of two overall lighting modes for the display:
+ *   This renderer automatically chooses one of two overall lighting modes for the display: [LM]
  *   either a black-on-white *paper* mode. or a reverse video *neon* mode.  It bases the choice
- *   on what it detects of the browser settings, which it takes to be the user’s preference.
+ *   on what it detects of the browser’s settings, which it takes to be the user’s preference.
  *
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
@@ -72,9 +72,49 @@
   Rather they share the general styling of waybits in general. */
 
 
+html|html
+{
+    position: relative; /* Establish a containing block for the absolutely positioned *offWayScreen*.
+      Normally its parent (the *body* element) would be given this function.  But its better to size
+      and position the screen to cover the document as a whole, including any content that happens
+      to stick outside of the body. */
+}
+
+
 html|body
 {
     display: none; /* pending layout completion by readable.js */
+}
+
+
+html|body > rend|offWayScreen
+{
+ /* A semi-opaque screen that extends out to cover the document element.  On-way branches rise clear
+    of this screen, distinct from any off-way ancestors that are left behind, still dimmed by it.
+    One would rather dim the off-way ancestors with an *opacity* or alpha *filter* property instead,
+    except that on-way descendants could not then undo the effect.  Or with semi-opaque colours in
+    their foreground properties, except that each distinct colour would then have to be declared twice,
+    in off-way and on-way variants, adding a large burden to a style sheet that is already burdened
+    by colour variants in its lighting modes.  Hence this technique of screening. */
+
+    background-color: inherit; /* so screening whatever lies beneath */
+    pointer-events: none;
+    position: absolute;
+    left:0; top:0;
+    width: 100%;
+    height: 100%;
+}
+
+
+html|html[rend|isOnWayBranch] > html|body > rend|offWayScreen /* [OWB] */
+{
+    display: none; /* not needed, there is nothing off-way to screen */
+}
+
+
+*:not([rend|isOnWayBranch]) *[rend|isOnWayBranch] /* [OWB] */
+{
+    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
 
@@ -90,87 +130,101 @@ html|body
 }
 
 
+
+/* - - -  neon   - - - - - - - - - - - - [TLM]
+ */
+html[rend|lighting='neon'] > html|body
+{
+               color: hsl( 0, 0%, 80% ); /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */
+    background-color: hsl( 0, 0%, 20% ); /* on dark */
+}
+
+
+html[rend|lighting='neon'] > html|body > rend|offWayScreen
+{
+    opacity: 0.5;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - - [TLM]
+ */
+html[rend|lighting='paper'] > html|body
+{
+               color: hsl( 0, 0%, 7% ); /* DARK_TEXT, yet allowing darker effects elsewhere */
+    background-color: hsl( 0, 0%, 93% ); /* on bright white, yet allowing brighter touches elsewhere */
+}
+
+
+html[rend|lighting='paper'] > html|body > rend|offWayScreen
+{
+    opacity: 0.6;
+}
+
+
+
+/* ---  a  --  h y p e r l i n k s  --------------------------------------------------------------------
+ */
+
 html|a
 {
     color: inherit; /* defeat, avoid the distraction and colour interference */
+}
+*:not(rend|forelinker) > html|a
+{
+    position: relative; /* enabling *z-index* change on hover */
     text-decoration-color: transparent; /* redundant but for enabling a transition effect */
  /* text-decoration-skip: ink; *//* no support in Firefox, no matter, but avoid the console warning */
-    transition-property: color, text-decoration-color;
+    transition-property: text-decoration-color,    z-index;
+    transition-duration:                  0.2s,         0s;
+    transition-timing-function:       ease-out, step-start;
+    transition-delay:                     0.1s,       0.6s; /* avoid distracting flash on passing */
+    z-index: 0; /* So enabling its transition, which the default does not.  But see a::after below. */
 }
-html|a:hover
+
+
+*:not(rend|forelinker) > html|a:hover
 {
     text-decoration-line: underline;
-}
-html|a,
-html|a::after
-{
-    transition: 0.2s ease-out 0.1s; /* Transit duration, timing function, onset delay.
-      Delay to avoid distracting flash on passing. */
+    z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
 
-html|a::after
+*:not(rend|forelinker) > html|a::after
 {
+ /* This trailing asterisk cannot raise itself clear of the *offWayScreen* as it would like to,
+    instantly on hover.  Rather it must wait for the parent *a* element to raise itself.  The parent
+    has set an initial *z-index* value and thereby created a stacking context in which this asterisk
+    is now trapped.  A possible workaround is for the parent to animate its *z-index* in key frames,
+    as that might allow removal of the initial *z-index* setting. */
+
     content: '*';
     font-size: 0.9em;
     line-height: 0.5em; /* preserve the original line spacing despite the *vertical-align* of 'super' */
     text-decoration: none !important; /* defeat Chrome's staggered underline (fails, ignored) */
-    transition-property: color;
     vertical-align: super;
 }
 
 
-/* - - -  neon   - - - - - - - - - - - -
+
+/* - - -  neon   - - - - - - - - - - - - [TLM]
  */
-html[rend|lighting='neon'] > html|body
-{
-    background-color: hsl( 0, 0%, 20% ); /* night time */
-               color: hsla( 0, 0%, 80% /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */, .5 );
-}                                                       /* generally rendered as OFF_WAY by default ↑ */
-html[rend|lighting='neon'] *[rend|isOnWayBranch]
-{
-               color: hsl(  0, 0%, 80% );               /*                        ON_WAY here         */
-}
-
-
-html[rend|lighting='neon'] html|a:hover
+html[rend|lighting='neon'] *:not(rend|forelinker) > html|a:hover
 {
     text-decoration-color: hsl( 190/*∼cyan*/, 100%, 60% ); /* BRIGHT_HYPERLINK */
 }
-html[rend|lighting='neon'] html|a::after
-{
-                   color: hsla( 190         , 100%, 60%, 0.5 ); /* = BRIGHT_HYPERLINK, OFF_WAY */
-}
-html[rend|lighting='neon'] *[rend|isOnWayBranch] html|a::after, /*                   ,  ON_WAY */
-html[rend|lighting='neon'] html|a:hover::after
+html[rend|lighting='neon'] *:not(rend|forelinker) > html|a::after
 {
                    color: hsl(  190         , 100%, 60% );
 }
 
 
-/* - - -  paper  - - - - - - - - - - - -
+/* - - -  paper  - - - - - - - - - - - - [TLM]
  */
-html[rend|lighting='paper'] > html|body
-{
-    background-color: hsl( 0, 0%, 93% ); /* bright white, yet allowing brighter touches here and there */
-               color: hsla( 0, 0%, 7% /* DARK_TEXT, yet allowing darker effects elsewhere */, .4 );
-}                                                  /* generally rendered as OFF_WAY by default ↑ */
-html[rend|lighting='paper'] *[rend|isOnWayBranch]
-{
-               color: hsl(  0, 0%, 7% );           /*                        ON_WAY here         */
-}
-
-
-html[rend|lighting='paper'] html|a:hover
+html[rend|lighting='paper'] *:not(rend|forelinker) > html|a:hover
 {
     text-decoration-color: hsl( 240/*blue*/, 100%, 50% ); /* DARK_HYPERLINK */
 }
-html[rend|lighting='paper']                       html|a::after
-{
-                   color: hsla( 240        , 100%, 50%, 0.4 ); /* = DARK_HYPERLINK, OFF_WAY */
-}
-html[rend|lighting='paper'] *[rend|isOnWayBranch] html|a::after, /*               ,  ON_WAY */
-html[rend|lighting='paper'] html|a:hover::after
+html[rend|lighting='paper'] *:not(rend|forelinker) > html|a::after
 {
                    color: hsl(  240        , 100%, 50% );
 }
@@ -242,6 +296,17 @@ html[rend|lighting='paper'] *[rend|isComposer]
 
 
 
+/* ---  D e s c r e e n  -------------------------------------------------------------------------------
+ */
+
+@keyframes descreen
+{
+    from { z-index: 1; } /* raised clear of the *offWayScreen* */
+      to { z-index: 1; } /* holding it there for the duration */
+}
+
+
+
 /* ---  F l a s h   f a d e  ---------------------------------------------------------------------------
  */
 
@@ -286,7 +351,8 @@ rend|eSTag eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
 
 *:target > rend|eSTag eQName /* for a targeted waybit, whether targeted as a waylink or hyperlink */
 {
-    animation-duration: 2s;
+    animation-duration: /*descreen*/3s, /*flashFade*/2s;
+    position: relative; /* enabling *z-index* for the descreening animation */
 }
 
 
@@ -294,7 +360,7 @@ rend|eSTag eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
  */
 html[rend|lighting='neon'] *:target > rend|eSTag eQName
 {
-    animation-name: flashFade_outline_bright; /* as a target locator */
+    animation-name: descreen, flashFade_outline_bright; /* as a target locator */
 }
 
 
@@ -302,7 +368,7 @@ html[rend|lighting='neon'] *:target > rend|eSTag eQName
  */
 html[rend|lighting='paper'] *:target > rend|eSTag eQName
 {
-    animation-name: flashFade_outline_dark; /* as a target locator */
+    animation-name: descreen, flashFade_outline_dark; /* as a target locator */
 }
 
 
@@ -392,18 +458,11 @@ html[rend|lighting='neon'] step|* > eSTag
 }
 
 
-html[rend|lighting='neon'] step|*                            > eSTag eQName
+html[rend|lighting='neon'] step|* > eSTag eQName
 {
+               color: hsl(  0, 0%,   0% );
+    background-color: hsla( 0, 0%, 100%, 0.45 );
     margin-left: -0.20em; /* = -ST_PAD_L */
-
-    background-color: hsla( 0, 0%, 100%, 0.22/* = .45 × .5 */ ); /* OFF_WAY */
-               color: hsla( 0, 0%,   0%, 0.5 );
-}
-html[rend|lighting='neon']      *[rend|isOnWayBranch] step|* > eSTag eQName,
-html[rend|lighting='neon'] step|*[rend|isOnWayBranch]        > eSTag eQName
-{
-    background-color: hsla( 0, 0%, 100%, 0.45/* = .45      */ ); /*  ON_WAY */
-               color: hsl(  0, 0%,   0%      );
 }
 
 
@@ -418,21 +477,14 @@ html[rend|lighting='paper'] step|* > eSTag
 }
 
 
-html[rend|lighting='paper'] step|*                            > eSTag eQName
+html[rend|lighting='paper'] step|* > eSTag eQName
 {
     /* prominence for the steps, making them stand out at a glance from the other waybits */
-    border-style: solid;
-    border-width: 0.08em; /* ST_BOR */
+    background-color: hsla( 0, 0%, 100%, 0.40 );
+        border-color: hsla( 0, 0%,   0%, 0.80 );
+        border-style: solid;
+        border-width: 0.08em; /* ST_BOR */
     margin-left: -0.28em; /* = -(ST_PAD_L + ST_BOR), to maintain precise text alignment */
-
-    background-color: hsla( 0, 0%, 100%, 0.16/* = .40 × .4 */ ); /* OFF_WAY */
-        border-color: hsla( 0, 0%,   0%, 0.32/* = .80 × .4 */ );
-}
-html[rend|lighting='paper']      *[rend|isOnWayBranch] step|* > eSTag eQName,
-html[rend|lighting='paper'] step|*[rend|isOnWayBranch]        > eSTag eQName
-{
-    background-color: hsla( 0, 0%, 100%, 0.40/* = .40      */ ); /*  ON_WAY */
-        border-color: hsla( 0, 0%,   0%, 0.80/* = .80      */ );
 }
 
 
@@ -479,14 +531,9 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
 /* ---  W a y l i n k   s o u r c e   n o d e  ---------------------------------------------------------
  */
 
-rend|forelinker > a,     /* override of the browser's default *a* styling */
-rend|forelinker > a:hover /* override [OVGA] */
+rend|forelinker > a
 {
-    text-decoration: none; /* symbols in the forelinker suffice */
-}
-rend|forelinker > a::after
-{
-    content: normal; /* [OVGA] */
+    text-decoration: none; /* override browser default, looks confusing in this composite hyperlink */
 }
 
 
@@ -513,11 +560,13 @@ rend|forelinker > a > verticalTruncator
 rend|forelinker > a > verticalTruncator
 {
     opacity: 0.4;
-    padding-left:  1em; /* extra click surface + indentation beneath the overlying preview text */
+    padding-left: 1em; /* extra click surface + indentation beneath the overlying preview text */
+    position: relative; /* enabling *z-index* change on hover */
 }
 rend|forelinker > a:hover > verticalTruncator
 {
     opacity: 1;
+    z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
 
@@ -533,45 +582,27 @@ rend|forelinker[class~='shortContent'] > a > verticalTruncator /* [C] */
 rend|forelinker > a > directionIndicator /* content is an arrow */
 {
     margin-left: 2em;
-
- /* visibility: hidden; */ /* but prefer opacity, as it allows for a more useful transition */
     opacity: 0;
-    transition: opacity 0.2s ease-out 0.3s; /* Property, transit duration, timing function, onset delay.
-      Delay to avoid distracting flash on passing. */
+    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
+    transition: opacity 0.2s ease-out; /* property, duration, timing function */
+    transition-delay: 0.3s; /* avoid distracting flash on passing */
 }
 
 
-rend|forelinker > a:focus > directionIndicator, /* fails either entirely (Chrome 59),
-                                     or when *href* is local to document (Firefox 52) */
+rend|forelinker > a:focus > directionIndicator, /* † */
 rend|forelinker > a:hover > directionIndicator
 {
     opacity: 1;
 }
+  /* † Focus rule fails to apply opacity.  Chrome 59 fails entirely.
+       Firefox 52 fails only when *href* is local to document. */
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon']
-*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+html[rend|lighting='neon'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
 {
-    color: hsla( 36/*orange*/, 100%, 50%, 0.5 ); /* OFF_WAY */
-}
-html[rend|lighting='neon']                                      *[rend|isOnWayBranch]
-*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
-{
-    color: hsl(  36          , 100%, 50%      ); /*  ON_WAY */
-}
-
-
-html[rend|lighting='neon']                       rend|forelinker > a > preview,
-html[rend|lighting='neon']                       rend|forelinker > a > verticalTruncator
-{
-    color: hsla( 0, 0%, 80%, 0.5 ); /* = BRIGHT_TEXT, OFF_WAY */
-}
-html[rend|lighting='neon'] *[rend|isOnWayBranch] rend|forelinker > a > preview,
-html[rend|lighting='neon'] *[rend|isOnWayBranch] rend|forelinker > a > verticalTruncator
-{
-    color: hsl(  0, 0%, 80%      ); /*              ,  ON_WAY */
+    color: hsl(  36/*orange*/, 100%, 50% );
 }
 
 
@@ -584,27 +615,9 @@ html[rend|lighting='neon'] rend|forelinker > a > directionIndicator
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper']
-*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
+html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
 {
-    color: hsla( 0/*red*/, 100%, 35%, 0.4 ); /* OFF_WAY */
-}
-html[rend|lighting='paper']                                     *[rend|isOnWayBranch]
-*[cog|link$="/actor/#commitment"] > eSTag > eQName > eLocalPart
-{
-    color: hsl(  0       , 100%, 35%      ); /*  ON_WAY */
-}
-
-
-html[rend|lighting='paper']                       rend|forelinker > a > preview,
-html[rend|lighting='paper']                       rend|forelinker > a > verticalTruncator
-{
-    color: hsla( 0, 0%, 7%, 0.4 ); /* = DARK_TEXT, OFF_WAY */
-}
-html[rend|lighting='paper'] *[rend|isOnWayBranch] rend|forelinker > a > preview,
-html[rend|lighting='paper'] *[rend|isOnWayBranch] rend|forelinker > a > verticalTruncator
-{
-    color: hsl(  0, 0%, 7%      ); /*            ,  ON_WAY */
+    color: hsl(  0/*red*/, 100%, 35% );
 }
 
 
@@ -622,7 +635,7 @@ html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
 [rend|isTarget] > eSTag
 {
     cursor: pointer; /* readable.js makes it a hyperlink */
-    position: relative; /* establish containing block for absolutely positioned descendants */
+    position: relative; /* establish containing block for absolutely positioned *targetMarker* */
 }
 
 
@@ -630,7 +643,8 @@ html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
 {
     position: absolute;
     left:         -2.0em; /* ∴ BODY_L ≥ 2.0em */
-    padding-right: 2.0em; /* ensure overlap with eSTag parent, avoid distraction of cursor change across gap */
+    padding-right: 2.0em; /* Ensure overlap with eSTag parent,
+                 avoid distraction of cursor change across gap. */
 }
 
 
@@ -650,9 +664,21 @@ html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
 }
 
 
+[rend|isTarget] > eSTag > targetMarker::before
+{
+    content: '\1f78b'; /* Unicode 1f78b (round target) */
+}
+
+
 [rend|isTarget]:target > eSTag > targetMarker /* when it's hyperlink-targeted: */
 {
     opacity: 1 !important; /* indicate that it's targeted */
+}
+
+
+[rend|isTarget][rend|isOrphan] > eSTag > targetMarker::before
+{
+    content: '\1f5d9'; /* Unicode 1f5d9 (cancellation X).  Changing? sync'd ← readable.js BREAK_SYMBOL. */
 }
 
 
@@ -709,11 +735,12 @@ html[rend|lighting='paper'] [rend|isTarget] > eSTag > eQName
  *  [C]  Class selectors are failing for non-HTML elements under Chrome (59).  Therefore this style
  *       sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
  *
- *  [COMP]  Defunct composer elements, http://reluk.ca/project/wayic/read/composer/
+ *  [COMP]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
  *
  *  [CONS]  https://console.spec.whatwg.org/
  *
- *  [OVGA]  Here overriding the general 'html|a' rule at top.
+ *  [OWB]  These rules depend on a restricted placement of attribute *isOnWayBranch* that is guaranteed
+ *         by readable.js, q.v. where it refers to this note.
  *
  *  [XMLN]  https://www.w3.org/TR/xml-names/
  */

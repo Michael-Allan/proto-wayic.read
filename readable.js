@@ -14,10 +14,17 @@
   *   The renderer introduces its own markup to the document which includes the following:
   *   (for the notation, see the key further below)
   *
-  *      * on html:html
+  *      * [rend:isOnWayBranch] - Whether this element (with all of its descendants) is on way [OWB]
+  *
+  *      * in html:html
   *          * [rend:lighting]   - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
   *
-  *      * on wayscript element
+  *      * in html:body
+  *          * [rend:offWayScreen]  - A semi-opaque screen that covers the *body* element.
+  *                                   On-way branches alone rise clear of this screen,
+  *                 distinct from any off-way ancestors they leave behind, still obscured
+  *
+  *      * in wayscript element
   *          * [rend:hasLeader]         - Whether the element has leading, non-whitespace text [BA]
   *          * [rend:hasPreviewString]  - Whether it’s a waylink source node with a non-empty preview
   *                                       of the target text
@@ -25,7 +32,7 @@
   *          * [rend:isChangeable]  - Whether its rendering might later be changed
   *          * [rend:isComposer]    - Whether it’s a composer element
   *          * [rend:isEntagment]   - Whether it’s a waylink entagment
-  *          * [rend:isOnWayBranch] - Whether it (together with all of its descendants) is on way [ONW]
+  *          * [rend:isOrphan]      - Whether it’s a waylink target node without a source node
   *          * [rend:isTarget]      - Whether it’s a waylink target node
   *          * [rend:isWaybit]      - Whether it’s a waybit
   *          * [rend:isWayscript]   - Whether it’s under a ‘data:,wayscript.’ namespace
@@ -302,12 +309,11 @@
 
 
 
-    const BROKEN_LINK_SYMBOL = String.fromCodePoint( 0x1f5d9 ); // Unicode 1f5d9 (cancellation X)
+    const BREAK_SYMBOL = '\u{1f5d9}'; // Unicode 1f5d9 (cancellation X).  Changing? sync'd → readable.css.
 
 
 
-    const BROKEN_SOURCE_NODE_STRING = '─' // '─' is Unicode 2500 (box drawings light horizontal)
-      + BROKEN_LINK_SYMBOL;
+    const BROKEN_SOURCE_NODE_STRING = '─' + BREAK_SYMBOL; // '─' Unicode 2500 (box drawings light horizontal)
 
 
 
@@ -597,6 +603,10 @@
     {
         const body = document.body;
 
+      // Place the off-way screen
+      // ------------------------
+        body.append( document.createElementNS( NS_REND, 'offWayScreen' ));
+
       // Detect user's lighting preference
       // ---------------------------------
         let lighting;
@@ -621,20 +631,6 @@
       // ----------------
         body.style.display = 'block'; // overriding readable.css 'none'
     }
-
-
-
-    const TARGET_MARK = '→'; // '→' is Unicode 2192 (rightwards arrow)
-
-
-
-    const TARGET_ORPHAN_MARK = BROKEN_LINK_SYMBOL;
-
-
-
-    /** The maximum number of characters in a forelinker target preview.
-      */
-    const TARGET_PREVIEW_MAX_LENGTH = 36;
 
 
 
@@ -720,7 +716,7 @@
                 t.insertBefore( textAligner, t.firstChild );
             }
             if( isBit ) t.setAttributeNS( NS_REND, 'isWaybit', 'isWaybit' );
-            const rendering = new PartRenderingC( t );
+            const partRendering = new PartRenderingC( t );
 
 
           // ==========
@@ -766,7 +762,7 @@
                         {
                             OuterWaylinkResolver.registerLink( t, targetDocLocN );
                             targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
-                            rendering.isChangeable = true;
+                            partRendering.isChangeable = true;
                             targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
                             break targeting;
                         }
@@ -799,7 +795,7 @@
                         }
                     }
 
-                    configureForTarget( tNS, tLocalPart, linkV, isBit, target, rendering );
+                    configureForTarget( tNS, tLocalPart, linkV, isBit, target, partRendering );
                     targetPreviewString = readTargetPreview( target );
                 }
                 const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
@@ -810,7 +806,8 @@
                 configureForTargetPreview( t, forelinker, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
-                  .appendChild( document.createTextNode( '⋱⋱' )); // alternatives ⋮ ⋱
+                  .appendChild( document.createTextNode( '⋱⋱' ));
+                    // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
                 a.appendChild( document.createElementNS( NS_REND, 'directionIndicator' ))
                   .appendChild( document.createTextNode( targetDirectionChar ));
             }
@@ -819,14 +816,14 @@
          // =========
          // Start tag of element t
          // =========
-            rendering.render();
-            const eSTag = rendering.eSTag;
+            partRendering.render();
+            const eSTag = partRendering.eSTag;
             if( lidV ) // then t is a waylink target node
             {
                 t.setAttributeNS( NS_REND, 'isTarget', 'isTarget' );
+                t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // till proven otherwise
                 Documents.idAsHyperlinkToo( t, lidV );
                 const tM = document.createElementNS( NS_REND, 'targetMarker' );
-                tM.appendChild( document.createTextNode( TARGET_ORPHAN_MARK )); // till proven otherwise
                 eSTag.insertBefore( tM, eSTag.firstChild );
                 Targets.initTarget( t, eSTag, /*idV*/lidV ); // idV = lidV ensured by ↖ idAsHyperlinkToo
             }
@@ -1274,12 +1271,8 @@
 
                 if( target.interlinkScene ) continue; // the work is already done
 
-              // Replace the orphan mark
-              // -----------------------
-                const targetMarker = asElementNamed( target.firstChild/*eSTag*/.firstChild, 'targetMarker' );
-                const markText = targetMarker.firstChild;
-                markText.replaceData( 0, markText.length, TARGET_MARK );
                 target.interlinkScene = true;
+                target.removeAttributeNS( NS_REND, 'isOrphan' );
             }
         }
 
@@ -1559,8 +1552,8 @@
 
 
 
-        const MYSTERY_SYMBOL = '─\u202f?\u202f─'; // '\u202f' is Unicode (narrow no-break space)
-                                                 // '─' is 2500 (box drawings light horizontal)
+        const MYSTERY_SYMBOL = '─\u{202f}?\u{202f}─'; // Unicode 202f (narrow no-break space)
+                                                     // '─' is 2500 (box drawings light horizontal)
 
 
         function setTargetPreview( sourceNode, newPreviewString )
@@ -2105,33 +2098,38 @@
             const doc = branch.ownerDocument;
         //  if( doc == document ) console.debug( '\t\t\t(in present document)' ); // TEST
             const docLoc = docReg.location;
-
-          // Shield the trace work with a rootward scan
-          // ------------------------------------------
-            if( isEmbodied ) for( let r = branch;; )
+            let marker;
+            if( isEmbodied )
             {
-                r = r.parentNode;
-                const ns = r.namespaceURI;
-                if( ns == null ) // then r is the document node
+              // Shield the trace work with a rootward scan to the *body* element
+              // ------------------------------------------
+                for( let r = branch;; ) // this cannot be the *body* yet [OWB] so immediately:
                 {
-                    mal( 'Malformed document: Missing HTML *body* element: ' + docLoc );
-                    break;
-                }
+                    r = r.parentNode;
+                    const ns = r.namespaceURI;
+                    if( ns == null ) // then r is the document node
+                    {
+                        mal( 'Malformed document: Missing HTML *body* element: ' + docLoc );
+                        break;
+                    }
 
-                if( isBitNS( ns ))
-                {
-                    const lidV = r.getAttributeNS( NS_COG, 'lid' );
-                    if( !lidV ) continue;
+                    if( isBitNS( ns ))
+                    {
+                        const lidV = r.getAttributeNS( NS_COG, 'lid' );
+                        if( !lidV ) continue;
 
-                    if( isShut( newLegID( docLoc, lidV ))) return; /* If only for sake of efficiency,
-                      ∵ the whole branch is already covered (or will be) as part of a larger branch. */
+                        if( isShut( newLegID( docLoc, lidV ))) return; /* If only for sake of efficiency,
+                          ∵ the whole branch is already covered (or will be) as part of a larger branch. */
+                    }
+                    else if( r.localName == 'body' && ns == NS_HTML ) break;
                 }
-                else if( r.localName == 'body' && ns == NS_HTML ) break;
+                marker = branch;
             }
+            else marker = doc.documentElement; // [OWB]
 
           // Mark the branch *on way*
           // ------------------------
-            branch.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
+            marker.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
 
           // Trace the branch
           // ----------------
@@ -2287,7 +2285,9 @@
   *
   *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [ONW]  http://reluk.ca/project/wayic/lex/way#on_way
+  *  [OWB]  Attribute *isOnWayBranch* is restricted to the *html* element (the document element),
+  *         and to descendants of the *body* element.  This restriction is assumed by readable.css,
+  *         q.v. where it refers to this note.
   *
   *  [OWR]  OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
   *         with the source nodes and sought the target of each using (new) Documents.getTargetById.
