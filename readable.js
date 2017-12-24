@@ -17,12 +17,10 @@
   *      * [rend:isOnWayBranch] - Whether this element (with all of its descendants) is on way [OWB]
   *
   *      * in html:html
-  *          * [rend:lighting]   - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
+  *          * [rend:lighting]  - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
   *
   *      * in html:body
-  *          * [rend:offWayScreen]  - A semi-opaque screen that covers the *body* element.
-  *                                   On-way branches alone rise clear of this screen,
-  *                 distinct from any off-way ancestors they leave behind, still obscured
+  *          * offWayScreen - Overlay screen for off-way styling, q.v. in readable.css.
   *
   *      * in wayscript element
   *          * [rend:hasLeader]         - Whether the element has leading, non-whitespace text [BA]

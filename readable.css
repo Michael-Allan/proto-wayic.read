@@ -311,7 +311,7 @@ html[rend|lighting='paper'] *[rend|isComposer]
  */
 
 @keyframes flashFade_outline_bright
-{
+{                                         /* white */
     from { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: linear }
      33% { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: ease-out }
       to { outline: medium solid transparent }
@@ -319,7 +319,7 @@ html[rend|lighting='paper'] *[rend|isComposer]
 
 
 @keyframes flashFade_outline_dark
-{
+{                                        /* black */
     from { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: linear }
      33% { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: ease-out }
       to { outline: medium solid transparent }
@@ -690,26 +690,11 @@ html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
 }
 
 
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > eQName
-{
-    outline-color: hsl( 0, 0%, 80% ); /* = BRIGHT_TEXT.  Cannot rely on outline-color's initial value
-      of 'invert' because that keyword is rejected in the keyframes of flashFade_outline_* (at least by
-      Firefox 52).  Nor is 'currentColor' useful, because if this element happens to be a step, and so
-      has inverted colours, then currentColor will be the opposite of what's needed for the outline. */
-}
-
-
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
 {
     opacity: 0.3;
-}
-
-
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > eQName
-{
-    outline-color: hsl( 0, 0%,  7% ); /* = DARK_TEXT.  See comment on namesake above. */
 }
 
 
