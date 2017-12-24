@@ -543,6 +543,14 @@ rend|forelinker > a:focus:not(:active)
 }
 
 
+rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
+{
+    display: inline-block; /* enables *min-width* */
+    min-width: 2em; /* = VT_PAD × 2; enables *text-align* */
+    text-align: center; /* over the *directionIndicator* */
+}
+
+
 *:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
 rend|forelinker > a > br
 {
@@ -560,22 +568,13 @@ rend|forelinker > a > verticalTruncator
 rend|forelinker > a > verticalTruncator
 {
     opacity: 0.4;
-    padding-left: 1em; /* extra click surface + indentation beneath the overlying preview text */
+    padding-left: 1em; /* VT_PAD; extra click surface + indentation beneath the overlying preview text */
     position: relative; /* enabling *z-index* change on hover */
 }
 rend|forelinker > a:hover > verticalTruncator
 {
     opacity: 1;
     z-index: 1; /* raised clear of the *offWayScreen* */
-}
-
-
-*[rend|isChangeable] >
-rend|forelinker[class~='shortContent'] > a > verticalTruncator /* [C] */
-{
- /* visibility: hidden; *//* It looks awkward and in most cases the short content itself will suffice
-    to indicate that a waylink is present, so hide it.  Yet don't remove it entirely because it'll
-    likely help preserve the stability of the layout in the event of the expected content change. */
 }
 
 
@@ -606,6 +605,12 @@ html[rend|lighting='neon'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > 
 }
 
 
+html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
+{
+    color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
+}
+
+
 html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
 html[rend|lighting='neon'] rend|forelinker > a > directionIndicator
 {
@@ -618,6 +623,12 @@ html[rend|lighting='neon'] rend|forelinker > a > directionIndicator
 html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
 {
     color: hsl(  0/*red*/, 100%, 35% );
+}
+
+
+html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
+{
+    color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
 }
 
 
@@ -690,11 +701,23 @@ html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
 }
 
 
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+{
+    color: hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
+}
+
+
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
 {
     opacity: 0.3;
+}
+
+
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+{
+    color: hsl(  0, 100%, 40% ); /* = DARK_BREAK */
 }
 
 

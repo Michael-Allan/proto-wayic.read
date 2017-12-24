@@ -27,6 +27,7 @@
   *          * [rend:hasPreviewString]  - Whether it’s a waylink source node with a non-empty preview
   *                                       of the target text
   *          * [rend:hasShortName]  - Whether its rendered name is no longer than three characters
+  *          * [rend:isBroken]      - Whether it’s a waylink source node with a broken target reference
   *          * [rend:isChangeable]  - Whether its rendering might later be changed
   *          * [rend:isComposer]    - Whether it’s a composer element
   *          * [rend:isEntagment]   - Whether it’s a waylink entagment
@@ -311,10 +312,6 @@
 
 
 
-    const BROKEN_SOURCE_NODE_STRING = '─' + BREAK_SYMBOL; // '─' Unicode 2500 (box drawings light horizontal)
-
-
-
     /** The location of the waycast (string) in normal URL form, and with a trailing slash '/'.
       *
       *     @see URIs#normalized
@@ -339,12 +336,12 @@
                     path = p;
                     while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove the trailing slash
                 }
-                else mal( "Missing 'base' attribute in 'cast' element" );
+                else mal( 'Missing *base* attribute in *cast* element' );
                 return path;
             }
         }
 
-        mal( "Missing 'cast' element in document 'head'" );
+        mal( 'Missing *cast* element in document *head*' );
         return path;
     }() );
 
@@ -395,29 +392,49 @@
 
 
     /** Configures a waylink source node for a given target preview.
+      *
+      *     @param source (Element) The source node.
+      *     @param preview (Element) Its *preview* element.
       */
-    function configureForTargetPreview( source, forelinker, targetPreviewString )
+    function configureForTargetPreview( source, preview, previewString )
     {
-        if( targetPreviewString.length == 0 )
+        function clearStyleClass()
+        {
+            const c = preview.className;
+            if( c )
+            {
+                console.assert( c == 'singleCharacterContent', A ); // removing only that one
+                preview.removeAttribute( 'class' );
+            }
+        }
+        const pointCount = countCodePoints( previewString );
+        if( pointCount == 0 )
         {
             source.removeAttributeNS( NS_REND, 'hasPreviewString' );
-            forelinker.className = 'shortContent';
+            clearStyleClass();
         }
         else
         {
             source.setAttributeNS( NS_REND, 'hasPreviewString', 'hasPreviewString' );
-            if( targetPreviewString.length <= 2 ) forelinker.className = 'shortContent';
-            else
-            {
-                const c = forelinker.className;
-                if( c )
-                {
-                    console.assert( c == 'shortContent', A ); // removing only that one
-                    forelinker.removeAttribute( 'class' );
-                }
-            }
+            if( pointCount == 1 ) preview.className = 'singleCharacterContent';
+            else clearStyleClass();
         }
-    };
+    }
+
+
+
+    /** Returns the number of Unicode code points in string *str*.
+      *
+      *     @see http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types-string-type
+      */
+    function countCodePoints( str )
+    {
+        const i = str[Symbol.iterator](); /* Iterates over code points, not just 16-bit 'character' units.
+          http://www.ecma-international.org/ecma-262/6.0/#sec-string.prototype-@@iterator */
+        let count = 0;
+        while( !i.next().done ) ++count;
+        return count;
+    }
 
 
 
@@ -736,7 +753,7 @@
 
                 if( lidV )
                 {
-                    mal( "Waylink node has both 'lid' and 'link' attributes: " + a2s('lid',lidV) );
+                    mal( 'Waylink node has both *lid* and *link* attributes: ' + a2s('lid',lidV) );
                     break source;
                 }
 
@@ -777,10 +794,11 @@
                         {
                             if( u == t ) // then search is on this node, about to revisit the nodes above
                             {
-                                mal( "Broken link: Either this document has no matching 'lid', "
+                                mal( 'Broken waylink: Either this document has no matching *lid*, '
                                   + 'or it has an identifier conflict: ' + a2s('link',linkV) );
                                 targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
-                                targetPreviewString = BROKEN_SOURCE_NODE_STRING;
+                                targetPreviewString = BREAK_SYMBOL;
+                                t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                                 break targeting;
                             }
 
@@ -801,7 +819,7 @@
                 a.setAttribute( 'href', targetDocLoc + '#' + link.targetID );
                 a.appendChild( preview );
                 preview.appendChild( document.createTextNode( targetPreviewString ));
-                configureForTargetPreview( t, forelinker, targetPreviewString );
+                configureForTargetPreview( t, preview, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
                   .appendChild( document.createTextNode( '⋱⋱' ));
@@ -1550,8 +1568,8 @@
 
 
 
-        const MYSTERY_SYMBOL = '─\u{202f}?\u{202f}─'; // Unicode 202f (narrow no-break space)
-                                                     // '─' is 2500 (box drawings light horizontal)
+        const MYSTERY_SYMBOL = '?';
+
 
 
         function setTargetPreview( sourceNode, newPreviewString )
@@ -1560,7 +1578,7 @@
             const preview = asElementNamed( forelinker.firstChild/*a*/.firstChild, 'preview' );
             const previewText = preview.firstChild;
             previewText.replaceData( 0, previewText.length, newPreviewString );
-            configureForTargetPreview( sourceNode, forelinker, newPreviewString );
+            configureForTargetPreview( sourceNode, preview, newPreviewString );
         }
 
 
@@ -1664,8 +1682,9 @@
                         for( const s of sourceNodes )
                         {
                             const linkV = s.getAttributeNS( NS_COG, 'link' );
-                            mal( "Broken link: No matching 'lid' in that document: " + a2s('link',linkV) );
+                            mal( 'Broken link: No matching *lid* in that document: ' + a2s('link',linkV) );
                             setTargetPreview( s, BROKEN_SOURCE_NODE_STRING );
+                            s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         }
                     }
                 });
