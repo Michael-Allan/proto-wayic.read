@@ -58,7 +58,7 @@
  *   malformed content, or anything else that an author might be able to remedy.
  *
  *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked '⋯?⋯'.
- *   See support file local_access/_wayic.read_local_access.html for instructions on dealing with this.
+ *   See support file local_access/_wayic.read.local_access.html for instructions on dealing with this.
  *
  *
  * NOTES  (continued at bottom)
@@ -68,12 +68,14 @@
 @namespace rend 'data:,wayic.read';
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
-    Namespace ↗ 'data:,wayscript.bit' covers waybits *simply*.  These have no styling of their own.
-  Rather they share the general styling of waybits in general. */
+              ↗ 'data:,wayscript.bit' covers waybits *simply*.  They have no styling of their own;
+                   rather they share the styling of waybits in general. */
+@namespace svg 'http://www.w3.org/2000/svg';
 
 
 html|html
 {
+    margin: 0; padding: 0; /* see § scene */
     position: relative; /* Establish a containing block for the absolutely positioned *offWayScreen*.
       Normally its parent (the *body* element) would be given this function.  But its better to size
       and position the screen to cover the document as a whole, including any content that happens
@@ -84,6 +86,7 @@ html|html
 html|body
 {
     display: none; /* pending layout completion by readable.js */
+    margin: 0; padding: 0; /* see § scene */
 }
 
 
@@ -106,27 +109,11 @@ html|body > rend|offWayScreen
 }
 
 
-html|html[rend|isOnWayBranch] > html|body > rend|offWayScreen /* [OWB] */
+*[rend|isOnWayBranch]
 {
-    display: none; /* not needed, there is nothing off-way to screen */
-}
-
-
-*:not([rend|isOnWayBranch]) *[rend|isOnWayBranch] /* [OWB] */
-{
-    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
-}
-
-
-@media screen
-{
-    html|html{ margin: 0; padding: 0; }
-    html|body
-    {
-        margin: 3em auto 5em auto; /* TRBL */
-        max-width: 50em;
-        padding: 0 0.7em 0 2.0em; /* TRBL - meeting constraints on BODY_L */
-    }
+    position: relative; z-index: 1; /* Raised clear of the *offWayScreen*.
+      But if an ancestor is already so raising the branch, then this only raises it
+      within the ancestor's stacking context, which should have no visual effect. */
 }
 
 
@@ -327,6 +314,137 @@ html[rend|lighting='paper'] *[rend|isComposer]
 
 
 
+/* ---  S c e n e  -------------------------------------------------------------------------------------
+ */
+
+rend|scene
+{
+    display: block;
+}
+
+
+rend|scene#_wayic\.read\.document_scene
+{
+    margin: 3em auto 5em auto; /* TRBL */
+    max-width: 50em;
+    padding: 0 0.7em 0 3.4em; /* TRBL, where L = MIN_CLICK_WIDTH_EM + MIN_GAP_EM - TM_L,
+                                       and the *_EM components are defined in readable.js */
+}
+
+
+
+/* ---  S o u r c e   n o d e   ( w a y l i n k )  -----------------------------------------------------
+ */
+
+rend|forelinker > a
+{
+    text-decoration: none; /* override browser default, looks confusing in this composite hyperlink */
+}
+
+
+rend|forelinker > a:focus:not(:active)
+{
+    outline: none; /* defeat (Firefox) ∵ its coverage of verticalTruncator is awkward and distracting */
+}
+
+
+rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
+{
+    display: inline-block; /* enables *min-width* */
+    min-width: 2em; /* = VT_PAD × 2; enables *text-align* */
+    text-align: center; /* over the left glyph-edge of the *vertical truncator* */
+}
+
+
+*:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
+rend|forelinker > a > br
+{
+    display: none; /* It happens that no text content precedes the injected *br* element.
+      Therefore let it collapse to nothing.  But not when the source node has a short name;
+      then the *br* is wanted to position the verticalTruncator below the node's start tag. */
+}
+*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
+rend|forelinker > a > verticalTruncator
+{
+    margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
+}
+
+
+rend|forelinker > a > verticalTruncator
+{
+    opacity: 0.4;
+    padding-left: 1em; /* VT_PAD; extra click surface + indentation beneath the overlying preview text */
+    position: relative; /* enabling *z-index* change on hover */
+}
+rend|forelinker > a:hover > verticalTruncator
+{
+    opacity: 1;
+    z-index: 1; /* raised clear of the *offWayScreen* */
+}
+
+
+rend|forelinker > a > targetPointer /* content is an arrow */
+{
+    margin-left: 2em;
+    opacity: 0;
+    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
+    transition: opacity 0.2s ease-out; /* property, duration, timing function */
+    transition-delay: 0.3s; /* avoid distracting flash on passing */
+}
+
+
+rend|forelinker > a:focus > targetPointer, /* † */
+rend|forelinker > a:hover > targetPointer
+{
+    opacity: 1;
+}
+  /* † Focus rule fails to apply opacity.  Chrome 59 fails entirely.
+       Firefox 52 fails only when *href* is local to document. */
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
+{
+    color: hsl(  36/*orange*/, 100%, 50% );
+}
+
+
+html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
+{
+    color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
+}
+
+
+html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
+html[rend|lighting='neon'] rend|forelinker > a > targetPointer
+{
+    color: hsl( 190/*∼cyan*/, 100%, 60% ); /* = BRIGHT_HYPERLINK */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
+{
+    color: hsl(  0/*red*/, 100%, 35% );
+}
+
+
+html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
+{
+    color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
+}
+
+
+html[rend|lighting='paper'] rend|forelinker > a:hover > verticalTruncator,
+html[rend|lighting='paper'] rend|forelinker > a > targetPointer
+{
+    color: hsl( 240/*blue*/, 100%, 50% ); /* = DARK_HYPERLINK */
+}
+
+
+
 /* ---  S t a r t   t a g  -----------------------------------------------------------------------------
  */
 
@@ -489,6 +607,140 @@ html[rend|lighting='paper'] step|* > eSTag eQName
 
 
 
+/* ---  T a r g e t   n o d e   ( w a y l i n k )  -----------------------------------------------------
+ */
+
+[rend|isTarget] > eSTag
+{
+    cursor: pointer; /* readable.js makes it a hyperlink */
+    position: relative; /* establish containing block for absolutely positioned children */
+}
+
+
+[rend|isTarget] > eSTag > /*liner*/svg
+{
+    cursor: default; /* click function not yet coded */
+    display: none; /* pending change by readable.js */
+    position: absolute; /* [SC] */
+    top: 0;             /* [SC], readable.js does further positioning */
+}
+
+
+[rend|isTarget] > eSTag > /*liner*/svg > /*edge mark*/circle
+{
+    fill: currentColor;
+}
+
+
+[rend|isTarget] > eSTag > /*liner*/svg > /*line*/path
+{
+    opacity: 0.5;
+    stroke: currentColor;
+}
+
+
+[rend|isTarget] > eSTag > targetMarker
+{
+    display: block; /* consistent with SVG liner, if for no other reason */
+    position: absolute;
+    top: 0;
+    left: -2.0em; /* TM_L */
+    width: 2.0em; /* abutting eSTag parent, avoiding distraction of cursor change across gap */
+}
+
+
+[rend|isWaybit]
+[rend|isTarget] > eSTag > targetMarker /* when it's an underbit */
+{
+    left: -3.5em; /* farther to better separate from overbit content */
+    width: 3.5em;
+}
+
+
+[rend|isWaybit] [rend|isComposer] >
+[rend|isTarget] > eSTag > targetMarker /* when moreover it's a topmost component */
+{
+    left: -2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no farther, as there's no direct overbit content */
+    width: 2.0em;
+}
+
+
+[rend|isTarget] > eSTag > targetMarker::before
+{
+    content: '\1f78b'; /* Unicode 1f78b (round target) */
+}
+[rend|isTarget][rend|isOrphan] > eSTag > targetMarker::before
+{
+    content: '\1f5d9'; /* Unicode 1f5d9 (cancellation X).  Changing? sync'd ← readable.js BREAK_SYMBOL. */
+}
+
+
+[rend|isTarget] > eSTag:hover > targetMarker
+{
+    z-index: 1; /* raised clear of the *offWayScreen* */
+}
+
+
+[rend|isTarget] > eSTag:hover > targetMarker,
+[rend|isTarget]:target > eSTag > targetMarker /* when it's hyperlink-targeted */
+{
+    opacity: 1 !important; /* indicate that it's targeted */
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*liner*/svg
+{
+    opacity: 0.50;
+}
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
+{
+    opacity: 0.25;
+}
+
+
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*edge mark*/circle
+{
+    fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
+}
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*line*/path
+{
+    stroke: hsl( 0, 80%, 80% );
+}
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+{
+    color:  hsl( 0, 80%, 80% );
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*liner*/svg
+{
+    opacity: 0.30;
+}
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
+{
+    opacity: 0.15;
+}
+
+
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*edge mark*/circle
+{
+    fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
+}
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*line*/path
+{
+    stroke: hsl( 0, 100%, 40% );
+}
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+{
+    color:  hsl( 0, 100%, 40% );
+}
+
+
+
 /* ---  t e x t - A l i g n e r  -----------------------------------------------------------------------
  */
 
@@ -528,200 +780,6 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
 
 
 
-/* ---  W a y l i n k   s o u r c e   n o d e  ---------------------------------------------------------
- */
-
-rend|forelinker > a
-{
-    text-decoration: none; /* override browser default, looks confusing in this composite hyperlink */
-}
-
-
-rend|forelinker > a:focus:not(:active)
-{
-    outline: none; /* defeat (Firefox) ∵ its coverage of verticalTruncator is awkward and distracting */
-}
-
-
-rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
-{
-    display: inline-block; /* enables *min-width* */
-    min-width: 2em; /* = VT_PAD × 2; enables *text-align* */
-    text-align: center; /* over the *directionIndicator* */
-}
-
-
-*:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
-rend|forelinker > a > br
-{
-    display: none; /* It happens that no text content precedes the injected *br* element.
-      Therefore let it collapse to nothing.  But not when the source node has a short name;
-      then the *br* is wanted to position the verticalTruncator below the node's start tag. */
-}
-*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
-rend|forelinker > a > verticalTruncator
-{
-    margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
-}
-
-
-rend|forelinker > a > verticalTruncator
-{
-    opacity: 0.4;
-    padding-left: 1em; /* VT_PAD; extra click surface + indentation beneath the overlying preview text */
-    position: relative; /* enabling *z-index* change on hover */
-}
-rend|forelinker > a:hover > verticalTruncator
-{
-    opacity: 1;
-    z-index: 1; /* raised clear of the *offWayScreen* */
-}
-
-
-rend|forelinker > a > directionIndicator /* content is an arrow */
-{
-    margin-left: 2em;
-    opacity: 0;
-    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
-    transition: opacity 0.2s ease-out; /* property, duration, timing function */
-    transition-delay: 0.3s; /* avoid distracting flash on passing */
-}
-
-
-rend|forelinker > a:focus > directionIndicator, /* † */
-rend|forelinker > a:hover > directionIndicator
-{
-    opacity: 1;
-}
-  /* † Focus rule fails to apply opacity.  Chrome 59 fails entirely.
-       Firefox 52 fails only when *href* is local to document. */
-
-
-/* - - -  neon   - - - - - - - - - - - -
- */
-html[rend|lighting='neon'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
-{
-    color: hsl(  36/*orange*/, 100%, 50% );
-}
-
-
-html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
-{
-    color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
-}
-
-
-html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
-html[rend|lighting='neon'] rend|forelinker > a > directionIndicator
-{
-    color: hsl( 190/*∼cyan*/, 100%, 60% ); /* = BRIGHT_HYPERLINK */
-}
-
-
-/* - - -  paper  - - - - - - - - - - - -
- */
-html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
-{
-    color: hsl(  0/*red*/, 100%, 35% );
-}
-
-
-html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
-{
-    color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
-}
-
-
-html[rend|lighting='paper'] rend|forelinker > a:hover > verticalTruncator,
-html[rend|lighting='paper'] rend|forelinker > a > directionIndicator
-{
-    color: hsl( 240/*blue*/, 100%, 50% ); /* = DARK_HYPERLINK */
-}
-
-
-
-/* ---  W a y l i n k   t a r g e t   n o d e  ---------------------------------------------------------
- */
-
-[rend|isTarget] > eSTag
-{
-    cursor: pointer; /* readable.js makes it a hyperlink */
-    position: relative; /* establish containing block for absolutely positioned *targetMarker* */
-}
-
-
-[rend|isTarget] > eSTag > targetMarker
-{
-    position: absolute;
-    left:         -2.0em; /* ∴ BODY_L ≥ 2.0em */
-    padding-right: 2.0em; /* Ensure overlap with eSTag parent,
-                 avoid distraction of cursor change across gap. */
-}
-
-
-[rend|isWaybit]
-[rend|isTarget] > eSTag > targetMarker /* when it's an underbit: */
-{
-    left:         -3.5em; /* farther to better separate from overbit content */
-    padding-right: 3.5em;
-}
-
-
-[rend|isWaybit] [rend|isComposer] >
-[rend|isTarget] > eSTag > targetMarker /* when moreover it's a topmost component: */
-{
-    left:         -2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no farther, as there's no direct overbit content */
-    padding-right: 2.0em;
-}
-
-
-[rend|isTarget] > eSTag > targetMarker::before
-{
-    content: '\1f78b'; /* Unicode 1f78b (round target) */
-}
-
-
-[rend|isTarget]:target > eSTag > targetMarker /* when it's hyperlink-targeted: */
-{
-    opacity: 1 !important; /* indicate that it's targeted */
-}
-
-
-[rend|isTarget][rend|isOrphan] > eSTag > targetMarker::before
-{
-    content: '\1f5d9'; /* Unicode 1f5d9 (cancellation X).  Changing? sync'd ← readable.js BREAK_SYMBOL. */
-}
-
-
-/* - - -  neon   - - - - - - - - - - - -
- */
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
-{
-    opacity: 0.5;
-}
-
-
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
-{
-    color: hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
-}
-
-
-/* - - -  paper  - - - - - - - - - - - -
- */
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
-{
-    opacity: 0.3;
-}
-
-
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
-{
-    color: hsl(  0, 100%, 40% ); /* = DARK_BREAK */
-}
-
-
-
 /* ---  W a y s c r i p t  -----------------------------------------------------------------------------
  */
 
@@ -747,10 +805,10 @@ html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarke
  *
  *  [CONS]  https://console.spec.whatwg.org/
  *
- *  [OWB]  These rules depend on a restricted placement of attribute *isOnWayBranch* that is guaranteed
- *         by readable.js, q.v. where it refers to this note.
- *
  *  [XMLN]  https://www.w3.org/TR/xml-names/
+ *
+ *  [SC]  Support for this CSS property seems to be undocumented.
+ *        https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  */
 
 

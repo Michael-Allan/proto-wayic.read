@@ -14,46 +14,57 @@
   *   The renderer introduces its own markup to the document which includes the following:
   *   (for the notation, see the key further below)
   *
-  *      * [rend:isOnWayBranch] - Whether this element (with all of its descendants) is on way [OWB]
+  *   Any element
+  *   - - - - - -
+  *      * [rend:isOnWayBranch] - Whether this element is (with all of its descendants) on way
   *
-  *      * in html:html
-  *          * [rend:lighting]  - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
+  *   html:html
+  *   - - - - -
+  *      * [rend:lighting]  - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
   *
-  *      * in html:body
-  *          * offWayScreen - Overlay screen for off-way styling, q.v. in readable.css.
+  *   html:body
+  *   - - - - -
+  *      * scene        - Document scene
+  *          * [id]     - '_wayic.read.document_scene'
+  *      * scene(s)     - Interlink scenes
+  *          * [class]  - 'interlink'
+  *      * offWayScreen - Overlay screen for off-way styling, q.v. in readable.css.
   *
-  *      * in wayscript element
-  *          * [rend:hasLeader]         - Whether the element has leading, non-whitespace text [BA]
-  *          * [rend:hasPreviewString]  - Whether it’s a waylink source node with a non-empty preview
-  *                                       of the target text
-  *          * [rend:hasShortName]  - Whether its rendered name is no longer than three characters
-  *          * [rend:isBroken]      - Whether it’s a waylink source node with a broken target reference
-  *          * [rend:isChangeable]  - Whether its rendering might later be changed
-  *          * [rend:isComposer]    - Whether it’s a composer element
-  *          * [rend:isEntagment]   - Whether it’s a waylink entagment
-  *          * [rend:isOrphan]      - Whether it’s a waylink target node without a source node
-  *          * [rend:isTarget]      - Whether it’s a waylink target node
-  *          * [rend:isWaybit]      - Whether it’s a waybit
-  *          * [rend:isWayscript]   - Whether it’s under a ‘data:,wayscript.’ namespace
+  *   Wayscript element
+  *   - - - - - - - - -
+  *      * [rend:hasLeader]         - Whether the element has leading, non-whitespace text [BA]
+  *      * [rend:hasPreviewString]  - Whether it’s a waylink source node with a non-empty preview
+  *                                   of the target text
+  *      * [rend:hasShortName]  - Whether its rendered name is no longer than three characters
+  *      * [rend:isBroken]      - Whether it’s a waylink source node with a broken target reference
+  *      * [rend:isChangeable]  - Whether its rendering might later be changed
+  *      * [rend:isComposer]    - Whether it’s a composer element
+  *      * [rend:isEntagment]   - Whether it’s a waylink entagment
+  *      * [rend:isOrphan]      - Whether it’s a waylink target node without a source node
+  *      * [rend:isTarget]      - Whether it’s a waylink target node
+  *      * [rend:isWaybit]      - Whether it’s a waybit
+  *      * [rend:isWayscript]   - Whether it’s under a ‘data:,wayscript.’ namespace
   *
-  *          * eSTag            - Start tag of an element, reproducing content that would otherwise
-  *                               be invisible except in the wayscript source
-  *              * targetMarker - Present if the element is a waylink target node
-  *              * eQName                   - Qualified name [XMLN] of the element
-  *                  * [rend:isAnonymous]   - Whether the local part is declared to be anonymous
-  *                  * ePrefix                  - Namespace prefix, if any
-  *                      * [rend:isAnonymous]   - Whether the prefix is declared to be anonymous
-  *                  * eLocalPart               - Local part of the name
+  *      * eSTag            - Start tag of an element, reproducing content that would otherwise
+  *                           be invisible except in the wayscript source
+  *          * eQName                   - Qualified name [XMLN] of the element
+  *              * [rend:isAnonymous]   - Whether the local part is declared to be anonymous
+  *              * ePrefix                  - Namespace prefix, if any
+  *                  * [rend:isAnonymous]   - Whether the prefix is declared to be anonymous
+  *              * eLocalPart               - Local part of the name
+  *          * svg:svg          - Target liner [NR], present if the element is a waylink target node
+  *             * svg:text
+  *             * svg:path
+  *          * targetMarker     - Target marker, likewise
   *
-  *          * textAligner  - Present if the element is a step
+  *      * textAligner  - Present if the element is a step
   *
-  *          * forelinker   - Hyperlink effector for a waylink source node
-  *              * html:a
-  *                  * preview  - Preview of the target text
-  *                  * html:br
-  *                  * verticalTruncator    - Basic indicator of the waylink as such
-  *                  * directionIndicator   - Hover indicator of the relative direction
-  *                                           to the target node
+  *      * forelinker   - Hyperlink effector for a waylink source node
+  *          * html:a
+  *              * preview  - Preview of the target text
+  *              * html:br
+  *              * verticalTruncator    - Indicating the source node as such (half a link)
+  *              * targetPointer        - Pointing to the target node (the other half)
   *
   *   Key to the notation above
   *   - - - - - - - - - - - - -
@@ -74,8 +85,8 @@
   *   Waylink target node (Element)
   *   - - - - - - - - - -
   *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
-  *       That's only its temporary use; later this property will instead point to
-  *       the HTML *section* element that encodes the target node's *interlink scene*.
+  *       That's only its temporary use; later this property will instead point to the *scene* element
+  *       that encodes the target node's interlink scene.
   *
   *
   * CONDITION
@@ -292,7 +303,7 @@
  //   */
  // function appendToStyleClass( element, names )
  // {
- //     var existingNames = element.className;
+ //     let existingNames = element.className;
  //     element.className = existingNames? existingNames + ' ' + names: names );
  // }
 
@@ -301,10 +312,10 @@
     /** Returns the given node if it looks like an element and has the right name,
       * otherwise returns null.
       *
-      *     @param node (Node)
       *     @param name (string) The expected value of the *localName* property.
+      *     @param node (Node)
       */
-    function asElementNamed( node, name ) { return name == node.localName? node: null; }
+    function asElementNamed( name, node ) { return name == node.localName? node: null; }
 
 
 
@@ -322,7 +333,7 @@
 
     /** The path to the base (root directory) of the waycast, without a trailing slash '/'.
       */
-    const CAST_BASE_PATH = ( function()
+    const CAST_BASE_PATH = ( ()=>
     {
         let path = '__UNDEFINED_repo_href__';
         const traversal = document.createTreeWalker( document.head, SHOW_ELEMENT );
@@ -343,7 +354,7 @@
 
         mal( 'Missing *cast* element in document *head*' );
         return path;
-    }() );
+    })();
 
 
         {
@@ -438,6 +449,25 @@
 
 
 
+    /** The location of present document (string) in normal URL form.
+      *
+      *     @see URIs#normalized
+      */
+    const DOCUMENT_LOCATION = ( ()=>
+    {
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        const wloc = window.location; // [WDL]
+        let loc = wloc.toString();
+        if( wloc.hash ) loc = URIs.defragmented( loc );
+        return URIs.normalized( loc ); // to be sure
+    })();
+
+
+
+    const DOCUMENT_SCENE_ID = '_wayic.read.document_scene';
+
+
+
     const ELEMENT = Node.ELEMENT_NODE;
 
 
@@ -452,21 +482,6 @@
       * of a waylink souce node.
       */
     const ELEMENT_NAME_UNCHANGED = '_iso';
-
-
-
-    /** The location of present document (string) in normal URL form.
-      *
-      *     @see URIs#normalized
-      */
-    const DOCUMENT_LOCATION = ( function()
-    {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-        const wloc = window.location; // [WDL]
-        let loc = wloc.toString();
-        if( wloc.hash ) loc = URIs.defragmented( loc );
-        return URIs.normalized( loc ); // to be sure
-    }() );
 
 
 
@@ -554,6 +569,10 @@
 
 
 
+    const NO_BREAK_SPACE = ' '; // Unicode a0
+
+
+
     /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
       */
     const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
@@ -575,6 +594,29 @@
     /** The XML namespace of steps.
       */
     const NS_STEP = NS_WAYSCRIPT_DOT + SUB_NS_STEP;
+
+
+
+    /** The XML namespace of SVG.
+      */
+    const NS_SVG = 'http://www.w3.org/2000/svg';
+
+
+
+    const PX_PER_EM = ( ()=>
+    {
+        const body = document.body;
+        const svg = body.appendChild( document.createElementNS( NS_SVG, 'svg' ));
+        svg.setAttribute( 'width', '100px' );  // ensure coordinate system is initialized [ICS]
+        svg.setAttribute( 'height', '100px' );
+        const line = svg.appendChild( document.createElementNS( NS_SVG, 'line' ));
+        const bV = line.x2.baseVal;
+        bV.newValueSpecifiedUnits( SVGLength.SVG_LENGTHTYPE_EMS, 1 );
+        bV.convertToSpecifiedUnits( SVGLength.SVG_LENGTHTYPE_PX );
+        const px = bV.valueInSpecifiedUnits; // captured before removal
+        body.removeChild( svg );
+        return px;
+    })();
 
 
 
@@ -620,7 +662,7 @@
 
       // Place the off-way screen
       // ------------------------
-        body.append( document.createElementNS( NS_REND, 'offWayScreen' ));
+        body.appendChild( document.createElementNS( NS_REND, 'offWayScreen' ));
 
       // Detect user's lighting preference
       // ---------------------------------
@@ -642,9 +684,9 @@
       // -------------------
         document.documentElement.setAttributeNS( NS_REND, 'lighting', lighting );
 
-      // Lay out and show
-      // ----------------
-        body.style.display = 'block'; // overriding readable.css 'none'
+      // Show document
+      // -------------
+        body.style.setProperty( 'display', 'block' ); // overriding readable.css 'none'
     }
 
 
@@ -658,7 +700,16 @@
     function transform()
     {
         const body = document.body;
-        const traversal = document.createTreeWalker( body, SHOW_ELEMENT, {
+        const scene = body.appendChild( document.createElementNS( NS_REND, 'scene' ));
+        scene.setAttribute( 'id', DOCUMENT_SCENE_ID );
+        for( ;; ) // wrap *body* content in *scene*
+        {
+            const c = body.firstChild;
+            if( c === scene ) break;
+
+            scene.appendChild( c );
+        }
+        const traversal = document.createTreeWalker( scene, SHOW_ELEMENT, {
             acceptNode: function( node )
             {
                 if( node.namespaceURI == NS_REND ) return NodeFilter.FILTER_REJECT; /* bypassing this
@@ -766,16 +817,16 @@
                 }
 
                 const preview = document.createElementNS( NS_REND, 'preview' );
-                const targetDocLoc = link.targetDocumentLocation;
+                const tDocLoc = link.targetDocumentLocation;
                 let targetPreviewString, targetDirectionChar;
                 targeting:
                 {
-                    if( targetDocLoc.length > 0 )
+                    if( tDocLoc.length > 0 )
                     {
-                        const targetDocLocN = URIs.normalized( targetDocLoc );
-                        if( targetDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
+                        const tDocLocN = URIs.normalized( tDocLoc );
+                        if( tDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
                         {
-                            OuterWaylinkResolver.registerLink( t, targetDocLocN );
+                            OuterWaylinkResolver.registerLink( t, tDocLocN );
                             targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
                             partRendering.isChangeable = true;
                             targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
@@ -788,7 +839,7 @@
                     if( target ) targetDirectionChar = '↑'; // '↑' is Unicode 2191 (upwards arrow)
                     else // it should be in nodes below, where transform has yet to reach it and set its 'id'
                     {
-                        const traversal = document.createTreeWalker( body, SHOW_ELEMENT ); // search for it
+                        const traversal = document.createTreeWalker( scene, SHOW_ELEMENT ); // search for it
                         let u = lastNode( traversal );        // from last node
                         for(;; u = traversal.previousNode() ) // travel upward
                         {
@@ -816,16 +867,16 @@
                 }
                 const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
-                a.setAttribute( 'href', targetDocLoc + '#' + link.targetID );
+                a.setAttribute( 'href', tDocLoc + '#' + link.targetID );
                 a.appendChild( preview );
                 preview.appendChild( document.createTextNode( targetPreviewString ));
                 configureForTargetPreview( t, preview, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
-                  .appendChild( document.createTextNode( '⋱⋱' ));
+                 .appendChild( document.createTextNode( '⋱⋱' ));
                     // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
-                a.appendChild( document.createElementNS( NS_REND, 'directionIndicator' ))
-                  .appendChild( document.createTextNode( targetDirectionChar ));
+                a.appendChild( document.createElementNS( NS_REND, 'targetPointer' ))
+                 .appendChild( document.createTextNode( targetDirectionChar ));
             }
 
 
@@ -839,8 +890,11 @@
                 t.setAttributeNS( NS_REND, 'isTarget', 'isTarget' );
                 t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // till proven otherwise
                 Documents.idAsHyperlinkToo( t, lidV );
-                const tM = document.createElementNS( NS_REND, 'targetMarker' );
-                eSTag.insertBefore( tM, eSTag.firstChild );
+                const targetMarker = document.createElementNS( NS_REND, 'targetMarker' );
+                targetMarker.appendChild( document.createTextNode( NO_BREAK_SPACE )); /* to be sure;
+                  see readable.css for the visible content */
+                TargetLining.appendNewLiner( eSTag, targetMarker );
+                eSTag.appendChild( targetMarker );
                 Targets.initTarget( t, eSTag, /*idV*/lidV ); // idV = lidV ensured by ↖ idAsHyperlinkToo
             }
             else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
@@ -878,7 +932,7 @@
                     // Let the leader align neatly with the content of the start tag as it would in
                     // the source.  Let it even *abut* the start tag (see the example in readable.css).
                     // Do this by shipping the leader nodes into the start tag.
-                    const eQName = eSTag.firstChild;
+                    const eQName = asElementNamed( 'eQName', eSTag.firstChild );
                     do
                     {
                         const nNext = n.nextSibling;
@@ -1276,11 +1330,9 @@
 
                 // No need here to fend against other types of malformed link declaration.
                 // Rather take it as the wayscribe intended.
-                let targetDocLoc = link.targetDocumentLocation;
-                if( !targetDocLoc ) targetDocLoc = docLoc;
-
-                targetDocLoc = URIs.normalized( targetDocLoc );
-                if( targetDocLoc != DOCUMENT_LOCATION ) continue;
+                let tDocLoc = link.targetDocumentLocation;
+                tDocLoc = tDocLoc? URIs.normalized(tDocLoc): docLoc;
+                if( tDocLoc != DOCUMENT_LOCATION ) continue;
 
                 const target = document.getElementById( link.targetID ); // assumes TARGID
                 if( !target) continue;
@@ -1575,7 +1627,7 @@
         function setTargetPreview( sourceNode, newPreviewString )
         {
             const forelinker = sourceNode.lastChild;
-            const preview = asElementNamed( forelinker.firstChild/*a*/.firstChild, 'preview' );
+            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
             const previewText = preview.firstChild;
             previewText.replaceData( 0, previewText.length, newPreviewString );
             configureForTargetPreview( sourceNode, preview, newPreviewString );
@@ -1597,19 +1649,19 @@
         /** Tells this resolver of an outer link to be resolved.
           *
           *     @param sourceNode (Element) A source node that has an outer target.
-          *     @param targetDocLoc (string) The document location in normal URL form.
+          *     @param tDocLoc (string) The document location in normal URL form.
           *
           *     @see URIs#normalized
           */
-        that.registerLink = function( sourceNode, targetDocLoc )
+        that.registerLink = function( sourceNode, tDocLoc )
         {
-            if( URIs.isDetectedAbnormal( targetDocLoc )) throw URIs.message_abnormal( targetDocLoc );
+            if( URIs.isDetectedAbnormal( tDocLoc )) throw URIs.message_abnormal( tDocLoc );
 
-            let sourceNodes = sourceNodeRegistry.get( targetDocLoc );
+            let sourceNodes = sourceNodeRegistry.get( tDocLoc );
             if( sourceNodes === undefined )
             {
                 sourceNodes = [];
-                sourceNodeRegistry.set( targetDocLoc, sourceNodes );
+                sourceNodeRegistry.set( tDocLoc, sourceNodes );
             }
             sourceNodes.push( sourceNode );
         };
@@ -1625,9 +1677,9 @@
             const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
             for( const entry of sourceNodeRegistry )
             {
-                const targetDocLoc = entry[0];
+                const tDocLoc = entry[0];
                 const sourceNodes = entry[1];
-                Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
+                Documents.readNowOrLater( tDocLoc, new class extends DocumentReader
                 {
                     close( docReg )
                     {
@@ -1635,14 +1687,14 @@
                         {
                             for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
                         }
-                        sourceNodeRegistry.delete( targetDocLoc );
+                        sourceNodeRegistry.delete( tDocLoc );
                     }
 
-                    read( docReg, targetDoc )
+                    read( docReg, tDoc )
                     {
                       // Try to resolve waylinks, re-rendering the source node of each
                       // -----------------------
-                        const traversal = targetDoc.createNodeIterator( targetDoc, SHOW_ELEMENT );
+                        const traversal = tDoc.createNodeIterator( tDoc, SHOW_ELEMENT );
                         tt: for( ;; ) // seek the target nodes in *that* document [OWR]
                         {
                             const target = traversal.nextNode();
@@ -1672,7 +1724,7 @@
                               // De-register it
                               // --------------
                                 sourceNodes.splice( s, /*removal count*/1 );
-                                if( sourceNodes.length == 0 ) break tt; // done with this targetDoc
+                                if( sourceNodes.length == 0 ) break tt; // done with this tDoc
 
                             } while( --s >= 0 )
                         }
@@ -1803,8 +1855,8 @@
                 lp = '●'; // Unicode 25cf (black circle)
                 eQName.setAttributeNS( NS_REND, 'isAnonymous', 'isAnonymous' );
             }
-            else if( lp.charAt(0) != '_' ) lp = lp.replace( /_/g, ' ' ); /* If it starts with a non-
-              underscore, which hopefully means it has some letters or other visible content,
+            else if( lp.charAt(0) != '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE ); /* If it starts
+              with a non-underscore, which hopefully means it has some letters or other visible content,
               then replace any underscores with nonbreaking spaces for sake of readability. */
             eLocalPart.appendChild( document.createTextNode( lp ));
 
@@ -1845,7 +1897,7 @@
         constructor( element )
         {
             super( element );
-            const eSTag = asElementNamed( element.firstChild, 'eSTag' );
+            const eSTag = asElementNamed( 'eSTag', element.firstChild );
             if( !eSTag ) throw 'Missing eSTag';
 
             element.removeChild( eSTag );
@@ -1857,6 +1909,202 @@
         }
 
     }
+
+
+
+   // ==================================================================================================
+
+
+    /** Vector graphics and scene switching for waylink target nodes.<pre>
+      *
+      *                                 marker          start tag
+      *                target liner        ╲               ╱
+      *        ┌——————————————————————————┐ ╲             ╱
+      *                                      ╲  1waybit  ╱
+      *                                       ╲         ╱                           ┐
+      *         ∙ ·  ·   ·    ·     ·          ·    2target                         │ target
+      *        ╱       │                                Second waybit text content  │  node
+      *       ╱        │                        3waybit                             ┘
+      *      ╱         │                            Third waybit text content
+      *     ╱   ∙ ·  · │ ·    ·              ·  4target
+      *   edge         │                            Fourth waybit text content
+      *   mark       target
+      *               line
+      *
+      * </pre><p>On the pointer (↖) crossing any DOM-formal part of the start tag,
+      * including the target liner, the target marker reveals itself in full:</p><pre>
+      *
+      *                                         1waybit
+      *
+      *         ∙ ·  ·   ·    ·     ·          ◉    2target
+      *                      ↖                          Second waybit text content
+      *                                         3waybit
+      *                                             Third waybit text content
+      *         ∙ ·  ·   ·    ·              ·  4target
+      *                                             Fourth waybit text content
+      * </pre>
+      */
+    const TargetLining = ( function()
+    {
+
+        const that = {}; // the public interface of TargetLining
+
+        // Dimensions and coordinates are given in pixel units, except where marked otherwise.
+
+
+
+        const EDGE_MARK_WIDTH = 0.3/*em*/ * PX_PER_EM;
+
+        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
+
+
+
+        /** The allowance for rounding errors and other imprecisions in graphics rendering.
+          */
+        const GRAPHICAL_ERROR_MARGIN = 0.01;
+
+
+
+        const LINE_MARGIN = 2/*em*/ * PX_PER_EM;
+
+
+
+        /** The maximum, formal gap between the liner and the marker to its right.  The *visual* gap
+          * may be wider depending on how the liner draws its content.
+          */
+        const MAX_GAP = 1.5/*em*/ * PX_PER_EM; // Wherein the pointer style defaults, indicating that
+                                               // the two components have distinct control functions.
+
+
+        const MIN_CLICK_WIDTH_EM = 0.8; // Changing? sync'd → readable.css
+
+
+
+        /** The minimum, formal gap between the liner and the marker to its right.
+          */
+        const MIN_GAP_EM = 0.6; // Changing? sync'd → readable.css
+
+        const MIN_GAP = MIN_GAP_EM * PX_PER_EM;
+
+
+
+        const MIN_WIDTH = MIN_CLICK_WIDTH_EM * PX_PER_EM;
+
+            { console.assert( EDGE_MARK_WIDTH - MIN_WIDTH /* error */ <= GRAPHICAL_ERROR_MARGIN, A ); }
+
+
+
+        /** Draws or redraws the given target liner, and sets it displayable if it wasn't.
+          *
+          *     @param liner (SVGSVGElement) The target liner.
+          *     @param markerVpBounds (DOMRectReadOnly) The bounds within the scroller's viewport of
+          *       the associated target marker.  If undefined, then this parameter is determined anew.
+          */
+        function redraw( liner,
+          markerVpBounds = asElementNamed('targetMarker',liner.nextSibling).getBoundingClientRect() )
+        {
+            let displayStyle = 'none'; // default
+            try
+            {
+              // Fit within left margin
+              // ----------------------
+                let width;
+                {
+                    const scrollX = window.scrollX;
+                    const tagVpBounds = liner.parentNode/*eSTag*/.getBoundingClientRect();
+                    const tagMargin = tagVpBounds.left + scrollX;
+                    liner.style.setProperty( 'left'/*[SC]*/, -tagMargin + 'px' );
+                    const markerMargin = markerVpBounds.left + scrollX;
+                    const availableGap = markerMargin - MIN_WIDTH;
+                    if( MIN_GAP - availableGap /* error */ > GRAPHICAL_ERROR_MARGIN )
+                    {
+                        console.assert( false, AA + 'availableGap ' + availableGap + ' ≥ MIN_GAP ' + MIN_GAP );
+                        return;
+                    }
+
+                    const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
+                    width = markerMargin - gap;
+                }
+                liner.setAttribute( 'width', width + 'px' );
+
+              // Span height of marker  (as opposed to the whole tag, which might have multiple lines)
+              // ---------------------
+                const height = markerVpBounds.height;
+                liner.setAttribute( 'height', height + 'px' );
+
+              // Draw the line
+              // -------------
+                const midY = height / 2; // vertically centered
+                {
+                    const line = asElementNamed( 'path', liner.lastChild );
+                    const startX = width - width / 4;
+                    const lineWidth = startX - LINE_MARGIN;
+                    let display = 'inline';
+                    if( lineWidth < LINE_MARGIN ) display = 'none';
+                    else line.setAttribute( 'd',
+                      // [PD]         X            Y
+                      //         -----------      ----
+                         'M ' +    startX + ' ' + midY
+                      + ' H ' +  LINE_MARGIN
+                      );
+                    line.style.display = display;
+                }
+
+              // Draw the edge mark
+              // ------------------
+                const mark = asElementNamed( 'circle', liner.firstChild );
+                mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
+                mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // abutting the document edge
+                mark.setAttribute( 'cy', midY + 'px' );
+
+              // Ensure the liner is visible
+              // ---------------------------
+                displayStyle = 'block'; // overriding readable.css 'none'
+            }
+            finally { liner.style.setProperty( 'display', displayStyle ); }
+        }
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Constructs a target liner (*svg* element) and appends it to the given start tag.
+          *
+          *     @param eSTag (Element) The start tag of the target node.
+          *     @param targetMarker (Element) The associated target marker.
+          */
+        that.appendNewLiner = function( eSTag, targetMarker )
+        {
+          // Construct and append
+          // --------------------
+            const liner = eSTag.appendChild( document.createElementNS( NS_SVG, 'svg' ));
+            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // edge mark
+            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // line
+
+          // Show
+          // ----
+            tryShow();
+            function tryShow( _msTime = null )
+            {
+                const markerVpBounds = targetMarker.getBoundingClientRect();
+                if( markerVpBounds.width )
+                {
+                    redraw( liner, markerVpBounds );
+                    window.addEventListener( 'resize', ()=>{redraw(liner);} );
+                }
+                else window.requestAnimationFrame( tryShow ); // wait for the marker to get laid
+            }
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
+
 
 
 
@@ -1908,15 +2156,17 @@
 
         function handleClick( event )
         {
-            const view = document.scrollingElement;
+            let e = event.target; // clicked element
+            if( e.namespaceURI == NS_SVG ) return; // target liner, click function not yet coded
+
+            while( e.localName != 'eSTag' ) e = e.parentNode; // rising from the clicked child
+            const targetNode = e.parentNode;
+
+            const view = document.scrollingElement; // within the viewport
             const scrollTopWas = view.scrollTop;
             const scrollLeftWas = view.scrollLeft;
 
-            let eSTag = event.target;
-            while( eSTag.localName != 'eSTag' ) eSTag = eSTag.parentNode; // rising from the clicked child
-            const targetNode = eSTag.parentNode;
-
-          // Toggle the browser location  targeted ⇄ untargeted
+          // Toggle the browser location, targeted ⇄ untargeted
           // ---------------------------
             const wloc = window.location; // [WDL]
             if( targetNode == targetFormallyTargeted ) // then transit targeted → untargeted
@@ -1930,7 +2180,7 @@
             }
             else wloc.hash = targetNode.getAttribute( 'id' ); // untargeted → targeted
 
-          // Stabilize the view
+          // Stabilize the view within the viewport
           // ------------------
             view.scrollTop = scrollTopWas;
             view.scrollLeft = scrollLeftWas;
@@ -2021,22 +2271,26 @@
 
 
 
+        const MESSAGE_NO_BODY = 'Malformed document: Missing HTML *body* element';
+
+
+
         /** Constructs a trace leg identifier (string) for the specified target.
           * Each trace leg is scoped to single DOM branch exclusive of waylinks.
           *
-          *     @param targetDocLoc (string) The target document location in normal URL form.
+          *     @param tDocLoc (string) The target document location in normal URL form.
           *     @param targetID (string)
           */
-        function newLegID( targetDocLoc, targetID )
+        function newLegID( tDocLoc, targetID )
         {
-            if( targetDocLoc == ROOT_DOCUMENT_LOCATION ) return ROOT_LEG_ID;
+            if( tDocLoc == ROOT_DOCUMENT_LOCATION ) return ROOT_LEG_ID;
               // All targets of the root document are here assigned the same identifier.  This can be
               // understood either (a) logically as a consequence of the exception of tracing the root
               // document as a whole in a single leg, all of a piece; or (b) practically as a method of
               // helping the code to isolate the root targets for special treatment (basically to ignore
               // them) and so to shield itself from the consequences of this exception.
 
-            return targetDocLoc + '#' + targetID;
+            return tDocLoc + '#' + targetID;
         }
 
 
@@ -2064,8 +2318,8 @@
 
 
 
-        /** The identifier of the root leg of the trace.  The root leg comprises the *body* element
-          * of the root document as a whole.
+        /** The identifier of the root leg of the trace.  The root leg comprises the root document
+          * as a whole.
           */
         const ROOT_LEG_ID = 'ROOT'; // unlike other legs, which are identified by target URL
 
@@ -2108,48 +2362,16 @@
           *     @see #newLegID
           *     @param branch (Element) Base element of the branch that comprises the leg.
           *     @param docReg (DocumentRegistration)
-          *     @param isEmbodied (boolean) Whether the branch lies leafward of the HTML body.
           */
-        function traceLeg( legID, branch, docReg, isEmbodied = true )
+        function traceLeg( legID, branch, docReg )
         {
-            const doc = branch.ownerDocument;
-        //  if( doc == document ) console.debug( '\t\t\t(in present document)' ); // TEST
             const docLoc = docReg.location;
-            let marker;
-            if( isEmbodied )
+            const doc = branch.ownerDocument;
+            if( doc == document )
             {
-              // Shield the trace work with a rootward scan to the *body* element
-              // ------------------------------------------
-                for( let r = branch;; ) // this cannot be the *body* yet [OWB] so immediately:
-                {
-                    r = r.parentNode;
-                    const ns = r.namespaceURI;
-                    if( ns == null ) // then r is the document node
-                    {
-                        mal( 'Malformed document: Missing HTML *body* element: ' + docLoc );
-                        break;
-                    }
-
-                    if( isBitNS( ns ))
-                    {
-                        const lidV = r.getAttributeNS( NS_COG, 'lid' );
-                        if( !lidV ) continue;
-
-                        if( isShut( newLegID( docLoc, lidV ))) return; /* If only for sake of efficiency,
-                          ∵ the whole branch is already covered (or will be) as part of a larger branch. */
-                    }
-                    else if( r.localName == 'body' && ns == NS_HTML ) break;
-                }
-                marker = branch;
+                branch.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
+             // console.debug( '\t\t\t(in present document)' ); // TEST
             }
-            else marker = doc.documentElement; // [OWB]
-
-          // Mark the branch *on way*
-          // ------------------------
-            marker.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
-
-          // Trace the branch
-          // ----------------
             const traversal = doc.createTreeWalker( branch, SHOW_ELEMENT );
             for( ;; )
             {
@@ -2167,48 +2389,75 @@
 
                     // No need here to fend against other types of malformed declaration.
                     // Rather let the trace extend as the wayscribe intended.
-                    let targetDocLoc = link.targetDocumentLocation;
-                    if( !targetDocLoc ) targetDocLoc = docLoc;
-
-                    targetDocLoc = URIs.normalized( targetDocLoc );
+                    let tDocLoc = link.targetDocumentLocation;
+                    tDocLoc = tDocLoc? URIs.normalized(tDocLoc): docLoc;
                     const targetID = link.targetID;
-                    const targetLegID = newLegID( targetDocLoc, targetID );
+                    const targetLegID = newLegID( tDocLoc, targetID );
                     if( wasOpened( targetLegID )) break source;
 
                     openLeg( targetLegID );
-                    Documents.readNowOrLater( targetDocLoc, new class extends DocumentReader
+                    Documents.readNowOrLater( tDocLoc, new class extends DocumentReader
                     {
-                        close( docReg )
+                        close( tDocReg )
                         {
-                            if( docReg.document == null ) shutLeg( targetLegID );
+                            if( tDocReg.document == null ) shutLeg( targetLegID );
                             // else readDirectly has (or will) shut it
                         }
 
-                        read( docReg, targetDoc ) /* The call to this method might come now or later,
+                        read( tDocReg, tDoc ) /* The call to this method might come now or later,
                           but the method itself ensures that any actual reading is done only later,
                           after the present leg is fully traced and marked shut.  Thus it enables
                           optimizations elsewhere in the code that depend on such ordering. */
                         {
                             const wasCalledLate = isShut( legID );
                             const readMethod = wasCalledLate? this.readDirectly: this.readLater;
-                            readMethod.call( this, docReg, targetDoc );
+                            readMethod.call( this, tDocReg, tDoc );
                         }
 
-                        readDirectly( docReg, targetDoc )
+                        readDirectly( tDocReg, tDoc )
                         {
-                            const target = Documents.getTargetById( targetID, targetDoc ); // assumes TARGID
-                            if( target ) traceLeg( targetLegID, target, docReg );
+                            const target = Documents.getTargetById( targetID, tDoc ); // assumes TARGID
+                            subTrace: if( target )
+                            {
+                              // Shield the sub-trace work with a rootward scan
+                              // ----------------------------------------------
+                                for( let r = target;; )
+                                {
+                                    r = r.parentNode;
+                                    const ns = r.namespaceURI;
+                                    if( ns == null ) // then r is the document node
+                                    {
+                                        mal( MESSAGE_NO_BODY + ': ' + tDocLoc );
+                                        break;
+                                    }
+
+                                    if( isBitNS( ns ))
+                                    {
+                                        const lidV = r.getAttributeNS( NS_COG, 'lid' );
+                                        if( !lidV ) continue;
+
+                                        if( isShut( newLegID( tDocLoc, lidV ))) break subTrace;
+                                          // If only for sake of efficiency, ∵ this target branch is
+                                          // already covered (or will be) as part of a larger branch.
+                                    }
+                                    else if( r.localName == 'body' && ns == NS_HTML ) break;
+                                }
+
+                              // Sub-trace
+                              // ---------
+                                traceLeg( targetLegID, target, tDocReg );
+                            }
                             else console.warn( 'Broken waylink truncates trace at leg: ' + targetLegID );
                             shutLeg( targetLegID );
                         }
 
-                        readLater( docReg, targetDoc )
+                        readLater( tDocReg, tDoc )
                         {
-                         // setTimeout( this.readDirectly, /*delay*/0, docReg, targetDoc );
+                         // setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
                          /// but more efficiently (as a microtask) and properly bound as a method call:
                             Promise.resolve().then( function()
                             {
-                                this.readDirectly( docReg, targetDoc );
+                                this.readDirectly( tDocReg, tDoc );
                             }.bind( this ));
 
                             // This merely postpones execution till (I think) the end of the current
@@ -2255,21 +2504,24 @@
                 close( docReg ) { shutLeg( id ); }
                 read( docReg, doc )
                 {
-                    const traversal = doc.createTreeWalker( doc.documentElement, SHOW_ELEMENT );
-                    for( let t = traversal.nextNode();; t = traversal.nextSibling() )
+                    const html = doc.documentElement;
+                    let t; // element to trace
+                    if( doc == document ) t = document.getElementById( DOCUMENT_SCENE_ID );
+                    else // find the *body* element
                     {
-                        if( t == null )
+                        const traversal = doc.createTreeWalker( html, SHOW_ELEMENT );
+                        for( t = traversal.nextNode();; t = traversal.nextSibling() )
                         {
-                            mal( 'Unable to trace: the root document has no body: ' + ROOT_DOCUMENT_LOCATION );
-                            break;
-                        }
+                            if( t == null )
+                            {
+                                mal( 'Unable to trace: ' + MESSAGE_NO_BODY + ': ' + ROOT_DOCUMENT_LOCATION );
+                                return;
+                            }
 
-                        if( t.localName == 'body' && t.namespaceURI == NS_HTML )
-                        {
-                            traceLeg( id, t, docReg, /*isEmbodied*/false );
-                            break;
+                            if( t.localName == 'body' && t.namespaceURI == NS_HTML ) break;
                         }
                     }
+                    traceLeg( id, t, docReg );
                 }
             });
         };
@@ -2296,20 +2548,28 @@
   *  [C2] The constructor of PartRenderingC2 must remove all such markup.
   *
   *  [F]  Documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
-  *       See support file _wayic.read_local_access.xht.
+  *       See support file _wayic.read.local_access.xht.
   *
   *  [HI]  https://www.w3.org/TR/html5/browsers.html#the-history-interface
   *
+  *  [ICS]  https://www.w3.org/TR/SVG11/coords.html#InitialCoordinateSystem
+  *
   *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [OWB]  Attribute *isOnWayBranch* is restricted to the *html* element (the document element),
-  *         and to descendants of the *body* element.  This restriction is assumed by readable.css,
-  *         q.v. where it refers to this note.
+  *  [NR]  Here avoiding NS_REND in favour of a standard element such as HTML or SVG.
+  *        This is for sake of standard properties such as *style*, which NS_REND elements lack.
   *
   *  [OWR]  OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
   *         with the source nodes and sought the target of each using (new) Documents.getTargetById.
   *
-  *  [WDL]  Either 'document.location' or 'window.location', they are identical.
+  *  [PD]  The path data could instead be defined using the new SVGPathData interface.
+  *        But this (array-form instead of string-form definition) wouldn’t help enough to outweigh
+  *        the bother of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
+  *
+  *  [SC]  Support for this CSS property seems to be undocumented.
+  *        https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
+  *
+  *  [WDL]  Either ‘document.location’ or ‘window.location’, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
   */
 
