@@ -49,7 +49,7 @@
  *
  * TROUBLESHOOTING
  * ---------------
- *   This renderer reports problems it detects to the browser’s debugging console. [CONS]
+ *   This renderer reports problems it detects to the browser’s debugging console. [CON]
  *
  *   Direct rendering from the file system
  *   - - - - - - - - - - - - - - - - - - -
@@ -57,7 +57,7 @@
  *   you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
- *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked '⋯?⋯'.
+ *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked ‘⋯?⋯’.
  *   See support file local_access/_wayic.read.local_access.html for instructions on dealing with this.
  *
  *
@@ -178,7 +178,7 @@ html|a
 
 *:not(rend|forelinker) > html|a::after
 {
- /* This trailing asterisk cannot raise itself clear of the *offWayScreen* as it would like to,
+ /* This trailing asterisk cannot raise itself clear of the *offWayScreen* as it would like to, viz.
     instantly on hover.  Rather it must wait for the parent *a* element to raise itself.  The parent
     has set an initial *z-index* value and thereby created a stacking context in which this asterisk
     is now trapped.  A possible workaround is for the parent to animate its *z-index* in key frames,
@@ -247,13 +247,13 @@ html[rend|lighting='paper'] *:not(rend|forelinker) > html|a::after
 }
 
 
-*[rend|isComposer] > eSTag eQName > ePrefix
+*[rend|isComposer] > eSTag > eQName > ePrefix
 {
     display: none; /* assume that it's uninformative */
 }
 
 
-*[rend|isComposer] > eSTag eQName::after
+*[rend|isComposer] > eSTag > eQName::after
 {
     content: ':';
 }
@@ -327,8 +327,8 @@ rend|scene#_wayic\.read\.document_scene
 {
     margin: 3em auto 5em auto; /* TRBL */
     max-width: 50em;
-    padding: 0 0.7em 0 3.4em; /* TRBL, where L = MIN_CLICK_WIDTH_EM + MIN_GAP_EM - TM_L,
-                                       and the *_EM components are defined in readable.js */
+    padding: 0 0.7em 0 3.4rem; /* TRBL, where L = MIN_CLICK_WIDTH_REM + MIN_GAP_REM + ICON_W,
+                                        and the *_REM components are defined in readable.js */
 }
 
 
@@ -372,13 +372,12 @@ rend|forelinker > a > verticalTruncator
 
 rend|forelinker > a > verticalTruncator
 {
-    opacity: 0.4;
     padding-left: 1em; /* VT_PAD; extra click surface + indentation beneath the overlying preview text */
     position: relative; /* enabling *z-index* change on hover */
 }
 rend|forelinker > a:hover > verticalTruncator
 {
-    opacity: 1;
+    opacity: 1 !important;
     z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
@@ -416,6 +415,12 @@ html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
 }
 
 
+html[rend|lighting='neon'] rend|forelinker > a > verticalTruncator
+{
+    opacity: 0.4;
+}
+
+
 html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
 html[rend|lighting='neon'] rend|forelinker > a > targetPointer
 {
@@ -437,6 +442,12 @@ html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
 }
 
 
+html[rend|lighting='paper'] rend|forelinker > a > verticalTruncator
+{
+    opacity: 0.2;
+}
+
+
 html[rend|lighting='paper'] rend|forelinker > a:hover > verticalTruncator,
 html[rend|lighting='paper'] rend|forelinker > a > targetPointer
 {
@@ -455,19 +466,19 @@ rend|eSTag
 }
 
 
-rend|eSTag eQName
+rend|eSTag > eQName
 {
     outline-offset: 0.2em;
 }
 
 
-rend|eSTag eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
+rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
 {
     cursor: default; /* defeat text cursor to avoid flash on passing, which distracts */
 }
 
 
-*:target > rend|eSTag eQName /* for a targeted waybit, whether targeted as a waylink or hyperlink */
+*:target > rend|eSTag > eQName /* for a targeted waybit, whether targeted as a waylink or hyperlink */
 {
     animation-duration: /*descreen*/3s, /*flashFade*/2s;
     position: relative; /* enabling *z-index* for the descreening animation */
@@ -476,7 +487,7 @@ rend|eSTag eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *:target > rend|eSTag eQName
+html[rend|lighting='neon'] *:target > rend|eSTag > eQName
 {
     animation-name: descreen, flashFade_outline_bright; /* as a target locator */
 }
@@ -484,7 +495,7 @@ html[rend|lighting='neon'] *:target > rend|eSTag eQName
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *:target > rend|eSTag eQName
+html[rend|lighting='paper'] *:target > rend|eSTag > eQName
 {
     animation-name: descreen, flashFade_outline_dark; /* as a target locator */
 }
@@ -498,7 +509,7 @@ html[rend|lighting='paper'] *:target > rend|eSTag eQName
  *
  * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
  * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method used by the old composer elements [COMP],
+ * then consider switching to the simpler, more direct method of the defunct composer elements [DCE],
  * namely shipping the leading flow content into the start tag.  A drawback would be the loss
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
@@ -538,28 +549,28 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 /* ---  S t e p  ---------------------------------------------------------------------------------------
  */
 
-step|* > eSTag eQName
+step|* > eSTag > eQName
 {
     border-radius: 0.15em / 15%; /* H / V */
     padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is inline, */
 }        /* -------- -------- --------             but rather cause overlapping, ∴ constraints STEP_PAD_*.
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
-step|* > eSTag eQName > ePrefix,
-step|* > eSTag eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then */
+step|* > eSTag > eQName > ePrefix,
+step|* > eSTag > eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then */
 {                                                           /* it renders as a mere bullet */
     font-weight: bold;
 }
 
 
-step|* > eSTag eQName > ePrefix[rend|isAnonymous],
-step|* > eSTag eQName:not([rend|isAnonymous]) > ePrefix
+step|* > eSTag > eQName > ePrefix[rend|isAnonymous],
+step|* > eSTag > eQName:not([rend|isAnonymous]) > ePrefix
 {
     display: none; /* let the local part stand alone */
 }
 
 
-step|* > eSTag eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLocalPart
+step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLocalPart
 {
     display: none; /* let the prefix stand alone */
 }
@@ -576,7 +587,7 @@ html[rend|lighting='neon'] step|* > eSTag
 }
 
 
-html[rend|lighting='neon'] step|* > eSTag eQName
+html[rend|lighting='neon'] step|* > eSTag > eQName
 {
                color: hsl(  0, 0%,   0% );
     background-color: hsla( 0, 0%, 100%, 0.45 );
@@ -595,7 +606,7 @@ html[rend|lighting='paper'] step|* > eSTag
 }
 
 
-html[rend|lighting='paper'] step|* > eSTag eQName
+html[rend|lighting='paper'] step|* > eSTag > eQName
 {
     /* prominence for the steps, making them stand out at a glance from the other waybits */
     background-color: hsla( 0, 0%, 100%, 0.40 );
@@ -612,103 +623,91 @@ html[rend|lighting='paper'] step|* > eSTag eQName
 
 [rend|isTarget] > eSTag
 {
-    cursor: pointer; /* readable.js makes it a hyperlink */
     position: relative; /* establish containing block for absolutely positioned children */
 }
 
 
-[rend|isTarget] > eSTag > /*liner*/svg
+[rend|isTarget] > eSTag > /*marginalis*/div
 {
-    cursor: default; /* click function not yet coded */
-    display: none; /* pending change by readable.js */
-    position: absolute; /* [SC] */
-    top: 0;             /* [SC], readable.js does further positioning */
+    position: absolute; top: 0; /* further placement deferred to readable.js */
+    visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
+      Its layout depends on the size of the icon child, however, so don't use display 'none' here. */
 }
 
 
-[rend|isTarget] > eSTag > /*liner*/svg > /*edge mark*/circle
+[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
+{
+    position: absolute; top: 0; left: 0; /* [HSP] sizing deferred to readable.js */
+}
+
+
+[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
 {
     fill: currentColor;
 }
 
 
-[rend|isTarget] > eSTag > /*liner*/svg > /*line*/path
+[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
 {
     opacity: 0.5;
     stroke: currentColor;
 }
 
 
-[rend|isTarget] > eSTag > targetMarker
+[rend|isTarget] > eSTag > /*marginalis*/div > icon
 {
-    display: block; /* consistent with SVG liner, if for no other reason */
     position: absolute;
-    top: 0;
-    left: -2.0em; /* TM_L */
-    width: 2.0em; /* abutting eSTag parent, avoiding distraction of cursor change across gap */
+    top: 0; right: 0;
+    width: 2.0rem; /* ICON_W.  It determines the visual gap between the left-aligned content
+      of the icon and that of the tag name to its right. */
 }
 
 
 [rend|isWaybit]
-[rend|isTarget] > eSTag > targetMarker /* when it's an underbit */
+[rend|isTarget] > eSTag > /*marginalis*/div > icon /* when it's an underbit */
 {
-    left: -3.5em; /* farther to better separate from overbit content */
-    width: 3.5em;
+    width: 3.5em; /* wider to better separate from overbit content */
 }
 
 
 [rend|isWaybit] [rend|isComposer] >
-[rend|isTarget] > eSTag > targetMarker /* when moreover it's a topmost component */
+[rend|isTarget] > eSTag > /*marginalis*/div > icon /* when moreover it's a topmost component */
 {
-    left: -2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no farther, as there's no direct overbit content */
-    width: 2.0em;
+    width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there's no direct overbit content */
 }
 
 
-[rend|isTarget] > eSTag > targetMarker::before
+[rend|isTarget] > eSTag > /*marginalis*/div > icon::before
 {
     content: '\1f78b'; /* Unicode 1f78b (round target) */
 }
-[rend|isTarget][rend|isOrphan] > eSTag > targetMarker::before
+[rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
 {
     content: '\1f5d9'; /* Unicode 1f5d9 (cancellation X).  Changing? sync'd ← readable.js BREAK_SYMBOL. */
 }
 
 
-[rend|isTarget] > eSTag:hover > targetMarker
-{
-    z-index: 1; /* raised clear of the *offWayScreen* */
-}
-
-
-[rend|isTarget] > eSTag:hover > targetMarker,
-[rend|isTarget]:target > eSTag > targetMarker /* when it's hyperlink-targeted */
-{
-    opacity: 1 !important; /* indicate that it's targeted */
-}
-
-
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*liner*/svg
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.50;
 }
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > targetMarker
+html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.25;
 }
 
 
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*edge mark*/circle
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
 }
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*line*/path
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 80%, 80% );
 }
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 80%, 80% );
 }
@@ -716,27 +715,81 @@ html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*liner*/svg
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.30;
 }
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > targetMarker
+html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.15;
 }
 
 
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*edge mark*/circle
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
 }
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*liner*/svg > /*line*/path
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 100%, 40% );
 }
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > targetMarker
+html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 100%, 40% );
+}
+
+
+
+/* ---  T a r g e t   n o d e   ( w a y l i n k )  --  s e l f - h y p e r l i n k i n g  --------------
+ */
+
+[rend|isTarget] > eSTag > /*marginalis*/div > icon,
+[rend|isTarget] > eSTag > eQName
+{
+    cursor: pointer; /* has click function, as per readable.js TargetControl handleClick */
+}
+
+
+[rend|isTarget] > eSTag > eQName
+{
+    position: relative; /* enabling *z-index* change on hover */
+    transition-property:           z-index;
+    transition-duration:                0s;
+    transition-timing-function: step-start;
+    transition-delay:                 0.6s; /* avoid distracting flash on passing */
+    z-index: 0; /* so enabling its transition, which the default does not */
+}
+
+
+[rend|isTarget] > eSTag > eQName:hover,
+                       /* … icon:hover ~ eQName, *//* in lieu of which [GSC], readable.js does: */
+[rend|isTarget] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'],
+[rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+{
+    z-index: 1; /* raised clear of the *offWayScreen* */
+}
+
+
+[rend|isTarget]:target > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path,
+[rend|isTarget]:target > eSTag > /*marginalis*/div > icon
+{
+    opacity: 1 !important;
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon'] [rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+{
+    opacity: 0.7;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper'] [rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+{
+    opacity: 0.5;
 }
 
 
@@ -795,20 +848,27 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
 
 /* NOTES
  * -----
- *  [BA]  A boolean attribute such as [rend|isFoo] either has the same value as the local part
- *        (‘isFoo’) of its name, meaning true; or the attribute is not present, meaning false.
+ *  [C]  · Class selectors.  These fail for NS_REND elements under Chrome (59).  Instead select
+ *         the class of NS_REND element using the general attribute selector [class~='CLASS'].
  *
- *  [C]  Class selectors are failing for non-HTML elements under Chrome (59).  Therefore this style
- *       sheet selects non-HTML elements using a more general attribute selector: [class~='CLASS'].
+ *  [DCE]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
  *
- *  [COMP]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
+ *  [CON]  Console.  https://console.spec.whatwg.org/
  *
- *  [CONS]  https://console.spec.whatwg.org/
+ *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
+ *         “general sibling combinator” is really rather particular in its application, in that it
+ *         can only combine siblings in document order.  It cannot express a combination like this:
  *
- *  [XMLN]  https://www.w3.org/TR/xml-names/
+ *           parent > subsequentSibling ~ priorSibling
  *
- *  [SC]  Support for this CSS property seems to be undocumented.
- *        https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
+ *         https://www.w3.org/TR/css3-selectors/#general-sibling-combinators
+ *
+ *  [HSP]  HTML-embedded styling property.  The SVG standard appears to grant the *svg* element
+ *         no such styling property.  Nevertheless the browsers are obeying it,
+ *         at least when the *svg* element is embedded in HTML.
+ *         https://www.w3.org/TR/SVG11/struct.html#SVGElement
+ *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
+ *         http://w3c.github.io/html/semantics-embedded-content.html#svg
  */
 
 

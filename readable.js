@@ -16,66 +16,65 @@
   *
   *   Any element
   *   - - - - - -
-  *      * [rend:isOnWayBranch] - Whether this element is (with all of its descendants) on way
+  *      * [isOnWayBranch] · Whether this element is (with all of its descendants) on way
   *
   *   html:html
   *   - - - - -
-  *      * [rend:lighting]  - Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
+  *      * [lighting] · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
   *
   *   html:body
   *   - - - - -
-  *      * scene        - Document scene
-  *          * [id]     - '_wayic.read.document_scene'
-  *      * scene(s)     - Interlink scenes
-  *          * [class]  - 'interlink'
-  *      * offWayScreen - Overlay screen for off-way styling, q.v. in readable.css.
+  *      * scene      · Document scene
+  *          * [:id]    · ‘_wayic.read.document_scene’
+  *      * scene…        · Interlink scenes
+  *          * [:class]  · ‘interlink’
+  *      * offWayScreen  · Overlay screen for off-way styling, q.v. in readable.css.
   *
   *   Wayscript element
   *   - - - - - - - - -
-  *      * [rend:hasLeader]         - Whether the element has leading, non-whitespace text [BA]
-  *      * [rend:hasPreviewString]  - Whether it’s a waylink source node with a non-empty preview
-  *                                   of the target text
-  *      * [rend:hasShortName]  - Whether its rendered name is no longer than three characters
-  *      * [rend:isBroken]      - Whether it’s a waylink source node with a broken target reference
-  *      * [rend:isChangeable]  - Whether its rendering might later be changed
-  *      * [rend:isComposer]    - Whether it’s a composer element
-  *      * [rend:isEntagment]   - Whether it’s a waylink entagment
-  *      * [rend:isOrphan]      - Whether it’s a waylink target node without a source node
-  *      * [rend:isTarget]      - Whether it’s a waylink target node
-  *      * [rend:isWaybit]      - Whether it’s a waybit
-  *      * [rend:isWayscript]   - Whether it’s under a ‘data:,wayscript.’ namespace
+  *      * [hasLeader]        · Has leading, non-whitespace text?  [BA]
+  *      * [hasPreviewString] · Is a waylink source node with a non-empty preview of the target text?
+  *      * [hasShortName]     · Has a rendered name no longer than three characters?
+  *      * [isBroken]        · Is a waylink source node with a broken target reference?
+  *      * [isChangeable]   · Has a rendering that might later change?
+  *      * [isComposer]    · Is a composer element?
+  *      * [isEntagment]  · Is a waylink entagment?
+  *      * [isOrphan]    · Is a waylink target node without a source node?
+  *      * [isTarget]   · Is a waylink target node?
+  *      * [isWaybit]    · Is a waybit?
+  *      * [isWayscript]  · Is under a ‘data:,wayscript.’ namespace?
   *
-  *      * eSTag            - Start tag of an element, reproducing content that would otherwise
-  *                           be invisible except in the wayscript source
-  *          * eQName                   - Qualified name [XMLN] of the element
-  *              * [rend:isAnonymous]   - Whether the local part is declared to be anonymous
-  *              * ePrefix                  - Namespace prefix, if any
-  *                  * [rend:isAnonymous]   - Whether the prefix is declared to be anonymous
-  *              * eLocalPart               - Local part of the name
-  *          * svg:svg          - Target liner [NR], present if the element is a waylink target node
-  *             * svg:text
-  *             * svg:path
-  *          * targetMarker     - Target marker, likewise
+  *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
+  *                      except in the wayscript source
+  *          * eQName            · Qualified name [XN] of the element
+  *              * [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
+  *              * ePrefix           · Namespace prefix, if any
+  *                  * [isAnonymous]  · Has a prefix that is declared to be anonymous?
+  *              * eLocalPart        · Local part of the name
+  *          * html:div             · Marginalis (if element is a waylink target node).  [NNR, ODO]
+  *              * svg:svg        · Target liner
+  *                 * svg:path   · Line
+  *                 * svg:circle · Edge mark
+  *              * icon          ·
   *
-  *      * textAligner  - Present if the element is a step
+  *      * textAligner · (if element is a step)
   *
-  *      * forelinker   - Hyperlink effector for a waylink source node
-  *          * html:a
-  *              * preview  - Preview of the target text
-  *              * html:br
-  *              * verticalTruncator    - Indicating the source node as such (half a link)
-  *              * targetPointer        - Pointing to the target node (the other half)
+  *      * forelinker             · Hyperlink effector (if element is a waylink source node)
+  *          * html:a              ·
+  *              * preview          · Preview of the target text
+  *              * html:br           ·
+  *              * verticalTruncator · Indicating the source node as such (half a link)
+  *              * targetPointer     · Pointing to the target node (the other half)
   *
   *   Key to the notation above
   *   - - - - - - - - - - - - -
-  *      * blah         - Element ‘blah’ in namespace NS_REND, the default in this notation
-  *      * foo:bar      - Element ‘bar’ in namespace NS_*FOO*
-  *          * [attrib]     - Attribute of the element in no namespace
-  *          * [foo:attrib] - Attribute of the element in namespace NS_*FOO*
-  *          * foo:baz      - Child element ‘baz’
+  *      * blah         · Element ‘blah’ in namespace NS_REND, the default in this notation
+  *      * foo:bar        · Element ‘bar’ in namespace NS_*FOO*
+  *          * [:attrib]    · Attribute of the element in no namespace
+  *          * [foo:attrib] · Attribute of the element in namespace NS_*FOO*
+  *          * foo:baz      · Child element ‘baz’
   *
-  *      In this notation: unless otherwise marked, an element’s namespace is NS_REND (prefixed ‘rend’)
-  *      and an attribute’s is none.
+  *      Unless otherwise marked, the namespace of an element or attribute is NS_REND.
   *
   *
   * DOM EXTENSION
@@ -85,17 +84,17 @@
   *   Waylink target node (Element)
   *   - - - - - - - - - -
   *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
-  *       That's only its temporary use; later this property will instead point to the *scene* element
-  *       that encodes the target node's interlink scene.
+  *       That’s only its temporary use; later this property will instead point to the *scene* element
+  *       that encodes the target node’s interlink scene.
   *
   *
   * CONDITION
   * ---------
   *   The following named condition is asserted at whatever point in the code it applies:
   *
-  *     TARGID  (of a document)  Every waylink target node of the document has
-  *             an HTML *id* attribute equal in value to its wayscript *lid* attribute.
-  *         Where the document is unspecified, this condition refers to the present document.
+  *     TARGID (of a document)  Every waylink target node of the document has
+  *            an HTML *id* attribute equal in value to its wayscript *lid* attribute.
+  *            Where the document is unspecified, this condition refers to the present document.
   *
   *
   * NOTES  (continued at bottom)
@@ -485,6 +484,17 @@
 
 
 
+    /** Returns the CSS *em* length of the given element, which is defined as its *font-size*.
+      *
+      *     @see https://www.w3.org/TR/css-values/#em
+      */
+    function emLength( element )
+    {
+        return parseFloat( getComputedStyle(element).getPropertyValue( 'font-size' ));
+    }
+
+
+
     /** Returns the first child of the given node that is a waybit.
       */
     function firstWaybitChild( node )
@@ -502,6 +512,12 @@
       * A null result is unreliable until the present document has TARGID.
       */
     function getTargetById( id ) { return Documents.getTargetById( id, document ); }
+
+
+
+    /** The allowance for rounding errors and other imprecisions in graphics rendering.
+      */
+    const GRAPHICAL_ERROR_MARGIN = 0.01;
 
 
 
@@ -603,23 +619,6 @@
 
 
 
-    const PX_PER_EM = ( ()=>
-    {
-        const body = document.body;
-        const svg = body.appendChild( document.createElementNS( NS_SVG, 'svg' ));
-        svg.setAttribute( 'width', '100px' );  // ensure coordinate system is initialized [ICS]
-        svg.setAttribute( 'height', '100px' );
-        const line = svg.appendChild( document.createElementNS( NS_SVG, 'line' ));
-        const bV = line.x2.baseVal;
-        bV.newValueSpecifiedUnits( SVGLength.SVG_LENGTHTYPE_EMS, 1 );
-        bV.convertToSpecifiedUnits( SVGLength.SVG_LENGTHTYPE_PX );
-        const px = bV.valueInSpecifiedUnits; // captured before removal
-        body.removeChild( svg );
-        return px;
-    })();
-
-
-
     /** Reads the previewable text content of the given target node.
       *
       *     @param target (Element) The waylink target node.
@@ -632,6 +631,14 @@
         LeaderReader.read( target );
         return LeaderReader.leader;
     }
+
+
+
+    /** The CSS *rem* length.
+      *
+      *     @see https://www.w3.org/TR/css-values/#rem
+      */
+    const REM = emLength( /*root element*/document.documentElement );
 
 
 
@@ -890,12 +897,19 @@
                 t.setAttributeNS( NS_REND, 'isTarget', 'isTarget' );
                 t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // till proven otherwise
                 Documents.idAsHyperlinkToo( t, lidV );
-                const targetMarker = document.createElementNS( NS_REND, 'targetMarker' );
-                targetMarker.appendChild( document.createTextNode( NO_BREAK_SPACE )); /* to be sure;
-                  see readable.css for the visible content */
-                TargetLining.appendNewLiner( eSTag, targetMarker );
-                eSTag.appendChild( targetMarker );
-                Targets.initTarget( t, eSTag, /*idV*/lidV ); // idV = lidV ensured by ↖ idAsHyperlinkToo
+
+              // Marginalis
+              // ----------
+                const marginalis = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
+                marginalis.appendChild( TargetLining.newLiner() );
+                marginalis.appendChild( document.createElementNS( NS_REND, 'icon' ))
+                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // to be sure
+                    // see readable.css for the *visible* content
+                Marginalia.layWhen( marginalis, eSTag );
+
+              // -----
+                TargetControl.addControls( t, eSTag, /*idV*/lidV );
+                  // that idV = lidV is assured by idAsHyperlinkToo, further above
             }
             else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
             {
@@ -954,6 +968,15 @@
             }
         }
     }
+
+
+
+    /** The empty string as a parameter for CSSStyleDeclaration.setProperty,
+      * which instead has the effect of *removeProperty*.
+      *
+      *     @see https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-setproperty
+      */
+    const UNSET_STYLE = '';
 
 
 
@@ -1232,11 +1255,11 @@
 
               // load
               // - - -
-                req.onload = function( e )
+                req.onload = function( event )
                 {
-                    // If this listener is registered instead by req.addEventListener,
-                    // then oddly Firefox (52) rejects even in-branch local requests. [F]
-                    const doc = e.target.response;
+                    // If this listener is registered instead by req.addEventListener, then augmented
+                    // local access fails on Firefox (52), even the in-branch requests. [ALA]
+                    const doc = event.target.response;
                     docReg.document = doc;
 
                   // Set the *id* attribute of each waylink target node
@@ -1257,9 +1280,9 @@
                 /** @param e (Event) This is a mere ProgressEvent, at least on Firefox,
                   *   which itself contains no useful information.
                   */
-                req.onloadend = function( e )
+                req.onloadend = function( _event/*ignored*/ )
                 {
-                    // Parameter *e* is a ProgressEvent, which contains no useful information.
+                    // Parameter *_event* is a ProgressEvent, which contains no useful information.
                     // If more information is ever needed, then it might be obtained from req.status,
                     // or the mere fact of a call to req.error (see listener req.onerror, above).
 
@@ -1609,6 +1632,161 @@
    // ==================================================================================================
 
 
+    /** Dealing with marginalia, singular 'marginalis'.  The marginalis is a logical component of
+      * the start tag (*eSTag*) in waylink target nodes.  Nonetheless it lies to the left of the tag,
+      * where it spans the distance from the page edge to the tag.<pre>
+      *
+      *        ┌—————————— marginalis —————————————┐
+      *                                       icon         tag name
+      *        ┌—————— target liner ——————┐  ┌—————┐       ╱
+      *                                                   ╱
+      *                                         1waybit  ╱
+      *                                                 ╱
+      *     [   ∙ ·  ·   ·    ·     ·         ·     2target             ]
+      *        ╱       │                                2target content
+      *       ╱        │                        3waybit
+      *      ╱         │                            3waybit content
+      *     ╱   ∙ ·  · │ ·    ·             ·   4target
+      *   edge         │                            4target content
+      *   mark       target
+      *               line
+      *
+      * </pre><p>On the pointer (↖) crossing any DOM-formal part of the start tag,
+      * which includes the target liner, the target icon reveals itself in full:</p><pre>
+      *
+      *                                         1waybit
+      *
+      *         ∙ ·  ·   ·    ·     ·         ◉     2target
+      *                      ↖                          2target content
+      *                                         3waybit
+      *                                             3waybit content
+      *         ∙ ·  ·   ·    ·             ·   4target
+      *                                             4target content
+      * </pre>
+      */
+    const Marginalia = ( function()
+    {
+
+        const that = {}; // the public interface of Marginalia
+
+
+
+        /** Lays or re-lays the given marginalis.
+          *
+          *     @param marginalis (Element)
+          *     @param tagVpBounds (DOMRectReadOnly) The bounds within the scroller's viewport
+          *       of the parent start tag.  If undefined, then this parameter is determined anew.
+          */
+        function lay( marginalis, tagVpBounds = marginalis.parentNode.getBoundingClientRect() )
+        {
+            let s; // style
+
+          // Span the left margin from page edge to tag
+          // --------------------
+            const width = tagVpBounds.left + window.scrollX;
+            s = marginalis.style;
+            s.setProperty( 'left', -width + 'px' );
+            s.setProperty( 'width', width + 'px' );
+
+          // Clamp down on the icon (child)
+          // ----------------------
+            const iconVpBounds = marginalis.lastChild/*icon*/.getBoundingClientRect();
+            const height = iconVpBounds.height;
+            if( !height ) throw 'Target icon is unlaid';
+
+            s.setProperty( 'height', height + 'px' );
+
+          // Lay the liner (child)
+          // -------------
+            const liner = marginalis.firstChild;
+            s = liner.style;
+            const iconX = width - iconVpBounds.width;
+            const availableGap/*liner ↔ icon*/ = iconX - TargetLining.MIN_WIDTH;
+            if( MIN_GAP - availableGap > GRAPHICAL_ERROR_MARGIN )
+            {
+                console.error( 'Marginalis availableGap ' + availableGap + ' < MIN_GAP ' + MIN_GAP );
+                s.setProperty( 'display', 'none' );
+                return;
+            }
+
+            const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
+              // allowing it to expand up to MAX_GAP, if that much is available
+            const lineWidth = iconX - gap;
+            s.setProperty( 'width', lineWidth + 'px' ); // [HSP]
+            s.setProperty( 'height',   height + 'px' );
+         // liner.setAttribute( 'width', lineWidth );
+         // liner.setAttribute( 'height',   height );
+         /// a failed attempt to fix the liner.getBBox failure in TargetLining, q.v.
+            s.setProperty( 'display', UNSET_STYLE ); // to whatever it was
+            TargetLining.redraw( liner, lineWidth, height );
+        }
+
+
+
+        /** The maximum, formal gap between the liner child and the icon to its right.
+          * The *visual* gap may be wider depending on how the liner draws its content.
+          */
+        const MAX_GAP = 1.5/*rem*/ * REM; // Within which the pointer style defaults, so indicating
+                                         // that the two components have distinct control functions.
+
+
+        /** The minimum, formal gap between the liner child and the icon to its right.
+          */
+        const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
+
+        const MIN_GAP = MIN_GAP_REM * REM;
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Ensures the given marginalis will be laid and shown.
+          *
+          *     @param marginalis (HTMLElement)
+          *     @param eSTag (Element) The start tag beside which to lay it.
+          */
+        that.layWhen = function( marginalis, eSTag )
+        {
+         // window.requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry.
+            window.setTimeout( layIf, 50/*ms*/ ); // Give the browser a breather.
+            let pollCount = 0;
+            function layIf( _msTime/*ignored*/ )
+            {
+                const tagVpBounds = eSTag.getBoundingClientRect();
+                if( tagVpBounds.width ) // then the tag is laid
+                {
+                  // Lay the marginalis and show it
+                  // ------------------------------
+                    lay( marginalis, tagVpBounds );
+                    marginalis.style.setProperty( 'visibility', 'visible' ); // overriding readable.css
+
+                  // Ensure it re-lays itself as needed
+                  // ------------------------
+                    window.addEventListener( 'resize', (e)=>{lay(marginalis);} );
+                }
+                else if( pollCount <= 3 )
+                {
+                    ++pollCount;
+                    window.requestAnimationFrame( layIf ); // wait for the tag to get laid
+                }
+                else console.error( "Cannot lay marginalis, start tag isn't being laid" );
+            }
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
     /** A device to complete the rendering of outer waylinks, those whose target nodes are outside
       * of the present document.  It fetches the documents, reads their target nodes and amends
       * the rendered wayscript accordingly.
@@ -1912,303 +2090,170 @@
 
 
 
-   // ==================================================================================================
-
-
-    /** Vector graphics and scene switching for waylink target nodes.<pre>
-      *
-      *                                 marker          start tag
-      *                target liner        ╲               ╱
-      *        ┌——————————————————————————┐ ╲             ╱
-      *                                      ╲  1waybit  ╱
-      *                                       ╲         ╱                           ┐
-      *         ∙ ·  ·   ·    ·     ·          ·    2target                         │ target
-      *        ╱       │                                Second waybit text content  │  node
-      *       ╱        │                        3waybit                             ┘
-      *      ╱         │                            Third waybit text content
-      *     ╱   ∙ ·  · │ ·    ·              ·  4target
-      *   edge         │                            Fourth waybit text content
-      *   mark       target
-      *               line
-      *
-      * </pre><p>On the pointer (↖) crossing any DOM-formal part of the start tag,
-      * including the target liner, the target marker reveals itself in full:</p><pre>
-      *
-      *                                         1waybit
-      *
-      *         ∙ ·  ·   ·    ·     ·          ◉    2target
-      *                      ↖                          Second waybit text content
-      *                                         3waybit
-      *                                             Third waybit text content
-      *         ∙ ·  ·   ·    ·              ·  4target
-      *                                             Fourth waybit text content
-      * </pre>
-      */
-    const TargetLining = ( function()
-    {
-
-        const that = {}; // the public interface of TargetLining
-
-        // Dimensions and coordinates are given in pixel units, except where marked otherwise.
-
-
-
-        const EDGE_MARK_WIDTH = 0.3/*em*/ * PX_PER_EM;
-
-        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
-
-
-
-        /** The allowance for rounding errors and other imprecisions in graphics rendering.
-          */
-        const GRAPHICAL_ERROR_MARGIN = 0.01;
-
-
-
-        const LINE_MARGIN = 2/*em*/ * PX_PER_EM;
-
-
-
-        /** The maximum, formal gap between the liner and the marker to its right.  The *visual* gap
-          * may be wider depending on how the liner draws its content.
-          */
-        const MAX_GAP = 1.5/*em*/ * PX_PER_EM; // Wherein the pointer style defaults, indicating that
-                                               // the two components have distinct control functions.
-
-
-        const MIN_CLICK_WIDTH_EM = 0.8; // Changing? sync'd → readable.css
-
-
-
-        /** The minimum, formal gap between the liner and the marker to its right.
-          */
-        const MIN_GAP_EM = 0.6; // Changing? sync'd → readable.css
-
-        const MIN_GAP = MIN_GAP_EM * PX_PER_EM;
-
-
-
-        const MIN_WIDTH = MIN_CLICK_WIDTH_EM * PX_PER_EM;
-
-            { console.assert( EDGE_MARK_WIDTH - MIN_WIDTH /* error */ <= GRAPHICAL_ERROR_MARGIN, A ); }
-
-
-
-        /** Draws or redraws the given target liner, and sets it displayable if it wasn't.
-          *
-          *     @param liner (SVGSVGElement) The target liner.
-          *     @param markerVpBounds (DOMRectReadOnly) The bounds within the scroller's viewport of
-          *       the associated target marker.  If undefined, then this parameter is determined anew.
-          */
-        function redraw( liner,
-          markerVpBounds = asElementNamed('targetMarker',liner.nextSibling).getBoundingClientRect() )
-        {
-            let displayStyle = 'none'; // default
-            try
-            {
-              // Fit within left margin
-              // ----------------------
-                let width;
-                {
-                    const scrollX = window.scrollX;
-                    const tagVpBounds = liner.parentNode/*eSTag*/.getBoundingClientRect();
-                    const tagMargin = tagVpBounds.left + scrollX;
-                    liner.style.setProperty( 'left'/*[SC]*/, -tagMargin + 'px' );
-                    const markerMargin = markerVpBounds.left + scrollX;
-                    const availableGap = markerMargin - MIN_WIDTH;
-                    if( MIN_GAP - availableGap /* error */ > GRAPHICAL_ERROR_MARGIN )
-                    {
-                        console.assert( false, AA + 'availableGap ' + availableGap + ' ≥ MIN_GAP ' + MIN_GAP );
-                        return;
-                    }
-
-                    const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
-                    width = markerMargin - gap;
-                }
-                liner.setAttribute( 'width', width + 'px' );
-
-              // Span height of marker  (as opposed to the whole tag, which might have multiple lines)
-              // ---------------------
-                const height = markerVpBounds.height;
-                liner.setAttribute( 'height', height + 'px' );
-
-              // Draw the line
-              // -------------
-                const midY = height / 2; // vertically centered
-                {
-                    const line = asElementNamed( 'path', liner.lastChild );
-                    const startX = width - width / 4;
-                    const lineWidth = startX - LINE_MARGIN;
-                    let display = 'inline';
-                    if( lineWidth < LINE_MARGIN ) display = 'none';
-                    else line.setAttribute( 'd',
-                      // [PD]         X            Y
-                      //         -----------      ----
-                         'M ' +    startX + ' ' + midY
-                      + ' H ' +  LINE_MARGIN
-                      );
-                    line.style.display = display;
-                }
-
-              // Draw the edge mark
-              // ------------------
-                const mark = asElementNamed( 'circle', liner.firstChild );
-                mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
-                mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // abutting the document edge
-                mark.setAttribute( 'cy', midY + 'px' );
-
-              // Ensure the liner is visible
-              // ---------------------------
-                displayStyle = 'block'; // overriding readable.css 'none'
-            }
-            finally { liner.style.setProperty( 'display', displayStyle ); }
-        }
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Constructs a target liner (*svg* element) and appends it to the given start tag.
-          *
-          *     @param eSTag (Element) The start tag of the target node.
-          *     @param targetMarker (Element) The associated target marker.
-          */
-        that.appendNewLiner = function( eSTag, targetMarker )
-        {
-          // Construct and append
-          // --------------------
-            const liner = eSTag.appendChild( document.createElementNS( NS_SVG, 'svg' ));
-            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // edge mark
-            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // line
-
-          // Show
-          // ----
-            tryShow();
-            function tryShow( _msTime = null )
-            {
-                const markerVpBounds = targetMarker.getBoundingClientRect();
-                if( markerVpBounds.width )
-                {
-                    redraw( liner, markerVpBounds );
-                    window.addEventListener( 'resize', ()=>{redraw(liner);} );
-                }
-                else window.requestAnimationFrame( tryShow ); // wait for the marker to get laid
-            }
-        };
-
-
-
-       // - - -
-
-        return that;
-
-    }() );
-
-
-
 
    // ==================================================================================================
 
 
-    /** Dealing with waylink target nodes.
+    /** The control of self hyperlinking and scene switching for waylink target nodes.
       */
-    const Targets = ( function()
+    const TargetControl = ( function()
     {
 
-        const that = {}; // the public interface of Targets
+        const that = {}; // the public interface of TargetControl
 
 
 
-        /** Returns the fragment part of window.location without the preceding delimiter character '#',
-          * or null if the fragment part is missing.  Caches the return value in *idActuallyTargetedC*.
+        /** @param event (MouseEvent) A click event from within the start tag.
           */
-        function idActuallyTargeted()
+        function hearClick( event )
         {
-            const hash = window.location.hash; // [WDL]
-            idActuallyTargetedC = hash.length == 0? null: hash.slice(1);
-            return idActuallyTargetedC;
-        }
+            const eSTag = event.currentTarget; // where listening
+            const eClicked = event.target;    // what got clicked
 
+          // Empty container space clicked?  no function
+          // ---------------------
+            const eClickedNS = eClicked.namespaceURI;
+            if( eClickedNS == NS_HTML ) // marginalis
+            {
+                console.assert( eClicked.parentNode == eSTag && eClicked.localName == 'div', A );
+                return;
+            }
 
+            if( eClicked == eSTag ) return;
 
-        /** Cache of the last value returned from *idActuallyTargeted*.
-          */
-        let idActuallyTargetedC; { idActuallyTargeted(); }
+          // Target liner clicked?  function is scene switching
+          // ------------
+            const targetNode = eSTag.parentNode; // *waylink* target node
+            if( eClickedNS == NS_SVG ) // target liner
+            {
+                if( targetNode != nodeTargeted ) return; // switch is disabled
 
+                const wloc = window.location; // [WDL]
+                const u = new URL( wloc.toString() );
+                u.hash = ''; // remove the fragment
+                const pp = u.searchParams;
+                pp.set( 'sc', 'inter' );
+                pp.set( 'link', targetNode.getAttributeNS(NS_COG,'lid') );
+                const h = window.history;
+             // h.replaceState( /*same*/h.state, /*same*/document.title, u.href ); // TEST
+                return;
+            }
 
-
-        function formAsTargeted( target ) // companion to 'target:' rules in readable.css
-        {
-            // Pending a distinction of targeted and untargeted forms, which is expected in future,
-            // simply register the formal fact:
-            targetFormallyTargeted = target;
-        }
-
-
-
-        function formAsUntargeted( target )
-        {
-            if( target == targetFormallyTargeted ) targetFormallyTargeted = null;
-        }
-
-
-
-        function handleClick( event )
-        {
-            let e = event.target; // clicked element
-            if( e.namespaceURI == NS_SVG ) return; // target liner, click function not yet coded
-
-            while( e.localName != 'eSTag' ) e = e.parentNode; // rising from the clicked child
-            const targetNode = e.parentNode;
-
+          // Icon or tag name clicked: Function is self hyperlinking
+          // ----------------
             const view = document.scrollingElement; // within the viewport
             const scrollTopWas = view.scrollTop;
             const scrollLeftWas = view.scrollLeft;
 
-          // Toggle the browser location, targeted ⇄ untargeted
-          // ---------------------------
+          // toggle the browser location, targeted ⇄ untargeted
+          // - - - - - - - - - - - - - -
             const wloc = window.location; // [WDL]
-            if( targetNode == targetFormallyTargeted ) // then transit targeted → untargeted
+            if( targetNode == nodeTargeted ) // then transit targeted → untargeted
             {
                 wloc.hash = ''; // navigating to the untargeted location, no URI fragment in address bar
                 const loc = wloc.toString();
                 if( loc.endsWith( '#' )) // Then it left the fragment delimiter hanging there, visible,
                 {                 // like the grin of the Cheshire Cat (Firefox, Chrome).  Remove it:
-                    history.replaceState( /*same*/history.state, /*same*/document.title, loc.slice(0,-1) );
+                    const h = window.history;
+                    h.replaceState( /*same*/h.state, /*same*/document.title, loc.slice(0,-1) );
                 }
             }
             else wloc.hash = targetNode.getAttribute( 'id' ); // untargeted → targeted
 
-          // Stabilize the view within the viewport
-          // ------------------
+          // stabilize the view within the viewport
+          // - - - - - - - - - -
             view.scrollTop = scrollTopWas;
             view.scrollLeft = scrollLeftWas;
         }
 
 
 
-        /** The waylink target node that was actually hyperlink targeted by the browser
-          * and remains visibly formed as such, or null if there is none.
-          *
-          *     @see #idActuallyTargeted
+        /** The *eQName* element that was assigned a special *id* attribute for styling purposes,
+          * or null if there is none.
           */
-        let targetFormallyTargeted = null;
+        let hearMouse_eQNameIdentified = null; /* This approach to styling is a workaround for the
+          problem that *style* attributes are unsupported for NS_REND elements, such as *eQName*. */
+
+
+            /** @param event (MouseEvent) A mouse event from the target icon.
+              * @return The corresponding *eQName* element.
+              */
+            function hearMouse_eQName( event )
+            {
+                const icon = event.currentTarget; // where listening
+                return asElementNamed( 'eQName', icon.parentNode/*marginalis*/.previousSibling );
+            }
+
+
+            function hearMouse_unidentify( eQName )
+            {
+                eQName.removeAttribute( 'id' );
+                hearMouse_eQNameIdentified = null;
+            }
+
+
+            /** @param event (MouseEvent) A 'mouseenter' event from the target icon.
+              */
+            function hearMouseEnter( event )
+            {
+                if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
+                  // preclude duplication, to be sure
+                const eQName = hearMouse_eQName( event );
+                eQName.setAttribute( 'id', '_wayic.read.TargetControl.iconHover' );
+                hearMouse_eQNameIdentified = eQName;
+            }
+
+
+            /** @param event (MouseEvent) A 'mouseleave' event from the target icon.
+              */
+            function hearMouseLeave( event ) { hearMouse_unidentify( hearMouse_eQName( event )); }
+
+
+
+        /** The *id* that is hyperlink-targeted by the browser.
+          * Returns the fragment part of window.location without the preceding delimiter character '#',
+          * or null if the fragment part is missing.  Caches the return value in *idTargetedC*.
+          */
+        function idTargeted()
+        {
+            const hash = window.location.hash; // [WDL]
+            idTargetedC = hash.length == 0? null: hash.slice(1);
+            return idTargetedC;
+        }
+
+
+
+        /** Cache of the last value returned from *idTargeted*.
+          */
+        let idTargetedC; { idTargeted(); }
+
+
+
+        /** The waylink target node that is hyperlink-targeted by the browser, or null if there is none.
+          *
+          *     @see #idTargeted
+          */
+        let nodeTargeted = null;
 
 
 
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Initializes a target node.
+        /** Adds controls to the given target node.
           *
           *     @param idV (string) The value of the target node's *id* attribute.
           */
-        that.initTarget = function( target, eSTag, idV )
+        that.addControls = function( target, eSTag, idV )
         {
-            eSTag.addEventListener( 'click', handleClick );
-            if( idV == idActuallyTargetedC ) formAsTargeted( target );
-            else formAsUntargeted( target );
+            eSTag.addEventListener( 'click', hearClick );
+            if( idV == idTargetedC ) nodeTargeted = target;
+
+          // Do hover styling where readable.css cannot [GSC]
+          // ----------------
+            const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
+            icon.addEventListener( 'mouseenter', hearMouseEnter );
+            icon.addEventListener( 'mouseleave', hearMouseLeave );
         };
 
 
@@ -2217,13 +2262,144 @@
 
         window.addEventListener( 'hashchange', function( _event/*ignored*/ )
         {
-            if( targetFormallyTargeted ) formAsUntargeted( targetFormallyTargeted );
-            if( idActuallyTargeted() )
+            const id = idTargeted();
+            if( !id )
             {
-                const target = getTargetById( idActuallyTargetedC );
-                if( target ) formAsTargeted( target );
+                nodeTargeted = null;
+                return;
             }
+
+            const t = getTargetById( id );
+            nodeTargeted = t? t: null;
         });
+
+        return that;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
+    /** Dealing with target liners.  A target liner is a marginalis component that draws vector graphics
+      * for a waylink target node, and controls the scene switching for it.<pre>
+      *
+      *              target line
+      *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      *      ╲
+      *      edge
+      *      mark
+      *
+      * </pre>
+      *
+      *     @see Marginalia
+      */
+    const TargetLining = ( function()
+    {
+
+        const that = {}; // the public interface of TargetLining
+
+        // Dimensions and coordinates are given in pixels, except where marked otherwise.
+
+
+
+        /** The gap between the edge mark and the line to its right.
+          */
+        const GAP = 2/*rem*/ * REM;
+
+
+
+        const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
+
+        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
+
+
+
+        const LINE_MIN_LENGTH = GAP;
+
+
+
+        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** The minimum width that a liner requires in order to draw itself.
+          */
+        that.MIN_WIDTH = MIN_CLICK_WIDTH_REM * REM;
+
+            { console.assert( EDGE_MARK_WIDTH - that.MIN_WIDTH <= GRAPHICAL_ERROR_MARGIN, A ); }
+
+
+
+        /** Constructs a target liner.
+          */
+        that.newLiner = function()
+        {
+            const liner = document.createElementNS( NS_SVG, 'svg' );
+         // liner.addEventListener( 'resize', (e)=>{that.redraw(liner);} );
+              // Ensuring it draws when first laid, then redraws as needed.
+              //
+              // Except it's not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
+              // Maybe embedded svg elements such as this are not considered "outermost svg elements"?
+              // https://www.w3.org/TR/SVG11/interact.html#SVGEvents
+              //
+              // As a workaround, the Marginalis layout calls *redraw* directly.
+            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // edge mark
+            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // line
+            return liner;
+        };
+
+
+
+        /** Draws or redraws the given liner.
+          *
+          *     @param liner (SVGSVGElement)
+          */
+        that.redraw = function( liner, width, height )
+        {
+         // const bounds = liner.getBBox(); /* The actual bounds within the larger document.
+         //   These define the coordinate system of the drawing because the liner (*svg* element)
+         //   declares no *viewBox*.  Therefore the default unit (SVG 'user unit') is pixels. */
+         // const width = bounds.width;
+         // const height = bounds.height;
+         /// that failed, now they're given as parameters instead
+
+          // Draw the line
+          // -------------
+            const midY = height / 2; // vertically centered
+            {
+                const line = asElementNamed( 'path', liner.lastChild );
+                const endX = width - width / 4;
+                let display;
+                if( endX - GAP >= LINE_MIN_LENGTH )
+                {
+                    line.setAttribute( 'd',
+                      // [PD]     X             Y
+                      //        ------         ----
+                         'M ' + GAP + ' ' + midY
+                      + ' H ' + endX
+                      );
+                    display = UNSET_STYLE; // to whatever it was
+                }
+                else display = 'none'; // too short
+                line.style.setProperty( 'display', display );
+            }
+
+          // Draw the edge mark
+          // ------------------
+            const mark = asElementNamed( 'circle', liner.firstChild );
+            mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
+            mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // abutting the document edge
+            mark.setAttribute( 'cy', midY + 'px' );
+        };
+
+
+
+       // - - -
 
         return that;
 
@@ -2453,7 +2629,7 @@
 
                         readLater( tDocReg, tDoc )
                         {
-                         // setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
+                         // window.setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
                          /// but more efficiently (as a microtask) and properly bound as a method call:
                             Promise.resolve().then( function()
                             {
@@ -2545,32 +2721,41 @@
 
 /** NOTES
   * -----
-  *  [C2] The constructor of PartRenderingC2 must remove all such markup.
+  *  [ALA]  Augmented local access.
+  *         http://reluk.ca/project/wayic/read/local_access/_wayic.read.local_access.html
   *
-  *  [F]  Documents won’t reliably load when rendering a wayscript file on a file-scheme URL.
-  *       See support file _wayic.read.local_access.xht.
+  *  [BA] · Boolean attribute.  A boolean attribute such as [rend:isFoo] either has the same value
+  *         as the local part of its name (‘isFoo’), which makes it true, or it is absent
+  *         and thereby false.
   *
-  *  [HI]  https://www.w3.org/TR/html5/browsers.html#the-history-interface
+  *  [C2] · The constructor of PartRenderingC2 must remove all such markup.
   *
-  *  [ICS]  https://www.w3.org/TR/SVG11/coords.html#InitialCoordinateSystem
+  *  [GSC]  General sibling combinator, as per readable.css.
   *
-  *  [NPR]  URI network-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
+  *  [HSP]  HTML-embedded styling property, as per readable.css.
   *
-  *  [NR]  Here avoiding NS_REND in favour of a standard element such as HTML or SVG.
-  *        This is for sake of standard properties such as *style*, which NS_REND elements lack.
+  *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [OWR]  OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
+  *  [NNR]  Not NS_REND.  Here avoiding renderer-specific elements in favour of standard HTML.
+  *         This is for sake of properties such as the *style* attribute which are unsupported
+  *         for NS_REND elements.
+  *
+  *  [ODO]  Out of display order.  This element which is not always present (variant) is declared out of
+  *         display order so not to interfere with the *declaration* order of its invariant siblings.
+  *         Normally it would be declared earlier, but that would complicate the lookup of its siblings,
+  *         making them harder to find.
+  *
+  *  [OWR]  The OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
   *         with the source nodes and sought the target of each using (new) Documents.getTargetById.
   *
-  *  [PD]  The path data could instead be defined using the new SVGPathData interface.
-  *        But this (array-form instead of string-form definition) wouldn’t help enough to outweigh
-  *        the bother of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
+  *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
+  *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother
+  *         of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
   *
-  *  [SC]  Support for this CSS property seems to be undocumented.
-  *        https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
-  *
-  *  [WDL]  Either ‘document.location’ or ‘window.location’, they are identical.
+  *  [WDL]  ‘window.location’ or ‘document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
+  *
+  *  [XN] · XML names.  https://www.w3.org/TR/xml-names/
   */
 
 
