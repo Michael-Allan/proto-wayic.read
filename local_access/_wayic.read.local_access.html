@@ -2,13 +2,18 @@
 <html>
     <head>
         <meta charset='UTF-8'/>
-        <title>Web access to the local wayscript</title>
+        <title>Augmented local access</title>
         </head>
     <body>
-        <h1>Web access to the local wayscript</h1>
+        <h1>Augmented local access</h1>
         <!-- <<< deindent -->
 
 <section>
+    <p>
+        This enables full viewing of local wayscript from a web browser.
+        It enables wayscript loaded from the local file system (‘file’ scheme URL)
+        to look the same as when loaded from a web server (‘http’ scheme, among others).
+        </p>
     <ol>
         <li>Copy this file to the base directory of your waycast</li>
         <li>Load it into your browser, and from there:</li>
@@ -31,7 +36,7 @@
 <section>
     <h2>Why this is needed</h2>
     <p>
-        When a wayscript document is loaded [into the browser] on a ‘file’ scheme URL,
+        When a wayscript document is loaded into the browser on a ‘file’ scheme URL,
         wayic.read has a limited ability to resolve external waylinks (marked ‘⋯?⋯’ when resolution fails),
         to trace the way across multiple files, or generally to read other way files.
         <!--- - - - -
