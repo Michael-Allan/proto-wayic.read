@@ -1576,7 +1576,7 @@
             let loc = URIs.defragmented( value ); // document location
             {
                 const fragment = value.slice( loc.length + 1 );
-                if( !fragment ) throw "Missing target node identifier '#': " + a2s('link',value);
+                if( !fragment ) throw "Missing fragment sign '#' in target identifier: " + a2s('link',value);
 
                 this._targetID = fragment;
             }
