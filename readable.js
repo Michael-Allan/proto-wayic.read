@@ -1913,7 +1913,7 @@
                         {
                             const linkV = s.getAttributeNS( NS_COG, 'link' );
                             mal( 'Broken link: No matching *lid* in that document: ' + a2s('link',linkV) );
-                            setTargetPreview( s, BROKEN_SOURCE_NODE_STRING );
+                            setTargetPreview( s, BREAK_SYMBOL );
                             s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         }
                     }
