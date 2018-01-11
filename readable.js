@@ -480,7 +480,7 @@
     /** The string that means *same as the target name* when it encodes the local part of the name
       * of a waylink souce node.
       */
-    const ELEMENT_NAME_UNCHANGED = '_iso';
+    const ELEMENT_NAME_UNCHANGED = '_same';
 
 
 
