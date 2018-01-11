@@ -47,6 +47,12 @@
  *   When the renderer encounters this, it tries to reproduce a similar layout.
  *
  *
+ * SECTIONING
+ * ----------
+ *   This renderer places vertical margins on HTML *section* elements.  It places the same margins
+ *   on wayscript elements that are *direct children of the body*.
+ *
+ *
  * TROUBLESHOOTING
  * ---------------
  *   This renderer reports problems it detects to the browser’s debugging console. [CON]
@@ -73,7 +79,7 @@
 @namespace svg 'http://www.w3.org/2000/svg';
 
 
-html|html
+*:root
 {
     margin: 0; padding: 0; /* see § scene */
     position: relative; /* Establish a containing block for the absolutely positioned *offWayScreen*.
@@ -325,10 +331,19 @@ rend|scene
 
 rend|scene#_wayic\.read\.document_scene
 {
-    margin: 3em auto 5em auto; /* TRBL */
+    --section-margin: 3em;
+    margin: var(--section-margin) auto 5em auto; /* TRBL */
     max-width: 50em;
     padding: 0 0.7em 0 3.4rem; /* TRBL, where L = MIN_CLICK_WIDTH_REM + MIN_GAP_REM + ICON_W,
                                         and the *_REM components are defined in readable.js */
+}
+
+
+rend|scene#_wayic\.read\.document_scene html|section,
+rend|scene#_wayic\.read\.document_scene > *[rend|isWayscript]
+{
+    margin-top:    var(--section-margin);
+    margin-bottom: var(--section-margin);
 }
 
 
