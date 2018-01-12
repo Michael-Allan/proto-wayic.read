@@ -2548,12 +2548,10 @@
                 branch.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
              // console.debug( '\t\t\t(in present document)' ); // TEST
             }
-            const traversal = doc.createTreeWalker( branch, SHOW_ELEMENT );
-            for( ;; )
+            let t = branch;
+            const traversal = doc.createTreeWalker( t, SHOW_ELEMENT );
+            do
             {
-                const t = traversal.nextNode();
-                if( t == null ) break;
-
               // Source node
               // -----------
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
@@ -2650,6 +2648,7 @@
                 if( lidV && isShut(newLegID(docLoc,lidV)) ) lastNode( traversal ); /* Bypass sub-branch
                   t, if only for efficiency's sake, as already it was traced in a separate leg. */
             }
+            while( (t = traversal.nextNode()) != null );
         }
 
 
