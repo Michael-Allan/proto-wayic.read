@@ -801,7 +801,7 @@
                 {
                   // Translate tagless declaration → entagment
                   // -----------------------------------------
-                    const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_UNCHANGED );
+                    const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_NONE );
                     t.insertBefore( entagment, firstWaybitChild(t) );
                     entagment.setAttributeNS( NS_COG, 'link', linkV );
                          t.removeAttributeNS( NS_COG, 'link' );
