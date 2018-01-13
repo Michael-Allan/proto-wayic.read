@@ -38,7 +38,6 @@
   *      * [isBroken]        · Is a waylink source node with a broken target reference?
   *      * [isChangeable]   · Has a rendering that might later change?
   *      * [isComposer]    · Is a composer element?
-  *      * [isEntagment]  · Is a waylink entagment?
   *      * [isOrphan]    · Is a waylink target node without a source node?
   *      * [isTarget]   · Is a waylink target node?
   *      * [isWaybit]    · Is a waybit?
@@ -495,18 +494,6 @@
 
 
 
-    /** Returns the first child of the given node that is a waybit.
-      */
-    function firstWaybitChild( node )
-    {
-        const traversal = document.createTreeWalker( node, SHOW_ELEMENT );
-        let t = traversal.nextNode();
-        for(; t != null; t = traversal.nextSibling() ) if( isBitNS( t.namespaceURI )) return t;
-        return null;
-    }
-
-
-
     /** Tries quickly to find a waylink target node by its *id* attribute.
       * Returns the target node for the given *id*, or null if there is none.
       * A null result is unreliable until the present document has TARGID.
@@ -797,21 +784,15 @@
           // ==========
             source: if( linkV )
             {
-                if( !isDeclaredEmpty ) // then it's a tagless declaration of a source node
-                {
-                  // Translate tagless declaration → entagment
-                  // -----------------------------------------
-                    const entagment = document.createElementNS( NS_BIT, ELEMENT_NAME_NONE );
-                    t.insertBefore( entagment, firstWaybitChild(t) );
-                    entagment.setAttributeNS( NS_COG, 'link', linkV );
-                         t.removeAttributeNS( NS_COG, 'link' );
-                    entagment.setAttributeNS( NS_REND, 'isEntagment', 'isEntagment' ); // if only as debug aid
-                    break source; // leave it to be processed by a later iteration
-                }
-
                 if( lidV )
                 {
-                    mal( 'Waylink node has both *lid* and *link* attributes: ' + a2s('lid',lidV) );
+                    mal( 'A waylink node with both *lid* and *link* attributes: ' + a2s('lid',lidV) );
+                    break source;
+                }
+
+                if( !isDeclaredEmpty )
+                {
+                    mal( 'A waylink source node with content: ' + a2s('link',linkV) );
                     break source;
                 }
 
