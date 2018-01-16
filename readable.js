@@ -353,12 +353,12 @@
                     path = p;
                     while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove the trailing slash
                 }
-                else mal( 'Missing *base* attribute in *cast* element' );
+                else tsk( 'Missing *base* attribute in *cast* element' );
                 return path;
             }
         }
 
-        mal( 'Missing *cast* element in document *head*' );
+        tsk( 'Missing *cast* element in document *head*' );
         return path;
     })();
 
@@ -393,13 +393,13 @@
         let isMalNameReported = false;
         if( sourceNS != targetNS )
         {
-            mal( 'Source node namespace (' + sourceNS + ') differs from target node namespace ('
+            tsk( 'Source node namespace (' + sourceNS + ') differs from target node namespace ('
               + targetNS + ') for waylink: ' + a2s('link',linkV) );
             isMalNameReported = true;
         }
         if( !isMalNameReported && !isBit && sourceLocalPart != targetLocalPart )
         {
-            mal( 'Source node name (' + sourceLocalPart + ') differs from target node name ('
+            tsk( 'Source node name (' + sourceLocalPart + ') differs from target node name ('
               + targetLocalPart + ') for waylink: ' + a2s('link',linkV) );
         }
         if( isBit && sourceLocalPart == ELEMENT_NAME_UNCHANGED ) rendering.localPartOverride = targetLocalPart;
@@ -569,19 +569,6 @@
         while( treeWalker.lastChild() ) {}
         const destination = treeWalker.currentNode;
         return destination == origin? null: destination;
-    }
-
-
-
-    /** Reports malformed wayscript, or any other problem that a user with write access
-      * to the document might be able to redress.
-      */
-    function mal( message )
-    {
-        if( !message ) throw 'Null parameter';
-
-        console.error( message );
-        if( isUserEditor ) alert( message ); // see readable.css § TROUBLESHOOTING
     }
 
 
@@ -769,7 +756,7 @@
 
                 if( !isBit )
                 {
-                    mal( 'A non-waybit element with a waylink attribute: ' + a2s(attrName,v) );
+                    tsk( 'A non-waybit element with a waylink attribute: ' + a2s(attrName,v) );
                     v = null;
                 }
                 return v;
@@ -830,13 +817,13 @@
             {
                 if( lidV )
                 {
-                    mal( 'A waylink node with both *lid* and *link* attributes: ' + a2s('lid',lidV) );
+                    tsk( 'A waylink node with both *lid* and *link* attributes: ' + a2s('lid',lidV) );
                     break source;
                 }
 
                 if( !isDeclaredEmpty )
                 {
-                    mal( 'A waylink source node with content: ' + a2s('link',linkV) );
+                    tsk( 'A waylink source node with content: ' + a2s('link',linkV) );
                     break source;
                 }
 
@@ -844,7 +831,7 @@
                 try { link = new LinkAttribute( linkV ); }
                 catch( unparseable )
                 {
-                    mal( unparseable );
+                    tsk( unparseable );
                     break source;
                 }
 
@@ -877,7 +864,7 @@
                         {
                             if( u == t ) // then search is on this node, about to revisit the nodes above
                             {
-                                mal( 'Broken waylink: Either this document has no matching *lid*, '
+                                tsk( 'Broken waylink: Either this document has no matching *lid*, '
                                   + 'or it has an identifier conflict: ' + a2s('link',linkV) );
                                 targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
                                 targetPreviewString = BREAK_SYMBOL;
@@ -992,6 +979,19 @@
                 }
             }
         }
+    }
+
+
+
+    /** Reports a problem that a user with write access to the document might be able to redress,
+      * such as malformed wayscript.
+      */
+    function tsk( message )
+    {
+        if( !message ) throw 'Null parameter';
+
+        console.error( message );
+        if( isUserEditor ) alert( message ); // see readable.css § TROUBLESHOOTING
     }
 
 
@@ -1116,11 +1116,11 @@
 
 
 
-        function d_mal( doc, message )
+        function d_tsk( doc, message )
         {
             if( !doc ) throw 'Null parameter';
 
-            if( doc == document ) mal( message );
+            if( doc == document ) tsk( message );
         }
 
 
@@ -1211,10 +1211,10 @@
             if( idV )
             {
                 if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
-                else d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
+                else d_tsk( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
             }
             const e = doc.getElementById( lidV );
-            if( e ) d_mal( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
+            if( e ) d_tsk( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
             else t.setAttribute( 'id', lidV );
         };
 
@@ -1937,7 +1937,7 @@
                         for( const s of sourceNodes )
                         {
                             const linkV = s.getAttributeNS( NS_COG, 'link' );
-                            mal( 'Broken link: No matching *lid* in that document: ' + a2s('link',linkV) );
+                            tsk( 'Broken link: No matching *lid* in that document: ' + a2s('link',linkV) );
                             setTargetPreview( s, BREAK_SYMBOL );
                             s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         }
@@ -2626,7 +2626,7 @@
                                     const ns = r.namespaceURI;
                                     if( ns == null ) // then r is the document node
                                     {
-                                        mal( MESSAGE_NO_BODY + ': ' + tDocLoc );
+                                        tsk( MESSAGE_NO_BODY + ': ' + tDocLoc );
                                         break;
                                     }
 
@@ -2714,7 +2714,7 @@
                         {
                             if( t == null )
                             {
-                                mal( 'Unable to trace: ' + MESSAGE_NO_BODY + ': ' + ROOT_DOCUMENT_LOCATION );
+                                tsk( 'Unable to trace: ' + MESSAGE_NO_BODY + ': ' + ROOT_DOCUMENT_LOCATION );
                                 return;
                             }
 
