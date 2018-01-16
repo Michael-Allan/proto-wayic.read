@@ -124,7 +124,7 @@ html|body > rend|offWayScreen
 
 
 
-/* - - -  neon   - - - - - - - - - - - - [TLM]
+/* - - -  neon   - - - - - - - - - - - -
  */
 html[rend|lighting='neon'] > html|body
 {
@@ -139,7 +139,7 @@ html[rend|lighting='neon'] > html|body > rend|offWayScreen
 }
 
 
-/* - - -  paper  - - - - - - - - - - - - [TLM]
+/* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper'] > html|body
 {
@@ -158,68 +158,58 @@ html[rend|lighting='paper'] > html|body > rend|offWayScreen
 /* ---  a  --  h y p e r l i n k s  --------------------------------------------------------------------
  */
 
+html[rend|lighting='neon']
+{
+    --hyperlink-color: hsl( 190/*∼cyan*/, 100%, 60% );
+}
+html[rend|lighting='paper']
+{
+    --hyperlink-color: hsl( 240/*blue*/, 100%, 50% );
+}
+
+
 html|a
 {
     color: inherit; /* defeat, avoid the distraction and colour interference */
 }
-*:not(rend|forelinker) > html|a
+
+
+rend|a > html|a
 {
-    position: relative; /* enabling *z-index* change on hover */
     text-decoration-color: transparent; /* redundant but for enabling a transition effect */
  /* text-decoration-skip: ink; *//* no support in Firefox, no matter, but avoid the console warning */
     transition-property: text-decoration-color,    z-index;
     transition-duration:                  0.2s,         0s;
     transition-timing-function:       ease-out, step-start;
-    transition-delay:                     0.1s,       0.6s; /* avoid distracting flash on passing */
-    z-index: 0; /* So enabling its transition, which the default does not.  But see a::after below. */
+    transition-delay:                     0.1s,       1.0s; /* avoid distracting flash on passing */
 }
 
 
-*:not(rend|forelinker) > html|a:hover
+rend|a:hover > html|a
 {
+    text-decoration-color: var(--hyperlink-color);
     text-decoration-line: underline;
+}
+
+
+rend|a > html|a,
+rend|a > html|sup
+{
+    position: relative; /* enabling *z-index* change on hover */
+    z-index: 0; /* so enabling its transition, which the default does not */
+}
+rend|a:hover > html|a,
+rend|a:hover > html|sup
+{
     z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
 
-*:not(rend|forelinker) > html|a::after
+rend|a > html|sup
 {
- /* This trailing asterisk cannot raise itself clear of the *offWayScreen* as it would like to, viz.
-    instantly on hover.  Rather it must wait for the parent *a* element to raise itself.  The parent
-    has set an initial *z-index* value and thereby created a stacking context in which this asterisk
-    is now trapped.  A possible workaround is for the parent to animate its *z-index* in key frames,
-    as that might allow removal of the initial *z-index* setting. */
-
-    content: '*';
+    color: var(--hyperlink-color);
     font-size: 0.9em;
-    line-height: 0.5em; /* preserve the original line spacing despite the *vertical-align* of 'super' */
-    text-decoration: none !important; /* defeat Chrome's staggered underline (fails, ignored) */
-    vertical-align: super;
-}
-
-
-
-/* - - -  neon   - - - - - - - - - - - - [TLM]
- */
-html[rend|lighting='neon'] *:not(rend|forelinker) > html|a:hover
-{
-    text-decoration-color: hsl( 190/*∼cyan*/, 100%, 60% ); /* BRIGHT_HYPERLINK */
-}
-html[rend|lighting='neon'] *:not(rend|forelinker) > html|a::after
-{
-                   color: hsl(  190         , 100%, 60% );
-}
-
-
-/* - - -  paper  - - - - - - - - - - - - [TLM]
- */
-html[rend|lighting='paper'] *:not(rend|forelinker) > html|a:hover
-{
-    text-decoration-color: hsl( 240/*blue*/, 100%, 50% ); /* DARK_HYPERLINK */
-}
-html[rend|lighting='paper'] *:not(rend|forelinker) > html|a::after
-{
-                   color: hsl(  240        , 100%, 50% );
+    line-height: 0.5em; /* preserve line spacing despite an (implicit) *vertical-align* of 'super' */
 }
 
 
@@ -392,6 +382,7 @@ rend|forelinker > a > verticalTruncator
 }
 rend|forelinker > a:hover > verticalTruncator
 {
+    color: var(--hyperlink-color);
     opacity: 1 !important;
     z-index: 1; /* raised clear of the *offWayScreen* */
 }
@@ -399,6 +390,7 @@ rend|forelinker > a:hover > verticalTruncator
 
 rend|forelinker > a > targetPointer /* content is an arrow */
 {
+    color: var(--hyperlink-color);
     margin-left: 2em;
     opacity: 0;
     position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
@@ -436,13 +428,6 @@ html[rend|lighting='neon'] rend|forelinker > a > verticalTruncator
 }
 
 
-html[rend|lighting='neon'] rend|forelinker > a:hover > verticalTruncator,
-html[rend|lighting='neon'] rend|forelinker > a > targetPointer
-{
-    color: hsl( 190/*∼cyan*/, 100%, 60% ); /* = BRIGHT_HYPERLINK */
-}
-
-
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
@@ -460,13 +445,6 @@ html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
 html[rend|lighting='paper'] rend|forelinker > a > verticalTruncator
 {
     opacity: 0.2;
-}
-
-
-html[rend|lighting='paper'] rend|forelinker > a:hover > verticalTruncator,
-html[rend|lighting='paper'] rend|forelinker > a > targetPointer
-{
-    color: hsl( 240/*blue*/, 100%, 50% ); /* = DARK_HYPERLINK */
 }
 
 
@@ -854,7 +832,7 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
 *[rend|isWayscript]
 {
     clear: left;
-    display: block;
+    display: block; /* Changing the wayscript *display* property?  sync'd → readable.js layoutBlock. */
     margin-top:    0.1em;
     margin-bottom: 0.1em;
 }
@@ -887,4 +865,4 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
  */
 
 
-/* Copyright © 2017 Michael Allan and contributors.  Licence MIT. */
+/* Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT. */

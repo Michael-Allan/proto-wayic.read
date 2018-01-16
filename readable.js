@@ -25,10 +25,18 @@
   *   html:body
   *   - - - - -
   *      * scene      · Document scene
-  *          * [:id]    · ‘_wayic.read.document_scene’
-  *      * scene…        · Interlink scenes
-  *          * [:class]  · ‘interlink’
-  *      * offWayScreen  · Overlay screen for off-way styling, q.v. in readable.css.
+  *          * [:id]   · ‘_wayic.read.document_scene’
+  *      * scene        · Interlink scene(s), if any
+  *          * [:class] · ‘interlink’
+  *        scene
+  *          ⋮
+  *
+  *      * offWayScreen · Overlay screen for off-way styling, q.v. in readable.css.
+  *
+  *   a  (rend:a, that is)
+  *   -
+  *      * html:a  · Author’s hyperlink, as opposed to one injected by this renderer
+  *      * html:sup · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
   *
   *   Wayscript element
   *   - - - - - - - - -
@@ -41,14 +49,14 @@
   *      * [isOrphan]    · Is a waylink target node without a source node?
   *      * [isTarget]   · Is a waylink target node?
   *      * [isWaybit]    · Is a waybit?
-  *      * [isWayscript]  · Is under a ‘data:,wayscript.’ namespace?
+  *      * [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
   *
   *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
   *                      except in the wayscript source
   *          * eQName            · Qualified name [XN] of the element
   *              * [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
   *              * ePrefix           · Namespace prefix, if any
-  *                  * [isAnonymous]  · Has a prefix that is declared to be anonymous?
+  *                  * [isAnonymous] · Has a prefix that is declared to be anonymous?
   *              * eLocalPart        · Local part of the name
   *          * html:div             · Marginalis (if element is a waylink target node).  [NNR, ODO]
   *              * svg:svg        · Target liner
@@ -508,6 +516,12 @@
 
 
 
+    const HYPERLINK_SYMBOL = '*';
+
+    const HYPERLINK_SYMBOLS = [HYPERLINK_SYMBOL, '†', '‡'];
+
+
+
     /** Answers whether ns is a namespace of waybits.  That means either NS_BIT itself
       * or another namespace that starts with NS_BIT and a dot separator.
       * The only other defined at present is NS_STEP.
@@ -706,17 +720,24 @@
         const traversal = document.createTreeWalker( scene, SHOW_ELEMENT, {
             acceptNode: function( node )
             {
-                if( node.namespaceURI == NS_REND ) return NodeFilter.FILTER_REJECT; /* bypassing this
-                  branch, which was introduced in an earlier iteration and needs no more transforming */
+                if( node.namespaceURI == NS_REND ) return NodeFilter.FILTER_REJECT; /* Bypassing this
+                  branch which was introduced in an earlier iteration and needs no more transforming. */
 
                 return NodeFilter.FILTER_ACCEPT;
             }
         });
+        let layoutBlock = traversal.currentNode; /* Tracking the nearest container element in the
+          current hierarchy path (current element or nearest ancestor) that has a block layout. */
+        let layoutBlock_aLast = null; // layout block of the most recent (author's) hyperlink
+        let layoutBlock_aCount = 0; // count of such hyperlinks in that block, so far
         tt: for( ;; )
         {
-            const t = traversal.nextNode();
+            const t = traversal.nextNode(); // current element
             if( t == null ) break;
 
+          // ============
+          // General form of element t
+          // ============
             const tNS = t.namespaceURI;
             const tLocalPart = t.localName;
             let isBit, isHTML, isWayscript;
@@ -728,12 +749,14 @@
                 t.setAttributeNS( NS_REND, 'isWayscript', 'isWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
                 isBit = isBitSubNS( tSubNS );
+                layoutBlock = t; // sync'd ← readable.css § Wayscript
             }
             else // element t is non-wayscript
             {
                 isHTML = tNS == NS_HTML;
                 isBit = isWayscript = false;
                 tSubNS = null;
+                if( !getComputedStyle(t).getPropertyValue('display').startsWith('inline') ) layoutBlock = t;
             }
 
           // ============
@@ -762,6 +785,27 @@
                 const href = t.getAttribute( 'href' );
                 if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
                   // translating waycast space → universal space
+                const aWrapper = document.createElementNS( NS_REND, 'a' );
+                t.parentNode.insertBefore( aWrapper, t );
+                aWrapper.appendChild( t );
+                const sup = document.createElementNS( NS_HTML, 'sup' );
+                aWrapper.appendChild( sup );
+
+              // Indicator symbol
+              // ----------------
+                const symbol = ( ()=>
+                {
+                    if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
+                    {
+                        layoutBlock_aLast = layoutBlock;
+                        layoutBlock_aCount = 0;
+                        return HYPERLINK_SYMBOL;
+                    }
+
+                    const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
+                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
+                })();
+                sup.appendChild( document.createTextNode( symbol ));
             }
 
             if( !isWayscript ) continue tt;
@@ -919,8 +963,8 @@
                         }
 
                         const c = cc.charAt( 0 );
-                        if( c == '\n' || c == '\r' ) break alignment; /* not in line with start tag,
-                          needs no special alignment */
+                        if( c == '\n' || c == '\r' ) break alignment; /* Not in line with start tag,
+                          needs no special alignment. */
                     }
                     else if( !isNonethelessSafeToMove() ) break alignment;
 
@@ -2739,4 +2783,4 @@
   */
 
 
-// Copyright © 2017 Michael Allan and contributors.  Licence MIT.
+// Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.
