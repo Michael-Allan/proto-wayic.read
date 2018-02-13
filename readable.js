@@ -1290,7 +1290,7 @@
                   // Set the *id* attribute of each waylink target node
                   // ----------------------
                     const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
-                    for( ;; )
+                    for( traversal.nextNode()/*onto the document node itself*/;; )
                     {
                         const t = traversal.nextNode();
                         if( t == null ) break;
@@ -1364,7 +1364,7 @@
         function scan( doc, docLoc )
         {
             const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
-            for( ;; )
+            for( traversal.nextNode()/*onto the document node itself*/;; )
             {
                 const t = traversal.nextNode();
                 if( t == null ) break;
@@ -1898,7 +1898,8 @@
                       // Try to resolve waylinks, re-rendering the source node of each
                       // -----------------------
                         const traversal = tDoc.createNodeIterator( tDoc, SHOW_ELEMENT );
-                        tt: for( ;; ) // seek the target nodes in *that* document [OWR]
+                          // seeking the target nodes in *that* document [OWR]
+                        tt: for( traversal.nextNode()/*onto the document node itself*/;; )
                         {
                             const target = traversal.nextNode();
                             if( !target ) break;
