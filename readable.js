@@ -337,7 +337,7 @@
 
 
 
-    /** The path to the base (root directory) of the waycast, without a trailing slash '/'.
+    /** The path to the base directory of the waycast, without a trailing slash '/'.
       */
     const CAST_BASE_PATH = ( ()=>
     {
@@ -351,7 +351,7 @@
                 if( p )
                 {
                     path = p;
-                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove the trailing slash
+                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove any trailing slash
                 }
                 else tsk( 'Missing *base* attribute in *cast* element' );
                 return path;
@@ -365,7 +365,6 @@
 
         {
             let loc = URIs.normalized( CAST_BASE_PATH );
-            console.assert( !loc.includes('..'), A );
             if( !loc.endsWith('/') ) loc = loc + '/';
             CAST_BASE_LOCATION = loc;
         }
@@ -626,7 +625,7 @@
       *
       *     @see https://www.w3.org/TR/css-values/#rem
       */
-    const REM = emLength( /*root element*/document.documentElement );
+    const REM = emLength( /*root element 'r', sensu 'rem'*/document.documentElement );
 
 
 
@@ -2436,12 +2435,12 @@
    // ==================================================================================================
 
 
-    /** A device for tracing the way across multiple waylinked documents.  It traces the root document's
-      * waylinks to their target documents, thence onward till it traces the full network of waylinks.
+    /** A device for tracing the way across multiple waylinked documents.  It traces the root element's
+      * waylinks to their target nodes, thence onward till it traces the full network of waylinks.
       * The trace serves two purposes: (1) to discover documents for omnireaders; and (2) to adjust the
       * rendering of the present document based on the results.
       *
-      *     @see http://reluk.ca/project/wayic/lex/root#root_document
+      *     @see http://reluk.ca/project/wayic/lex/root#root_element
       *     @see Documents#addOmnireader
       */
     const WayTracer = ( function()
@@ -2473,27 +2472,13 @@
 
 
 
-        const MESSAGE_NO_BODY = 'Malformed document: Missing HTML *body* element';
-
-
-
         /** Constructs a trace leg identifier (string) for the specified target.
           * Each trace leg is scoped to single DOM branch exclusive of waylinks.
           *
           *     @param tDocLoc (string) The target document location in normal URL form.
           *     @param targetID (string)
           */
-        function newLegID( tDocLoc, targetID )
-        {
-            if( tDocLoc == ROOT_DOCUMENT_LOCATION ) return ROOT_LEG_ID;
-              // All targets of the root document are here assigned the same identifier.  This can be
-              // understood either (a) logically as a consequence of the exception of tracing the root
-              // document as a whole in a single leg, all of a piece; or (b) practically as a method of
-              // helping the code to isolate the root targets for special treatment (basically to ignore
-              // them) and so to shield itself from the consequences of this exception.
-
-            return tDocLoc + '#' + targetID;
-        }
+        function newLegID( tDocLoc, targetID ) { return tDocLoc + '#' + targetID; }
 
 
 
@@ -2511,19 +2496,20 @@
 
 
 
-        /** The normal-form location (URL string) of the root document.
+        /** The location of the root document (string) in normal URL form.
           *
           *     @see http://reluk.ca/project/wayic/lex/root#root_document
           *     @see URIs#normalized
           */
-        const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'visionary/way.xht';
+        const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
 
 
 
-        /** The identifier of the root leg of the trace.  The root leg comprises the root document
-          * as a whole.
+        /** The identifier of the root leg of the trace.
+          *
+          *     @see http://reluk.ca/project/wayic/lex/root#root_element
           */
-        const ROOT_LEG_ID = 'ROOT'; // unlike other legs, which are identified by target URL
+        const ROOT_LEG_ID = newLegID( ROOT_DOCUMENT_LOCATION, 'root' );
 
 
 
@@ -2627,7 +2613,7 @@
                                     const ns = r.namespaceURI;
                                     if( ns == null ) // then r is the document node
                                     {
-                                        tsk( MESSAGE_NO_BODY + ': ' + tDocLoc );
+                                        tsk( 'Malformed document: Missing HTML *body* element: ' + tDocLoc );
                                         break;
                                     }
 
@@ -2694,7 +2680,7 @@
 
         /** Starts this tracer.  It requires TARGID for the present document.
           */
-        that.start = function()
+        that.start = function() // requires TARGID for the *present* document in case it gets traced
         {
          // console.debug( 'Trace run starting' ); // TEST
             const id = ROOT_LEG_ID;
@@ -2705,24 +2691,9 @@
                 close( docReg ) { shutLeg( id ); }
                 read( docReg, doc )
                 {
-                    const html = doc.documentElement;
-                    let t; // element to trace
-                    if( doc == document ) t = document.getElementById( DOCUMENT_SCENE_ID );
-                    else // find the *body* element
-                    {
-                        const traversal = doc.createTreeWalker( html, SHOW_ELEMENT );
-                        for( t = traversal.nextNode();; t = traversal.nextSibling() )
-                        {
-                            if( t == null )
-                            {
-                                tsk( 'Unable to trace: ' + MESSAGE_NO_BODY + ': ' + ROOT_DOCUMENT_LOCATION );
-                                return;
-                            }
-
-                            if( t.localName == 'body' && t.namespaceURI == NS_HTML ) break;
-                        }
-                    }
-                    traceLeg( id, t, docReg );
+                    const target = doc.getElementById( 'root', doc ); // assumes TARGID
+                    if( target ) traceLeg( id, target, docReg );
+                    else tsk( 'Unable to trace: Missing root waybit: ' + id );
                 }
             });
         };
