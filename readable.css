@@ -410,7 +410,7 @@ rend|forelinker > a:hover > targetPointer
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
+html[rend|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eLocalPart
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
@@ -430,7 +430,7 @@ html[rend|lighting='neon'] rend|forelinker > a > verticalTruncator
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *[cog|link$='/actor/#commitment'] > eSTag > eQName > eLocalPart
+html[rend|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eLocalPart
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
