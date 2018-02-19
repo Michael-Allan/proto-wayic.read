@@ -1,8 +1,13 @@
 /* readable - Wayscript that’s readable on the web
  *
  *   This renderer does what’s needed in order to present a complete, easily readable copy
- *   of a wayscript document for public viewing.  Otherwise it tries to preserve the layout
+ *   of a wayscript document for public viewing.  At the same time, it tries to preserve the layout
  *   of the underlying wayscript source as it would appear to a wayscribe.
+ *
+ *   Supported browsers
+ *   - - - - - - - - - -
+ *   See the list of <a href='http://reluk.ca/project/wayic/read/README.html#browser_support'>
+ *   browsers tested</a>.
  *
  *
  * BASIC USAGE
@@ -57,14 +62,22 @@
  * ---------------
  *   This renderer reports problems it detects to the browser’s debugging console. [CON]
  *
- *   Direct rendering from the file system
- *   - - - - - - - - - - - - - - - - - - -
+ *   Direct rendering from the local file system
+ *   - - - - - - - - - - - - - - - - - - - - - -
  *   When a wayscript document is loaded into the browser on a ‘file’ scheme URL, the renderer assumes
  *   you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
  *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked ‘⋯?⋯’.
- *   See support file local_access/_wayic.read.local_access.html for instructions on dealing with this.
+ *   This affects the quality of rendering, making the way definition harder to view.
+ *   (Instructions on dealing with this are given further below.)  What causes this:
+ *   when a document is loaded on a ‘file’ scheme URL, the browser grants to JavaScript
+ *   only a limited ability to resolve external waylinks, to trace the way across multiple files,
+ *   or generally to read other local files. [LLR]
+ *
+ *   There is a workaround.  Among the browsers supported, this works only for Firefox.  The workaround
+ *   is to load the root document, or any other document from the base directory of the waycast, first.
+ *   Then follow the links from there. [WLL]
  *
  *
  * NOTES  (continued at bottom)
@@ -862,6 +875,21 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
  *         https://www.w3.org/TR/SVG11/struct.html#SVGElement
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
+ *
+ *  [LLR]  Local loading and remote waylinks.  Regardless of the *local load* scheme, the browser
+ *         is unlikely to limit access to *remotely linked* targets (once that kind of targeting
+ *         is supported by this renderer, viz. a full URI with a proper web scheme, such as ‘http’).
+ *         Such a target would be served with a response header of ‘Access-Control-Allow-Origin: *’,
+ *         which would then be the standard for all waycast service
+ *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
+ *         Of course, that won’t help for any *local links* that remain.
+ *
+ *  [WLL]  Workaround for local loading.  It fails for Chrome.  Chrome (59) rejects all local
+ *         read requests, logging the reason in the console as “Cross origin requests are
+ *         only supported for protocol schemes: http, data, chrome, chrome-extension, https.”
+ *         Firefox (52) is more lenient.  It at least forwards the in-branch requests, viz. where
+ *         “the parent directory of the originating file is an ancestor directory of the target file.”
+ *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  */
 
 

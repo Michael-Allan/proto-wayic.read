@@ -1281,8 +1281,8 @@
               // - - -
                 req.onload = function( event )
                 {
-                    // If this listener is registered instead by req.addEventListener, then augmented
-                    // local access fails on Firefox (52), even the in-branch requests. [ALA]
+                    // If this listener is registered instead by req.addEventListener, then local load
+                    // access fails on Firefox (52), even the in-branch requests. [readable.css WLL]
                     const doc = event.target.response;
                     docReg.document = doc;
 
@@ -2717,9 +2717,6 @@
 
 /** NOTES
   * -----
-  *  [ALA]  Augmented local access.
-  *         http://reluk.ca/project/wayic/read/local_access/_wayic.read.local_access.html
-  *
   *  [BA] · Boolean attribute.  A boolean attribute such as [rend:isFoo] either has the same value
   *         as the local part of its name (‘isFoo’), which makes it true, or it is absent
   *         and thereby false.
