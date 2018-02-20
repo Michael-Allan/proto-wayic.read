@@ -54,8 +54,9 @@
  *
  * SECTIONING
  * ----------
- *   This renderer places vertical margins on HTML *section* elements.  It places the same margins
- *   on wayscript elements that are *direct children of the body*.
+ *   This renderer puts vertical margins on HTML *section* elements.  It adds the same margins
+ *   to wayscript elements that are *direct children of the body*.  To defeat this automatic margining
+ *   for a given group of *body* children, put them together in a single *section* element.
  *
  *
  * TROUBLESHOOTING
