@@ -2440,7 +2440,7 @@
       * The trace serves two purposes: (1) to discover documents for omnireaders; and (2) to adjust the
       * rendering of the present document based on the results.
       *
-      *     @see http://reluk.ca/project/wayic/lex/root#root_element
+      *     @see http://reluk.ca/project/wayic/cast/root#root_element
       *     @see Documents#addOmnireader
       */
     const WayTracer = ( function()
@@ -2498,7 +2498,7 @@
 
         /** The location of the root document (string) in normal URL form.
           *
-          *     @see http://reluk.ca/project/wayic/lex/root#root_document
+          *     @see http://reluk.ca/project/wayic/cast/root#root_document
           *     @see URIs#normalized
           */
         const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
@@ -2507,7 +2507,7 @@
 
         /** The identifier of the root leg of the trace.
           *
-          *     @see http://reluk.ca/project/wayic/lex/root#root_element
+          *     @see http://reluk.ca/project/wayic/cast/root#root_element
           */
         const ROOT_LEG_ID = newLegID( ROOT_DOCUMENT_LOCATION, 'root' );
 
