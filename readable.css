@@ -1,8 +1,8 @@
-/* readable - Wayscript that’s readable on the web
+/* readable.∗ - Way documents that are readable on the web
  *
  *   This renderer does what’s needed in order to present a complete, easily readable copy
- *   of a wayscript document for public viewing.  At the same time, it tries to preserve the layout
- *   of the underlying wayscript source as it would appear to a wayscribe.
+ *   of a way document (way.xht) for public viewing.  It aims for a conservative presentation,
+ *   true to the appearance of the way document in the context of its native waycast. [IWS]
  *
  *   Supported browsers
  *   - - - - - - - - - -
@@ -12,7 +12,7 @@
  *
  * BASIC USAGE
  * -----------
- *   Insert this in the head element of the document:
+ *   Insert this in the head element of the way document:
  *
  *       <link rel='stylesheet' href='http://reluk.ca/project/wayic/read/readable.css'/> <!-- HERE CUSTOM -->
  *
@@ -65,7 +65,7 @@
  *
  *   Direct rendering from the local file system
  *   - - - - - - - - - - - - - - - - - - - - - -
- *   When a wayscript document is loaded into the browser on a ‘file’ scheme URL, the renderer assumes
+ *   When a way document is loaded into the browser on a ‘file’ scheme URL, the renderer assumes
  *   you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
@@ -876,6 +876,9 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
  *         https://www.w3.org/TR/SVG11/struct.html#SVGElement
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
+ *
+ *  [IWS]  Informed by the waycast structure, affording it maximal exposure and influence.
+           http://reluk.ca/project/wayic/architecture/doc.task § wayic architecture = waycast form
  *
  *  [LLR]  Local loading and remote waylinks.  Regardless of the *local load* scheme, the browser
  *         is unlikely to limit access to *remotely linked* targets (once that kind of targeting

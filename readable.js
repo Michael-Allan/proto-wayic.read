@@ -1,4 +1,4 @@
-/** readable - Wayscript that’s readable on the web
+/** readable.∗ - Way documents that are readable on the web
   *
   *   See readable.css for a general introduction.  The sections below are for programmers.
   *
@@ -1077,7 +1077,7 @@
    // ==================================================================================================
 
 
-    /** The generalized record of a wayscript document.
+    /** The generalized record of a way document.
       */
     class DocumentRegistration // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
@@ -1106,7 +1106,7 @@
    // ==================================================================================================
 
 
-    /** Dealing with wayscript documents at large, not only the present document.
+    /** Dealing with way documents at large, not only the present document.
       */
     const Documents = ( function() // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
