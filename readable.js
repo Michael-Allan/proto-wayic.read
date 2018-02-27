@@ -46,9 +46,9 @@
   *      * [isBroken]        · Is a waylink source node with a broken target reference?
   *      * [isChangeable]   · Has a rendering that might later change?
   *      * [isComposer]    · Is a composer element?
-  *      * [isOrphan]    · Is a waylink target node without a source node?
-  *      * [isTarget]   · Is a waylink target node?
-  *      * [isWaybit]    · Is a waybit?
+  *      * [isOrphan]     · Is waylink targetable, yet targeted by no source node?
+  *      * [isTargetable] · Is waylink targetable?
+  *      * [isWaybit]     · Is a waybit?
   *      * [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
   *
   *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
@@ -93,15 +93,6 @@
   *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
   *       That’s only its temporary use; later this property will instead point to the *scene* element
   *       that encodes the target node’s interlink scene.
-  *
-  *
-  * CONDITION
-  * ---------
-  *   The following named condition is asserted at whatever point in the code it applies:
-  *
-  *     TARGID (of a document)  Every waylink target node of the document has
-  *            an HTML *id* attribute equal in value to its wayscript *lid* attribute.
-  *            Where the document is unspecified, this condition refers to the present document.
   *
   *
   * NOTES  (continued at bottom)
@@ -291,9 +282,9 @@
 
 
 
-    /** Returns a string to represent an attribute declaration.
+    /** Transforms an attribute declaration to a string.
       */
-    function a2s( name, value ) { return  name + "='" + value + "'"; }
+    function a2s( name, value ) { return name + "='" + value + "'"; }
 
 
 
@@ -469,6 +460,14 @@
 
 
 
+    const DOCUMENT_POSITION_FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+
+
+
+    const DOCUMENT_POSITION_PRECEDING = Node.DOCUMENT_POSITION_PRECEDING;
+
+
+
     const DOCUMENT_SCENE_ID = '_wayic.read.document_scene';
 
 
@@ -498,14 +497,6 @@
     {
         return parseFloat( getComputedStyle(element).getPropertyValue( 'font-size' ));
     }
-
-
-
-    /** Tries quickly to find a waylink target node by its *id* attribute.
-      * Returns the target node for the given *id*, or null if there is none.
-      * A null result is unreliable until the present document has TARGID.
-      */
-    function getTargetById( id ) { return Documents.getTargetById( id, document ); }
 
 
 
@@ -636,14 +627,14 @@
         console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'), AA + 'Strict mode' );
           // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
           // credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-        transform(); // provides TARGID for the present document
+        transform();
       // --------------------
       // Layout is now stable, more or less
       // --------------------
         showDocument();
-        InterdocScanner.start(); // needs TARGID
+        InterdocScanner.start();
         OuterWaylinkResolver.start();
-        WayTracer.start(); // needs TARGID
+        WayTracer.start();
     }
 
 
@@ -689,7 +680,7 @@
 
 
 
-    /** Tranforms the present document.  Provides TARGID for it.
+    /** Tranforms the present document.
       */
     function transform()
     {
@@ -748,9 +739,9 @@
           // ============
           // Form testing of element t
           // ============
-            function waylinkAttributeV( attrName ) // returns its value, or null
+            const linkV = ( ()=> // waylink declaration, non-null if t is a source node
             {
-                let v = t.getAttributeNS( NS_COG, attrName );
+                let v = t.getAttributeNS( NS_COG, 'link' );
                 if( !v ) return null;
 
                 if( !isBit )
@@ -759,9 +750,7 @@
                     v = null;
                 }
                 return v;
-            }
-            const lidV = waylinkAttributeV( 'lid' ); // target identifier, non-null if t is a target node
-            const linkV = waylinkAttributeV( 'link' ); // waylink declaration, non-null if t is a source node
+            })();
 
           // ===================
           // Hyperlink targeting by element t
@@ -812,11 +801,20 @@
           // ==========
           // Waylinkage of element t
           // ==========
+            const lidV = ( ()=> // target identifier, non-null if t is a potential waylink target node
+            {
+                if( !isBit ) return null;
+
+                const v = t.getAttribute( 'id' );
+                if( v && Documents.testIdForm(t,v) ) return v;
+
+                return null;
+            })();
             source: if( linkV )
             {
                 if( lidV )
                 {
-                    tsk( 'A waylink node with both *lid* and *link* attributes: ' + a2s('lid',lidV) );
+                    tsk( 'A waylink node with both *id* and *link* attributes: ' + a2s('id',lidV) );
                     break source;
                 }
 
@@ -853,33 +851,23 @@
                     }
 
                     // the target is within this document
-                    let target = getTargetById( link.targetID );
-                    if( target ) targetDirectionChar = '↑'; // '↑' is Unicode 2191 (upwards arrow)
-                    else // it should be in nodes below, where transform has yet to reach it and set its 'id'
+                    let target = document.getElementById( link.targetID );
+                    if( !target )
                     {
-                        const traversal = document.createTreeWalker( scene, SHOW_ELEMENT ); // search for it
-                        let u = lastNode( traversal );        // from last node
-                        for(;; u = traversal.previousNode() ) // travel upward
-                        {
-                            if( u == t ) // then search is on this node, about to revisit the nodes above
-                            {
-                                tsk( 'Broken waylink: Either this document has no matching *lid*, '
-                                  + 'or it has an identifier conflict: ' + a2s('link',linkV) );
-                                targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
-                                targetPreviewString = BREAK_SYMBOL;
-                                t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
-                                break targeting;
-                            }
-
-                            if( u.getAttributeNS(NS_COG,'lid') == link.targetID )
-                            {
-                                target = u;
-                                targetDirectionChar = '↓'; // '↓' is Unicode 2193 (downwards arrow)
-                                break;
-                            }
-                        }
+                        tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',linkV) );
+                        targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
+                        targetPreviewString = BREAK_SYMBOL;
+                        t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
+                        break targeting;
                     }
 
+                    const targetPosition = t.compareDocumentPosition( target );
+                    if( targetPosition & DOCUMENT_POSITION_PRECEDING ) targetDirectionChar = '↑';
+                    else // '↓' is Unicode 2193 (downwards arrow); '↑' is 2191 (upwards arrow)
+                    {
+                        console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
+                        targetDirectionChar = '↓';
+                    }
                     configureForTarget( tNS, tLocalPart, linkV, isBit, target, partRendering );
                     targetPreviewString = readTargetPreview( target );
                 }
@@ -903,11 +891,10 @@
          // =========
             partRendering.render();
             const eSTag = partRendering.eSTag;
-            if( lidV ) // then t is a waylink target node
+            if( lidV ) // then t is waylink targetable
             {
-                t.setAttributeNS( NS_REND, 'isTarget', 'isTarget' );
+                t.setAttributeNS( NS_REND, 'isTargetable', 'isTargetable' );
                 t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // till proven otherwise
-                Documents.idAsHyperlinkToo( t, lidV );
 
               // Marginalis
               // ----------
@@ -919,8 +906,7 @@
                 Marginalia.layWhen( marginalis, eSTag );
 
               // -----
-                TargetControl.addControls( t, eSTag, /*idV*/lidV );
-                  // that idV = lidV is assured by idAsHyperlinkToo, further above
+                TargetControl.addControls( t, eSTag, /*id*/lidV );
             }
             else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
             {
@@ -1175,57 +1161,13 @@
 
 
 
-        /** Returns the waylink target node (Element) with the given *id* attribute,
-          * or null if the given document has none.
-          *
-          *     @param id (string)
-          *     @param doc (Document) A TARGID document.
-          */
-        that.getTargetById = function( id, doc )
-        {
-            let e = doc.getElementById( id );
-            if( e )
-            {
-                const lidV = e.getAttributeNS( NS_COG, 'lid' );
-                if( lidV == id ) return e;
-            }
-
-            return null;
-        };
-
-
-
-        /** Ensures that the given target node has one of the following: either
-          * (1) an *id* attribute that is both equal to the *lid* attribute,
-          *     and unique within its document, as required for an XML *ID* type; or
-          * (2) no *id* attribute.
-          *
-          *     @param t (Element) A waylink target node.
-          *     @param lidV (string) The value of t's *lid* attribute.
-          */
-        that.idAsHyperlinkToo = function( t, lidV )
-        {
-            const doc = t.ownerDocument;
-            const idV = t.getAttribute( 'id' );
-            if( idV )
-            {
-                if( lidV == idV ) t.removeAttribute( 'id' ); // pending the getElementById check below
-                else d_tsk( doc, 'Element with ' + a2s('lid',lidV) + ' has non-matching ' + a2s('id',idV) );
-            }
-            const e = doc.getElementById( lidV );
-            if( e ) d_tsk( doc, 'Element with ' + a2s('lid',lidV) + ' has non-unique *id*' );
-            else t.setAttribute( 'id', lidV );
-        };
-
-
-
         /** Tries to retrieve the indicated document for the given reader.  If *docLoc* indicates
           * the present document, then immediately the reader is given the present document as is,
           * followed by a call to reader.close.
           *
           * <p>Otherwise this method starts a retrieval process.  It may return early and leave
-          * the process to finish later.  If the process succeeds, then it provides TARGID for the
-          * document and calls reader.read.  Regardless it always finishes by calling reader.close.</p>
+          * the process to finish later.  If the process succeeds, then it calls reader.read.
+          * Regardless it always finishes by calling reader.close.</p>
           *
           *     @param docLoc (string) The document location in normal URL form.
           *     @param reader (DocumentReader)
@@ -1286,7 +1228,7 @@
                     const doc = event.target.response;
                     docReg.document = doc;
 
-                  // Set the *id* attribute of each waylink target node
+                  // Test *id* declarations
                   // ----------------------
                     const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
                     for( traversal.nextNode()/*onto the document node itself*/;; )
@@ -1294,8 +1236,8 @@
                         const t = traversal.nextNode();
                         if( t == null ) break;
 
-                        const lidV = t.getAttributeNS( NS_COG, 'lid' );
-                        if( lidV ) Documents.idAsHyperlinkToo( t, lidV );
+                        const id = t.getAttribute( 'id' );
+                        if( id ) Documents.testIdForm( t, id );
                     }
                 };
 
@@ -1329,6 +1271,33 @@
           // Send the request
           // ----------------
             req.send();
+        };
+
+
+
+        /** Tests whether the given *id* attribute declaration is well formed
+          * for the purpose of waylinkage.  Returns true if it is well formed,
+          * otherwise reports it as malformed and returns false.
+          *
+          *     @param t (Element) A waylink target node.
+          *     @param id (string) The value of t's *id* attribute.
+          */
+        that.testIdForm = function( t, id )
+        {
+            if( !id ) throw 'Null parameter';
+
+            let isWellFormed = true;
+            const doc = t.ownerDocument;
+            console.assert( t.hasAttribute('id'), A );
+            t.removeAttribute( 'id' );
+            const e = doc.getElementById( id );
+            t.setAttribute( 'id', id );
+            if( e )
+            {
+                isWellFormed = false;
+                d_tsk( doc, 'Malformed *id* declaration, value not unique: ' + a2s('id',id) );
+            }
+            return isWellFormed;
         };
 
 
@@ -1381,7 +1350,7 @@
                 tDocLoc = tDocLoc? URIs.normalized(tDocLoc): docLoc;
                 if( tDocLoc != DOCUMENT_LOCATION ) continue;
 
-                const target = document.getElementById( link.targetID ); // assumes TARGID
+                const target = document.getElementById( link.targetID );
                 if( !target) continue;
 
                 if( target.interlinkScene ) continue; // the work is already done
@@ -1396,7 +1365,7 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Starts this scanner.  It requires TARGID for the present document.
+        /** Starts this scanner.
           */
         that.start = function()
         {
@@ -1903,17 +1872,17 @@
                             const target = traversal.nextNode();
                             if( !target ) break;
 
-                            const lidV = target.getAttributeNS( NS_COG, 'lid' );
-                            if( !lidV ) continue;
+                            const id = target.getAttribute( 'id' );
+                            if( !id ) continue;
 
-                            const lidVN = lidV.length;
+                            const idN = id.length;
                             let s = sourceNodes.length - 1;
                             ss: do // seek the source nodes in *this* document that match
                             {
                                 const source = sourceNodes[s];
                                 const linkV = source.getAttributeNS( NS_COG, 'link' );
-                                if( !linkV.endsWith( lidV )
-                                  || linkV.charAt(linkV.length-lidVN-1) != '#' ) continue ss;
+                                if( !linkV.endsWith( id )
+                                  || linkV.charAt(linkV.length-idN-1) != '#' ) continue ss;
 
                               // Amend the source node
                               // ---------------------
@@ -1937,7 +1906,7 @@
                         for( const s of sourceNodes )
                         {
                             const linkV = s.getAttributeNS( NS_COG, 'link' );
-                            tsk( 'Broken link: No matching *lid* in that document: ' + a2s('link',linkV) );
+                            tsk( 'Broken link: No such *id* in that document: ' + a2s('link',linkV) );
                             setTargetPreview( s, BREAK_SYMBOL );
                             s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         }
@@ -2158,7 +2127,7 @@
                 u.hash = ''; // remove the fragment
                 const pp = u.searchParams;
                 pp.set( 'sc', 'inter' );
-                pp.set( 'link', targetNode.getAttributeNS(NS_COG,'lid') );
+                pp.set( 'link', targetNode.getAttribute('id') );
                 const h = window.history;
              // h.replaceState( /*same*/h.state, /*same*/document.title, u.href ); // TEST
                 return;
@@ -2267,12 +2236,12 @@
 
         /** Adds controls to the given target node.
           *
-          *     @param idV (string) The value of the target node's *id* attribute.
+          *     @param id (string) The value of the target node's *id* attribute.
           */
-        that.addControls = function( target, eSTag, idV )
+        that.addControls = function( target, eSTag, id )
         {
             eSTag.addEventListener( 'click', hearClick );
-            if( idV == idTargetedC ) nodeTargeted = target;
+            if( id == idTargetedC ) nodeTargeted = target;
 
           // Do hover styling where readable.css cannot [GSC]
           // ----------------
@@ -2294,7 +2263,7 @@
                 return;
             }
 
-            const t = getTargetById( id );
+            const t = document.getElementById( id );
             nodeTargeted = t? t: null;
         });
 
@@ -2602,7 +2571,7 @@
 
                         readDirectly( tDocReg, tDoc )
                         {
-                            const target = Documents.getTargetById( targetID, tDoc ); // assumes TARGID
+                            const target = tDoc.getElementById( targetID );
                             subTrace: if( target )
                             {
                               // Shield the sub-trace work with a rootward scan
@@ -2619,10 +2588,10 @@
 
                                     if( isBitNS( ns ))
                                     {
-                                        const lidV = r.getAttributeNS( NS_COG, 'lid' );
-                                        if( !lidV ) continue;
+                                        const id = r.getAttribute( 'id' );
+                                        if( !id ) continue;
 
-                                        if( isShut( newLegID( tDocLoc, lidV ))) break subTrace;
+                                        if( isShut( newLegID( tDocLoc, id ))) break subTrace;
                                           // If only for sake of efficiency, ∵ this target branch is
                                           // already covered (or will be) as part of a larger branch.
                                     }
@@ -2656,8 +2625,8 @@
 
               // Target node
               // -----------
-                const lidV = t.getAttributeNS( NS_COG, 'lid' );
-                if( lidV && isShut(newLegID(docLoc,lidV)) ) lastNode( traversal ); /* Bypass sub-branch
+                const id = t.getAttribute( 'id' );
+                if( id && isShut(newLegID(docLoc,id)) ) lastNode( traversal ); /* Bypass sub-branch
                   t, if only for efficiency's sake, as already it was traced in a separate leg. */
             }
             while( (t = traversal.nextNode()) != null );
@@ -2678,9 +2647,9 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Starts this tracer.  It requires TARGID for the present document.
+        /** Starts this tracer.
           */
-        that.start = function() // requires TARGID for the *present* document in case it gets traced
+        that.start = function()
         {
          // console.debug( 'Trace run starting' ); // TEST
             const id = ROOT_LEG_ID;
@@ -2691,7 +2660,7 @@
                 close( docReg ) { shutLeg( id ); }
                 read( docReg, doc )
                 {
-                    const target = doc.getElementById( 'root', doc ); // assumes TARGID
+                    const target = doc.getElementById( 'root', doc );
                     if( target ) traceLeg( id, target, docReg );
                     else tsk( 'Unable to trace: Missing root waybit: ' + id );
                 }
@@ -2739,7 +2708,7 @@
   *         making them harder to find.
   *
   *  [OWR]  The OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
-  *         with the source nodes and sought the target of each using (new) Documents.getTargetById.
+  *         with the source nodes and sought the target of each using Document.getElementById.
   *
   *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother

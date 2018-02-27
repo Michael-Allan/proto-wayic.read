@@ -628,13 +628,13 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  -----------------------------------------------------
  */
 
-[rend|isTarget] > eSTag
+[rend|isTargetable] > eSTag
 {
     position: relative; /* establish containing block for absolutely positioned children */
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div
+[rend|isTargetable] > eSTag > /*marginalis*/div
 {
     position: absolute; top: 0; /* further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -642,26 +642,26 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
+[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     position: absolute; top: 0; left: 0; /* [HSP] sizing deferred to readable.js */
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
+[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
 {
     fill: currentColor;
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
+[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
 {
     opacity: 0.5;
     stroke: currentColor;
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div > icon
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon
 {
     position: absolute;
     top: 0; right: 0;
@@ -671,50 +671,50 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 
 [rend|isWaybit]
-[rend|isTarget] > eSTag > /*marginalis*/div > icon /* when it's an underbit */
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* when it's an underbit */
 {
     width: 3.5em; /* wider to better separate from overbit content */
 }
 
 
 [rend|isWaybit] [rend|isComposer] >
-[rend|isTarget] > eSTag > /*marginalis*/div > icon /* when moreover it's a topmost component */
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* when moreover it's a topmost component */
 {
     width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there's no direct overbit content */
 }
 
 
-[rend|isTarget] > eSTag > /*marginalis*/div > icon::before
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon::before
 {
     content: '\1f78b'; /* Unicode 1f78b (round target) */
 }
-[rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
+[rend|isTargetable][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
 {
-    content: '\1f5d9'; /* Unicode 1f5d9 (cancellation X).  Changing? sync'd ← readable.js BREAK_SYMBOL. */
+    content: '│'; /* '│' is Unicode 2502 (box drawings light vertical) */
 }
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
+html[rend|lighting='neon'] [rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.50;
 }
-html[rend|lighting='neon'] [rend|isTarget] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='neon'] [rend|isTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.25;
 }
 
 
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*edge mark*/circle
+html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
 }
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*line*/path
+html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*line*/path
 {
     stroke: hsl( 0, 80%, 80% );
 }
-html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div > icon
 {
     color:  hsl( 0, 80%, 80% );
 }
@@ -722,25 +722,25 @@ html[rend|lighting='neon'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*marginalis*/div > /*liner*/svg
+html[rend|lighting='paper'] [rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.30;
 }
-html[rend|lighting='paper'] [rend|isTarget] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='paper'] [rend|isTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.15;
 }
 
 
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*edge mark*/circle
+html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
 }
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div /*line*/path
+html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*line*/path
 {
     stroke: hsl( 0, 100%, 40% );
 }
-html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div > icon
 {
     color:  hsl( 0, 100%, 40% );
 }
@@ -750,14 +750,14 @@ html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginali
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  --  s e l f - h y p e r l i n k i n g  --------------
  */
 
-[rend|isTarget] > eSTag > /*marginalis*/div > icon,
-[rend|isTarget] > eSTag > eQName
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon,
+[rend|isTargetable] > eSTag > eQName
 {
     cursor: pointer; /* has click function, as per readable.js TargetControl handleClick */
 }
 
 
-[rend|isTarget] > eSTag > eQName
+[rend|isTargetable] > eSTag > eQName
 {
     position: relative; /* enabling *z-index* change on hover */
     transition-property:           z-index;
@@ -768,17 +768,17 @@ html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginali
 }
 
 
-[rend|isTarget] > eSTag > eQName:hover,
+[rend|isTargetable] > eSTag > eQName:hover,
                        /* … icon:hover ~ eQName, *//* in lieu of which [GSC], readable.js does: */
-[rend|isTarget] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'],
-[rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+[rend|isTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'],
+[rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     z-index: 1; /* raised clear of the *offWayScreen* */
 }
 
 
-[rend|isTarget]:target > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path,
-[rend|isTarget]:target > eSTag > /*marginalis*/div > icon
+[rend|isTargetable]:target > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path,
+[rend|isTargetable]:target > eSTag > /*marginalis*/div > icon
 {
     opacity: 1 !important;
 }
@@ -786,7 +786,7 @@ html[rend|lighting='paper'] [rend|isTarget][rend|isOrphan] > eSTag > /*marginali
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+html[rend|lighting='neon'] [rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.7;
 }
@@ -794,7 +794,7 @@ html[rend|lighting='neon'] [rend|isTarget] > eSTag:hover > /*marginalis*/div > i
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isTarget] > eSTag:hover > /*marginalis*/div > icon
+html[rend|lighting='paper'] [rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.5;
 }
