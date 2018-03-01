@@ -129,7 +129,6 @@
       *     @see #SUB_NS_STEP
       */
     const NS_WAYSCRIPT_DOT = 'data:,wayscript.';
-
     const NS_WAYSCRIPT_DOT_LENGTH = NS_WAYSCRIPT_DOT.length;
 
 
@@ -366,14 +365,14 @@
 
 
 
-    /** Configures a waylink source node for a given target node.
+    /** Configures a bitform waylink source node for a given target node.
       *
       * @param sourceNS (string) The namespace of the source node.
       * @param sourceLocalPart (string) The local part of the source node's name.
       * @param linkV (string) The value of the source node's *link* attribute.
       * @param isBit (boolean) Whether the source node is a waybit.
       * @param target (Element) The target node.  The target node may be situated in this document,
-      *   or a separate document in the case of an outer link.
+      *   or a separate document in the case of an inter-document link.
       * @param rendering (PartRenderingC)
       */
     function configureForTarget( sourceNS, sourceLocalPart, linkV, isBit, target, rendering )
@@ -398,7 +397,7 @@
 
 
 
-    /** Configures a waylink source node for a given target preview.
+    /** Configures a bitform waylink source node for a given target preview.
       *
       *     @param source (Element) The source node.
       *     @param preview (Element) Its *preview* element.
@@ -461,9 +460,6 @@
 
 
     const DOCUMENT_POSITION_FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
-
-
-
     const DOCUMENT_POSITION_PRECEDING = Node.DOCUMENT_POSITION_PRECEDING;
 
 
@@ -506,9 +502,12 @@
 
 
 
-    const HYPERLINK_SYMBOL = '*';
+    /** The symbol to indicate a hyperlink.  It is rendered in superscript.
+      */
+    const HYPERLINK_SYMBOL = '*'; // '*' is Unicode 2a (asterisk)
 
-    const HYPERLINK_SYMBOLS = [HYPERLINK_SYMBOL, '†', '‡'];
+    const HYPERLINK_SYMBOLS = [HYPERLINK_SYMBOL, '†', '‡']; /* '†' is Unicode 2020 (dagger);
+      '‡' 2021 (double dagger).  Avoiding '⁑' 2051 (two asterisks) as fonts render it poorly. */
 
 
 
@@ -632,8 +631,8 @@
       // Layout is now stable, more or less
       // --------------------
         showDocument();
-        InterdocScanner.start();
-        OuterWaylinkResolver.start();
+        InterDocScanner.start();
+        InterDocWaylinkRenderer.start();
         WayTracer.start();
     }
 
@@ -712,6 +711,7 @@
             const t = traversal.nextNode(); // current element
             if( t == null ) break;
 
+
           // ============
           // General form of element t
           // ============
@@ -736,51 +736,79 @@
                 if( !getComputedStyle(t).getPropertyValue('display').startsWith('inline') ) layoutBlock = t;
             }
 
-          // ============
-          // Form testing of element t
-          // ============
-            const linkV = ( ()=> // waylink declaration, non-null if t is a source node
-            {
-                let v = t.getAttributeNS( NS_COG, 'link' );
-                if( !v ) return null;
 
-                if( !isBit )
-                {
-                    tsk( 'A non-waybit element with a waylink attribute: ' + a2s(attrName,v) );
-                    v = null;
-                }
-                return v;
-            })();
-
-          // ===================
-          // Hyperlink targeting by element t
-          // ===================
-            if( isHTML && tLocalPart == 'a' )
+          // =================
+          // Hyperform linkage by element t
+          // =================
+            hyperform: if( isHTML && tLocalPart == 'a' )
             {
                 const href = t.getAttribute( 'href' );
-                if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
-                  // translating waycast space → universal space
+                const linkV = t.getAttributeNS( NS_COG, 'link' );
+                let superscriptSymbol;
+
+              // hyperlink
+              // - - - - -
+                if( href )
+                {
+                    if( linkV )
+                    {
+                        tsk( 'An *a* element with both *href* and *link* attributes: '
+                          + a2s('href',href) + ', ' + a2s('link',link) );
+                    }
+                    if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
+                      // translating waycast space → universal space
+                    superscriptSymbol = ( ()=>
+                    {
+                        if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
+                        {
+                            layoutBlock_aLast = layoutBlock;
+                            layoutBlock_aCount = 0;
+                            return HYPERLINK_SYMBOL;
+                        }
+
+                        const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
+                        return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
+                    })();
+                }
+
+              // waylink
+              // - - - -
+                else if( linkV )
+                {
+                    let link;
+                    try { link = new LinkAttribute( linkV ); }
+                    catch( unparseable )
+                    {
+                        tsk( unparseable );
+                        break hyperform;
+                    }
+
+                    link.hrefTo( t );
+                    const targetDirection = new TargetDirection( t, link );
+                    switch( targetDirection.symbol ) // substituting symbols more fit for superscipting
+                    {
+                        case TARGET_DIRECTION_DOWN:
+                            superscriptSymbol = '▾'; // 25be (black down-pointing small triangle)
+                            break;
+                        case TARGET_DIRECTION_OUT:
+                            superscriptSymbol = '▸'; // 25b8    "   right-  "
+                            break;
+                        case TARGET_DIRECTION_UP:
+                            superscriptSymbol = '▴'; // 25b4    "   up-     "
+                            break;
+                        default:
+                            superscriptSymbol = '▪'; // 25aa    "   small square
+                            break;
+                    }
+                }
+
+              // Superscripting
+              // --------------
                 const aWrapper = document.createElementNS( NS_REND, 'a' );
                 t.parentNode.insertBefore( aWrapper, t );
                 aWrapper.appendChild( t );
-                const sup = document.createElementNS( NS_HTML, 'sup' );
-                aWrapper.appendChild( sup );
-
-              // Indicator symbol
-              // ----------------
-                const symbol = ( ()=>
-                {
-                    if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
-                    {
-                        layoutBlock_aLast = layoutBlock;
-                        layoutBlock_aCount = 0;
-                        return HYPERLINK_SYMBOL;
-                    }
-
-                    const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
-                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
-                })();
-                sup.appendChild( document.createTextNode( symbol ));
+                const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
+                sup.appendChild( document.createTextNode( superscriptSymbol ));
             }
 
             if( !isWayscript ) continue tt;
@@ -798,9 +826,9 @@
             const partRendering = new PartRenderingC( t );
 
 
-          // ==========
-          // Waylinkage of element t
-          // ==========
+          // ==================
+          // Bitform waylinkage of element t
+          // ==================
             const lidV = ( ()=> // target identifier, non-null if t is a potential waylink target node
             {
                 if( !isBit ) return null;
@@ -809,6 +837,18 @@
                 if( v && Documents.testIdForm(t,v) ) return v;
 
                 return null;
+            })();
+            const linkV = ( ()=> // waylink declaration, non-null if t is a source node
+            {
+                let v = t.getAttributeNS( NS_COG, 'link' );
+                if( !v ) return null;
+
+                if( !isBit )
+                {
+                    tsk( 'A non-waybit element with a *link* attribute: ' + a2s('link',v) );
+                    v = null;
+                }
+                return v;
             })();
             source: if( linkV )
             {
@@ -832,49 +872,35 @@
                     break source;
                 }
 
-                const preview = document.createElementNS( NS_REND, 'preview' );
-                const tDocLoc = link.targetDocumentLocation;
-                let targetPreviewString, targetDirectionChar;
+                const targetDirection = new TargetDirection( t, link );
+                const targetDirectionSymbol = targetDirection.symbol;
+                let targetPreviewString;
                 targeting:
                 {
-                    if( tDocLoc.length > 0 )
+                    if( targetDirectionSymbol == TARGET_DIRECTION_OUT ) // inter-document waylink
                     {
-                        const tDocLocN = URIs.normalized( tDocLoc );
-                        if( tDocLocN != DOCUMENT_LOCATION ) // then the target is outside this document
-                        {
-                            OuterWaylinkResolver.registerLink( t, tDocLocN );
-                            targetDirectionChar = '→'; // '→' is Unicode 2192 (rightwards arrow)
-                            partRendering.isChangeable = true;
-                            targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
-                            break targeting;
-                        }
+                        InterDocWaylinkRenderer.registerLink( t, targetDirection.documentLocationN );
+                        partRendering.isChangeable = true;
+                        targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
+                        break targeting;
                     }
 
-                    // the target is within this document
-                    let target = document.getElementById( link.targetID );
-                    if( !target )
+                    if( targetDirectionSymbol == TARGET_DIRECTION_UP_DOWN ) // broken waylink
                     {
-                        tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',linkV) );
-                        targetDirectionChar = '↕'; // '↕' is Unicode 2195 (up down arrow)
                         targetPreviewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         break targeting;
                     }
 
-                    const targetPosition = t.compareDocumentPosition( target );
-                    if( targetPosition & DOCUMENT_POSITION_PRECEDING ) targetDirectionChar = '↑';
-                    else // '↓' is Unicode 2193 (downwards arrow); '↑' is 2191 (upwards arrow)
-                    {
-                        console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
-                        targetDirectionChar = '↓';
-                    }
+                    // the target is within the present document
+                    const target = targetDirection.target;
                     configureForTarget( tNS, tLocalPart, linkV, isBit, target, partRendering );
                     targetPreviewString = readTargetPreview( target );
                 }
                 const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
-                a.setAttribute( 'href', tDocLoc + '#' + link.targetID );
-                a.appendChild( preview );
+                link.hrefTo( a );
+                const preview = a.appendChild( document.createElementNS( NS_REND, 'preview' ));
                 preview.appendChild( document.createTextNode( targetPreviewString ));
                 configureForTargetPreview( t, preview, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
@@ -882,7 +908,7 @@
                  .appendChild( document.createTextNode( '⋱⋱' ));
                     // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
                 a.appendChild( document.createElementNS( NS_REND, 'targetPointer' ))
-                 .appendChild( document.createTextNode( targetDirectionChar ));
+                 .appendChild( document.createTextNode( targetDirectionSymbol ));
             }
 
 
@@ -1319,10 +1345,10 @@
     /** A scanner of related documents.  It discovers related documents, scans them for references
       * to the present document, and updates the rendering of the present document based on the results.
       */
-    const InterdocScanner = ( function()
+    const InterDocScanner = ( function()
     {
 
-        const that = {}; // the public interface of InterdocScanner
+        const that = {}; // the public interface of InterDocScanner
 
 
 
@@ -1346,9 +1372,9 @@
 
                 // No need here to fend against other types of malformed link declaration.
                 // Rather take it as the wayscribe intended.
-                let tDocLoc = link.targetDocumentLocation;
-                tDocLoc = tDocLoc? URIs.normalized(tDocLoc): docLoc;
-                if( tDocLoc != DOCUMENT_LOCATION ) continue;
+                let targDocLoc = link.targetDocumentLocation;
+                targDocLoc = targDocLoc? URIs.normalized(targDocLoc): docLoc;
+                if( targDocLoc != DOCUMENT_LOCATION ) continue;
 
                 const target = document.getElementById( link.targetID );
                 if( !target) continue;
@@ -1381,6 +1407,154 @@
           //// TODO.  Start by traversing the waycast directory indeces.
             // Though the DOM for these on a 'file' scheme URL is self generated by the browser,
             // still it seems to be accessible (console tests, Chrome and Firefox).
+        };
+
+
+
+       // - - -
+
+        return that;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
+    /** A device to complete the rendering of inter-document bitform waylinks, those whose target nodes
+      * are outside of the present document.  It fetches the documents, reads their target nodes
+      * and amends the rendered wayscript accordingly.
+      */
+    const InterDocWaylinkRenderer = ( function()
+    {
+
+        const that = {}; // the public interface of InterDocWaylinkRenderer
+
+
+
+        const MYSTERY_SYMBOL = '?';
+
+
+
+        function setTargetPreview( sourceNode, newPreviewString )
+        {
+            const forelinker = sourceNode.lastChild;
+            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
+            const previewText = preview.firstChild;
+            previewText.replaceData( 0, previewText.length, newPreviewString );
+            configureForTargetPreview( sourceNode, preview, newPreviewString );
+        }
+
+
+
+        /** Map of source nodes to resolve.  The entry key is the location of a document (string)
+          * in normal URL form.  The value is a list of all source nodes (Array of Element)
+          * within the *present* document that target the *keyed* document.
+          */
+        const sourceNodeRegistry = new Map();
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** Tells this renderer of an inter-document link to be resolved.
+          *
+          *     @param sourceNode (Element) A source node that has a target in another document.
+          *     @param targDocLoc (string) The document location in normal URL form.
+          *
+          *     @see URIs#normalized
+          */
+        that.registerLink = function( sourceNode, targDocLoc )
+        {
+            if( URIs.isDetectedAbnormal( targDocLoc )) throw URIs.message_abnormal( targDocLoc );
+
+            let sourceNodes = sourceNodeRegistry.get( targDocLoc );
+            if( sourceNodes === undefined )
+            {
+                sourceNodes = [];
+                sourceNodeRegistry.set( targDocLoc, sourceNodes );
+            }
+            sourceNodes.push( sourceNode );
+        };
+
+
+
+        /** Starts this renderer.
+          */
+        that.start = function()
+        {
+            if( sourceNodeRegistry.size == 0 ) return;
+
+            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
+            for( const entry of sourceNodeRegistry )
+            {
+                const targDocLoc = entry[0];
+                const sourceNodes = entry[1];
+                Documents.readNowOrLater( targDocLoc, new class extends DocumentReader
+                {
+                    close( docReg )
+                    {
+                        if( docReg.document == null )
+                        {
+                            for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
+                        }
+                        sourceNodeRegistry.delete( targDocLoc );
+                    }
+
+                    read( docReg, targDoc )
+                    {
+                      // Try to resolve waylinks, re-rendering the source node of each
+                      // -----------------------
+                        const traversal = targDoc.createNodeIterator( targDoc, SHOW_ELEMENT );
+                          // seeking the target nodes in *that* document [IDW]
+                        tt: for( traversal.nextNode()/*onto the document node itself*/;; )
+                        {
+                            const target = traversal.nextNode();
+                            if( !target ) break;
+
+                            const id = target.getAttribute( 'id' );
+                            if( !id ) continue;
+
+                            const idN = id.length;
+                            let s = sourceNodes.length - 1;
+                            ss: do // seek the source nodes in *this* document that match
+                            {
+                                const source = sourceNodes[s];
+                                const linkV = source.getAttributeNS( NS_COG, 'link' );
+                                if( !linkV.endsWith( id )
+                                  || linkV.charAt(linkV.length-idN-1) != '#' ) continue ss;
+
+                              // Amend the source node
+                              // ---------------------
+                                const sourceNS = source.namespaceURI;
+                                const reRendering = new PartRenderingC2( source );
+                                configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
+                                  target, reRendering );
+                                reRendering.render();
+                                setTargetPreview( source, readTargetPreview(target) );
+
+                              // De-register it
+                              // --------------
+                                sourceNodes.splice( s, /*removal count*/1 );
+                                if( sourceNodes.length == 0 ) break tt; // done with this targDoc
+
+                            } while( --s >= 0 )
+                        }
+
+                      // Mark any remaining source nodes as broken
+                      // -----------------------------------------
+                        for( const s of sourceNodes )
+                        {
+                            const linkV = s.getAttributeNS( NS_COG, 'link' );
+                            tsk( 'Broken link: No such *id* in that document: ' + a2s('link',linkV) );
+                            setTargetPreview( s, BREAK_SYMBOL );
+                            s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
+                        }
+                    }
+                });
+            }
         };
 
 
@@ -1596,7 +1770,13 @@
        // ----------------------------------------------------------------------------------------------
 
 
-        /** The location of the targeted document as a URL string, or the empty string if the *link*
+        /** Sets an *href* attribute on the given element in reference to the target node.
+          */
+        hrefTo( el ) { el.setAttribute( 'href', this._targetDocumentLocation + '#' + this._targetID ); }
+
+
+
+        /** The location of the target document as a URL string, or the empty string if the *link*
           * attribute encodes a *same-document reference*.
           *
           *     @see https://tools.ietf.org/html/rfc3986#section-4.4
@@ -1614,8 +1794,6 @@
         /** The unparsed string value of the attribute, as declared.
           */
         get value() { return this._stringValue; }
-
-
 
     }
 
@@ -1764,154 +1942,6 @@
                     window.requestAnimationFrame( layIf ); // wait for the tag to get laid
                 }
                 else console.error( "Cannot lay marginalis, start tag isn't being laid" );
-            }
-        };
-
-
-
-       // - - -
-
-        return that;
-
-    }() );
-
-
-
-   // ==================================================================================================
-
-
-    /** A device to complete the rendering of outer waylinks, those whose target nodes are outside
-      * of the present document.  It fetches the documents, reads their target nodes and amends
-      * the rendered wayscript accordingly.
-      */
-    const OuterWaylinkResolver = ( function()
-    {
-
-        const that = {}; // the public interface of OuterWaylinkResolver
-
-
-
-        const MYSTERY_SYMBOL = '?';
-
-
-
-        function setTargetPreview( sourceNode, newPreviewString )
-        {
-            const forelinker = sourceNode.lastChild;
-            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
-            const previewText = preview.firstChild;
-            previewText.replaceData( 0, previewText.length, newPreviewString );
-            configureForTargetPreview( sourceNode, preview, newPreviewString );
-        }
-
-
-
-        /** Map of source nodes to resolve.  The entry key is the location of a document (string)
-          * in normal URL form.  The value is a list of all source nodes (Array of Element)
-          * within the *present* document that target the *keyed* document.
-          */
-        const sourceNodeRegistry = new Map();
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Tells this resolver of an outer link to be resolved.
-          *
-          *     @param sourceNode (Element) A source node that has an outer target.
-          *     @param tDocLoc (string) The document location in normal URL form.
-          *
-          *     @see URIs#normalized
-          */
-        that.registerLink = function( sourceNode, tDocLoc )
-        {
-            if( URIs.isDetectedAbnormal( tDocLoc )) throw URIs.message_abnormal( tDocLoc );
-
-            let sourceNodes = sourceNodeRegistry.get( tDocLoc );
-            if( sourceNodes === undefined )
-            {
-                sourceNodes = [];
-                sourceNodeRegistry.set( tDocLoc, sourceNodes );
-            }
-            sourceNodes.push( sourceNode );
-        };
-
-
-
-        /** Starts this resolver.
-          */
-        that.start = function()
-        {
-            if( sourceNodeRegistry.size == 0 ) return;
-
-            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
-            for( const entry of sourceNodeRegistry )
-            {
-                const tDocLoc = entry[0];
-                const sourceNodes = entry[1];
-                Documents.readNowOrLater( tDocLoc, new class extends DocumentReader
-                {
-                    close( docReg )
-                    {
-                        if( docReg.document == null )
-                        {
-                            for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
-                        }
-                        sourceNodeRegistry.delete( tDocLoc );
-                    }
-
-                    read( docReg, tDoc )
-                    {
-                      // Try to resolve waylinks, re-rendering the source node of each
-                      // -----------------------
-                        const traversal = tDoc.createNodeIterator( tDoc, SHOW_ELEMENT );
-                          // seeking the target nodes in *that* document [OWR]
-                        tt: for( traversal.nextNode()/*onto the document node itself*/;; )
-                        {
-                            const target = traversal.nextNode();
-                            if( !target ) break;
-
-                            const id = target.getAttribute( 'id' );
-                            if( !id ) continue;
-
-                            const idN = id.length;
-                            let s = sourceNodes.length - 1;
-                            ss: do // seek the source nodes in *this* document that match
-                            {
-                                const source = sourceNodes[s];
-                                const linkV = source.getAttributeNS( NS_COG, 'link' );
-                                if( !linkV.endsWith( id )
-                                  || linkV.charAt(linkV.length-idN-1) != '#' ) continue ss;
-
-                              // Amend the source node
-                              // ---------------------
-                                const sourceNS = source.namespaceURI;
-                                const reRendering = new PartRenderingC2( source );
-                                configureForTarget( sourceNS, source.localName, linkV, isBitNS(sourceNS),
-                                  target, reRendering );
-                                reRendering.render();
-                                setTargetPreview( source, readTargetPreview(target) );
-
-                              // De-register it
-                              // --------------
-                                sourceNodes.splice( s, /*removal count*/1 );
-                                if( sourceNodes.length == 0 ) break tt; // done with this tDoc
-
-                            } while( --s >= 0 )
-                        }
-
-                      // Mark any remaining source nodes as broken
-                      // -----------------------------------------
-                        for( const s of sourceNodes )
-                        {
-                            const linkV = s.getAttributeNS( NS_COG, 'link' );
-                            tsk( 'Broken link: No such *id* in that document: ' + a2s('link',linkV) );
-                            setTargetPreview( s, BREAK_SYMBOL );
-                            s.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
-                        }
-                    }
-                });
             }
         };
 
@@ -2273,6 +2303,91 @@
 
 
 
+
+   // ==================================================================================================
+
+
+    const TARGET_DIRECTION_DOWN      = '↓'; // 2193 (downwards arrow) in Unicode
+    const TARGET_DIRECTION_OUT       = '→'; // 2192 rightwards   "
+    const TARGET_DIRECTION_UP        = '↑'; // 2191    upwards   "
+    const TARGET_DIRECTION_UP_DOWN   = '↕'; // 2195    up down   "
+
+
+
+    /** The relative direction from a waylink source node to its target.
+      */
+    class TargetDirection
+    {
+
+
+        /** Constructs a TargetDirection.
+          *
+          *     @param source (Element) The waylink source node.
+          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
+          */
+        constructor( source, link )
+        {
+            const docLoc = link.targetDocumentLocation;
+            if( docLoc.length > 0 )
+            {
+                const docLocN = URIs.normalized( docLoc );
+                if( docLocN != DOCUMENT_LOCATION ) // then the target is outside the present document
+                {
+                    this._documentLocationN = URIs.normalized( docLoc );
+                    this._symbol = TARGET_DIRECTION_OUT;
+                    this._target = null;
+                    return;
+                }
+            }
+
+            // the target is within the present document
+            this._documentLocationN = '';
+            const target = document.getElementById( link.targetID );
+            this._target = target;
+            if( target )
+            {
+                const targetPosition = source.compareDocumentPosition( target );
+                if( targetPosition & DOCUMENT_POSITION_PRECEDING ) this._symbol = TARGET_DIRECTION_UP;
+                else
+                {
+                    console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
+                    this._symbol = TARGET_DIRECTION_DOWN;
+                }
+            }
+            else
+            {
+                tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
+                this._symbol = TARGET_DIRECTION_UP_DOWN;
+            }
+        }
+
+
+
+       // ----------------------------------------------------------------------------------------------
+
+
+        /** The nominal location of the target document as a URL string in normal form,
+          * or the empty string if the target is nominally in the present document.
+          */
+        get documentLocationN() { return this._documentLocationN; }
+
+
+
+        /** One of the four TARGET_DIRECTION_* symbols, indicating the relative direction to the target.
+          */
+        get symbol() { return this._symbol; }
+
+
+
+        /** The waylink target node within the present document, or null if there is none.
+          * This property is null in the case of an inter-document or broken waylink.
+          */
+        get target() { return this._target; }
+
+    }
+
+
+
    // ==================================================================================================
 
 
@@ -2305,7 +2420,6 @@
 
 
         const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
-
         const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
 
 
@@ -2542,7 +2656,7 @@
                     try { link = new LinkAttribute( linkV ); }
                     catch( unparseable ) { break source; }
 
-                    // No need here to fend against other types of malformed declaration.
+                    // No need here to fend against other types of malformed waylink declaration.
                     // Rather let the trace extend as the wayscribe intended.
                     let tDocLoc = link.targetDocumentLocation;
                     tDocLoc = tDocLoc? URIs.normalized(tDocLoc): docLoc;
@@ -2696,6 +2810,9 @@
   *
   *  [HSP]  HTML-embedded styling property, as per readable.css.
   *
+  *  [IDW]  The InterDocWaylinkRenderer might run marginally faster if (instead) it began the traversal
+  *         with the source nodes and sought the target of each using Document.getElementById.
+  *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
   *  [NNR]  Not NS_REND.  Here avoiding renderer-specific elements in favour of standard HTML.
@@ -2706,9 +2823,6 @@
   *         display order so not to interfere with the *declaration* order of its invariant siblings.
   *         Normally it would be declared earlier, but that would complicate the lookup of its siblings,
   *         making them harder to find.
-  *
-  *  [OWR]  The OuterWaylinkResolver might run marginally faster if (instead) it began the traversal
-  *         with the source nodes and sought the target of each using Document.getElementById.
   *
   *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother

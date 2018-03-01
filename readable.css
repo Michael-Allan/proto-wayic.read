@@ -222,8 +222,13 @@ rend|a:hover > html|sup
 rend|a > html|sup
 {
     color: var(--hyperlink-color);
-    font-size: 0.9em;
     line-height: 0.5em; /* preserve line spacing despite an (implicit) *vertical-align* of 'super' */
+}
+
+
+rend|a > html|a[cog|link] + html|sup /* hyperform waylink, symbolized by a small geometric shape */
+{
+    font-size: inherit; /* defeat the browser's size reduction for the *sup* element, if any */
 }
 
 
