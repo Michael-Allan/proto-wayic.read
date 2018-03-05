@@ -188,6 +188,12 @@ html|a
 }
 
 
+html|a[href]
+{
+    cursor: url('link_cursor/hyperlink.svg') 13 2 /* HLINK_CURSOR */, pointer; /* [CVU] */
+}
+
+
 rend|a > html|a
 {
     text-decoration-color: transparent; /* redundant but for enabling a transition effect */
@@ -223,12 +229,6 @@ rend|a > html|sup
 {
     color: var(--hyperlink-color);
     line-height: 0.5em; /* preserve line spacing despite an (implicit) *vertical-align* of 'super' */
-}
-
-
-rend|a > html|a[cog|link] + html|sup /* hyperform waylink, symbolized by a small geometric shape */
-{
-    font-size: inherit; /* defeat the browser's size reduction for the *sup* element, if any */
 }
 
 
@@ -375,7 +375,7 @@ rend|forelinker > a:focus:not(:active)
 rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 {
     display: inline-block; /* enables *min-width* */
-    min-width: 2em; /* = VT_PAD × 2; enables *text-align* */
+    min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
     text-align: center; /* over the left glyph-edge of the *vertical truncator* */
 }
 
@@ -396,7 +396,8 @@ rend|forelinker > a > verticalTruncator
 
 rend|forelinker > a > verticalTruncator
 {
-    padding-left: 1em; /* VT_PAD; extra click surface + indentation beneath the overlying preview text */
+    padding-left: 1em; /* extra click surface + indentation beneath the overlying preview text; VT_PAD_L */
+    padding-right: 4em; /* extra click surface */
     position: relative; /* enabling *z-index* change on hover */
 }
 rend|forelinker > a:hover > verticalTruncator
@@ -407,24 +408,30 @@ rend|forelinker > a:hover > verticalTruncator
 }
 
 
-rend|forelinker > a > targetPointer /* content is an arrow */
+/* - - -  target orientation   - - - - -
+ */
+rend|forelinker/*bitform*/ > a:not([href^='#']), /* with a target reference in interdocument form */
+rend|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
 {
-    color: var(--hyperlink-color);
-    margin-left: 2em;
-    opacity: 0;
-    position: relative; z-index: 1; /* raised clear of the *offWayScreen* */
-    transition: opacity 0.2s ease-out; /* property, duration, timing function */
-    transition-delay: 0.3s; /* avoid distracting flash on passing */
+    cursor: url('link_cursor/waylink_out.svg') 13 2, pointer;
 }
 
 
-rend|forelinker > a:focus > targetPointer, /* † */
-rend|forelinker > a:hover > targetPointer
+rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='up'], /* intradocument, target above */
+rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='up'][cog|link]
 {
-    opacity: 1;
+    cursor: url('link_cursor/waylink_in_up.svg') 13 2, pointer;
 }
-  /* † Focus rule fails to apply opacity.  Chrome 59 fails entirely.
-       Firefox 52 fails only when *href* is local to document. */
+rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='down'], /* target below */
+rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='down'][cog|link]
+{
+    cursor: url('link_cursor/waylink_in_down.svg') 13 2, pointer;
+}
+rend|forelinker/*bitform*/ > a[href^='#']:not([rend|targetDirection]), /* target missing */
+rend|a       /*hyperform*/ > a[href^='#']:not([rend|targetDirection])[cog|link]
+{
+    cursor: url('link_cursor/waylink_in.svg') 13 2, pointer;
+}
 
 
 /* - - -  neon   - - - - - - - - - - - -
@@ -758,7 +765,8 @@ html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*
 [rend|isTargetable] > eSTag > /*marginalis*/div > icon,
 [rend|isTargetable] > eSTag > eQName
 {
-    cursor: pointer; /* has click function, as per readable.js TargetControl handleClick */
+    cursor: url('link_cursor/hyperlink.svg') 13 2 /* = HLINK_CURSOR */, pointer; /* [CVU]
+      Has click function, as per readable.js TargetControl handleClick. */
 }
 
 
@@ -866,6 +874,9 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
  *  [DCE]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
  *
  *  [CON]  Console.  https://console.spec.whatwg.org/
+ *
+ *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
+ *         wrongly resolves the relative URL against the document rather than the style sheet.
  *
  *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
  *         “general sibling combinator” is really rather particular in its application, in that it

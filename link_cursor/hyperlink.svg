@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!-- - -
+ ! hyperlink.svg - Cursor for HTML hyperlinks.
+ !
+ ! Copyright © 2018 Michael Allan and contributors.  Licence MIT.
+ -->
+<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'
+      width='34' height='38'>
+    <use xlink:href='#hand'/>
+    <defs>
+
+
+
+<!-- - -
+ ! Shadow effect.
+ -->
+<filter id='shadow'> <!-- changing below?  sync'd → #hand_shadow, waylink_in_up.svg#arrow_shadow -->
+    <feDropShadow dx='1' dy='1.5' flood-opacity='.4' stdDeviation='0.5'/>
+    </filter>
+
+
+
+<!-- - -
+ ! Hand pointing up.
+ !
+ ! Modified from an original drawn and released to the public domain by Manuel Campagnoli.
+ ! Source: https://commons.wikimedia.org/wiki/File:Pointing_hand_cursor_vector.svg?oldid=228356657
+ !
+ ! Changing?  sync'd → waylink_*.svg
+ -->
+<g id='hand'>
+    <path style='filter:url(#hand_shadow); stroke:#fff; stroke-width:2'
+      d='m 26.59 34
+       c .2763-1.502 1.308-3.14 2.006-5.406 1.55-4.54 1.42-5.75 1.4-10.59
+       l -2-2
+       h -2l-1.5-2
+       h -2.5
+       l -1.5-2
+       s -2.561-.01146-4.5 0
+       l .003 4.995
+       v -11
+       c 0-.565-.3618-1.696-.5003-2-.2715-.5963-1.485-1-2.5-1-1.01 0-2.096.1025-2.5 1-.2161.48-.5 1.525-.5 2
+       v 13
+       c -2.09-2.44-2.444-3.53-5.5-3-3.379.5867 1.192 8.917 3 10 3.152 2.709 5.062 6.01 5.5 8
+       z'/>
+    <rect style='fill:#fff' x='21' y='13' width='1' height='5'/>
+    <rect style='fill:#fff' x='25' y='15' width='1' height='4'/>
+    <filter id='hand_shadow' width='130%' height='130%'>
+        <!-- Changing below?  sync'd ← hyperlink.svg#shadow  [FL] -->
+        <feDropShadow dx='1' dy='1.5' flood-opacity='.4' stdDeviation='0.5'/>
+        </filter>
+    </g>
+
+
+
+        </defs>
+    </svg>
+
+
+
+<!-- - -
+ ! Notes.  - see notes.txt -
+ -->

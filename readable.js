@@ -11,11 +11,20 @@
   *
   * SPECIAL MARKUP
   * --------------
-  *   The renderer introduces its own markup to the document which includes the following:
-  *   (for the notation, see the key further below)
+  *   The renderer introduces its own markup to the document as outlined in this section.
+  *   Key to the outline:
   *
-  *   Any element
-  *   - - - - - -
+  *          * blah          · Element ‘blah’ in namespace NS_REND, the default in this notation †
+  *          * foo:bar        · Element ‘bar’ in namespace NS_*FOO*
+  *              * [attrib]    · Attribute of the element in namespace NS_REND †
+  *              * [:attrib]    · Attribute of the element in no namespace
+  *              * [foo:attrib] · Attribute of the element in namespace NS_*FOO*
+  *              * foo:baz      · Child element ‘baz’
+  *
+  *                                            † Unless otherwise marked, the namespace
+  *                                              of an element or attribute is NS_REND.
+  *   Element, any
+  *   - - - -
   *      * [isOnWayBranch] · Whether this element is (with all of its descendants) on way
   *
   *   html:html
@@ -35,17 +44,18 @@
   *
   *   a  (rend:a, that is)
   *   -
-  *      * html:a  · Author’s hyperlink, as opposed to one injected by this renderer
-  *      * html:sup · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *      * html:a
+  *          * [cog:link]        · Waylink declaration, if the element is a hyperform source node
+  *          * [targetDirection] · Direction to the target node ('up' or 'down') if it’s
+  *                                an intradocument waylink and the target node exists
+  *      * html:sup   · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
   *
-  *   Wayscript element
+  *   Wayscript element, any
   *   - - - - - - - - -
-  *      * [hasLeader]        · Has leading, non-whitespace text?  [BA]
-  *      * [hasPreviewString] · Is a waylink source node with a non-empty preview of the target text?
-  *      * [hasShortName]     · Has a rendered name no longer than three characters?
-  *      * [isBroken]        · Is a waylink source node with a broken target reference?
-  *      * [isChangeable]   · Has a rendering that might later change?
-  *      * [isComposer]    · Is a composer element?
+  *      * [hasLeader]    · Has leading, non-whitespace text?  [BA]
+  *      * [hasShortName] · Has a rendered name no longer than three characters?
+  *      * [isChangeable] · Has a rendering that might later change?
+  *      * [isComposer]   · Is a composer element?
   *      * [isOrphan]     · Is waylink targetable, yet targeted by no source node?
   *      * [isTargetable] · Is waylink targetable?
   *      * [isWaybit]     · Is a waybit?
@@ -66,22 +76,18 @@
   *
   *      * textAligner · (if element is a step)
   *
-  *      * forelinker             · Hyperlink effector (if element is a waylink source node)
-  *          * html:a              ·
-  *              * preview          · Preview of the target text
+  *   Waylink source node, bitform
+  *   - - - - - - - - - -
+  *      * [hasPreviewString]    · Has a non-empty preview of the target text?
+  *      * [isBroken]             · Has a broken target reference?
+  *      * [cog:link]              ·
+  *      * forelinker               · Hyperlink effector
+  *          * html:a                ·
+  *              * [targetDirection] · Direction to the target node ('up' or 'down') if it’s
+  *                                    an intradocument waylink and the target node exists
+  *              * preview           · Preview of the target text
   *              * html:br           ·
   *              * verticalTruncator · Indicating the source node as such (half a link)
-  *              * targetPointer     · Pointing to the target node (the other half)
-  *
-  *   Key to the notation above
-  *   - - - - - - - - - - - - -
-  *      * blah         · Element ‘blah’ in namespace NS_REND, the default in this notation
-  *      * foo:bar        · Element ‘bar’ in namespace NS_*FOO*
-  *          * [:attrib]    · Attribute of the element in no namespace
-  *          * [foo:attrib] · Attribute of the element in namespace NS_*FOO*
-  *          * foo:baz      · Child element ‘baz’
-  *
-  *      Unless otherwise marked, the namespace of an element or attribute is NS_REND.
   *
   *
   * DOM EXTENSION
@@ -372,7 +378,7 @@
       * @param linkV (string) The value of the source node's *link* attribute.
       * @param isBit (boolean) Whether the source node is a waybit.
       * @param target (Element) The target node.  The target node may be situated in this document,
-      *   or a separate document in the case of an inter-document link.
+      *   or a separate document in the case of an interdocument link.
       * @param rendering (PartRenderingC)
       */
     function configureForTarget( sourceNS, sourceLocalPart, linkV, isBit, target, rendering )
@@ -744,7 +750,6 @@
             {
                 const href = t.getAttribute( 'href' );
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
-                let superscriptSymbol;
 
               // hyperlink
               // - - - - -
@@ -757,18 +762,6 @@
                     }
                     if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
                       // translating waycast space → universal space
-                    superscriptSymbol = ( ()=>
-                    {
-                        if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
-                        {
-                            layoutBlock_aLast = layoutBlock;
-                            layoutBlock_aCount = 0;
-                            return HYPERLINK_SYMBOL;
-                        }
-
-                        const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
-                        return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
-                    })();
                 }
 
               // waylink
@@ -784,22 +777,9 @@
                     }
 
                     link.hrefTo( t );
-                    const targetDirection = new TargetDirection( t, link );
-                    switch( targetDirection.symbol ) // substituting symbols more fit for superscipting
-                    {
-                        case TARGET_DIRECTION_DOWN:
-                            superscriptSymbol = '▾'; // 25be (black down-pointing small triangle)
-                            break;
-                        case TARGET_DIRECTION_OUT:
-                            superscriptSymbol = '▸'; // 25b8    "   right-  "
-                            break;
-                        case TARGET_DIRECTION_UP:
-                            superscriptSymbol = '▴'; // 25b4    "   up-     "
-                            break;
-                        default:
-                            superscriptSymbol = '▪'; // 25aa    "   small square
-                            break;
-                    }
+                    const targetWhereabouts = new TargetWhereabouts( t, link );
+                    const direction = targetWhereabouts.direction;
+                    if( direction ) t.setAttributeNS( NS_REND, 'targetDirection', direction );
                 }
 
               // Superscripting
@@ -808,7 +788,19 @@
                 t.parentNode.insertBefore( aWrapper, t );
                 aWrapper.appendChild( t );
                 const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
-                sup.appendChild( document.createTextNode( superscriptSymbol ));
+                const symbol = ( ()=>
+                {
+                    if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
+                    {
+                        layoutBlock_aLast = layoutBlock;
+                        layoutBlock_aCount = 0;
+                        return HYPERLINK_SYMBOL;
+                    }
+
+                    const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
+                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
+                })();
+                sup.appendChild( document.createTextNode( symbol ));
             }
 
             if( !isWayscript ) continue tt;
@@ -872,20 +864,24 @@
                     break source;
                 }
 
-                const targetDirection = new TargetDirection( t, link );
-                const targetDirectionSymbol = targetDirection.symbol;
+                const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
+                const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
+                link.hrefTo( a );
+                const targetWhereabouts = new TargetWhereabouts( t, link );
                 let targetPreviewString;
                 targeting:
                 {
-                    if( targetDirectionSymbol == TARGET_DIRECTION_OUT ) // inter-document waylink
+                    const targetDocLocN = targetWhereabouts.documentLocationN;
+                    if( targetDocLocN ) // interdocument waylink
                     {
-                        InterDocWaylinkRenderer.registerLink( t, targetDirection.documentLocationN );
+                        InterDocWaylinkRenderer.registerLink( t, targetDocLocN );
                         partRendering.isChangeable = true;
                         targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
                         break targeting;
                     }
 
-                    if( targetDirectionSymbol == TARGET_DIRECTION_UP_DOWN ) // broken waylink
+                    const direction = targetWhereabouts.direction;
+                    if( direction == null ) // broken waylink
                     {
                         targetPreviewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
@@ -893,13 +889,11 @@
                     }
 
                     // the target is within the present document
-                    const target = targetDirection.target;
+                    a.setAttributeNS( NS_REND, 'targetDirection', direction );
+                    const target = targetWhereabouts.target;
                     configureForTarget( tNS, tLocalPart, linkV, isBit, target, partRendering );
                     targetPreviewString = readTargetPreview( target );
                 }
-                const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
-                const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
-                link.hrefTo( a );
                 const preview = a.appendChild( document.createElementNS( NS_REND, 'preview' ));
                 preview.appendChild( document.createTextNode( targetPreviewString ));
                 configureForTargetPreview( t, preview, targetPreviewString );
@@ -907,8 +901,6 @@
                 a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
                  .appendChild( document.createTextNode( '⋱⋱' ));
                     // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
-                a.appendChild( document.createElementNS( NS_REND, 'targetPointer' ))
-                 .appendChild( document.createTextNode( targetDirectionSymbol ));
             }
 
 
@@ -1422,7 +1414,7 @@
    // ==================================================================================================
 
 
-    /** A device to complete the rendering of inter-document bitform waylinks, those whose target nodes
+    /** A device to complete the rendering of interdocument bitform waylinks, those whose target nodes
       * are outside of the present document.  It fetches the documents, reads their target nodes
       * and amends the rendered wayscript accordingly.
       */
@@ -1459,7 +1451,7 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Tells this renderer of an inter-document link to be resolved.
+        /** Tells this renderer of an interdocument link to be resolved.
           *
           *     @param sourceNode (Element) A source node that has a target in another document.
           *     @param targDocLoc (string) The document location in normal URL form.
@@ -2303,91 +2295,6 @@
 
 
 
-
-   // ==================================================================================================
-
-
-    const TARGET_DIRECTION_DOWN      = '↓'; // 2193 (downwards arrow) in Unicode
-    const TARGET_DIRECTION_OUT       = '→'; // 2192 rightwards   "
-    const TARGET_DIRECTION_UP        = '↑'; // 2191    upwards   "
-    const TARGET_DIRECTION_UP_DOWN   = '↕'; // 2195    up down   "
-
-
-
-    /** The relative direction from a waylink source node to its target.
-      */
-    class TargetDirection
-    {
-
-
-        /** Constructs a TargetDirection.
-          *
-          *     @param source (Element) The waylink source node.
-          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
-          */
-        constructor( source, link )
-        {
-            const docLoc = link.targetDocumentLocation;
-            if( docLoc.length > 0 )
-            {
-                const docLocN = URIs.normalized( docLoc );
-                if( docLocN != DOCUMENT_LOCATION ) // then the target is outside the present document
-                {
-                    this._documentLocationN = URIs.normalized( docLoc );
-                    this._symbol = TARGET_DIRECTION_OUT;
-                    this._target = null;
-                    return;
-                }
-            }
-
-            // the target is within the present document
-            this._documentLocationN = '';
-            const target = document.getElementById( link.targetID );
-            this._target = target;
-            if( target )
-            {
-                const targetPosition = source.compareDocumentPosition( target );
-                if( targetPosition & DOCUMENT_POSITION_PRECEDING ) this._symbol = TARGET_DIRECTION_UP;
-                else
-                {
-                    console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
-                    this._symbol = TARGET_DIRECTION_DOWN;
-                }
-            }
-            else
-            {
-                tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
-                this._symbol = TARGET_DIRECTION_UP_DOWN;
-            }
-        }
-
-
-
-       // ----------------------------------------------------------------------------------------------
-
-
-        /** The nominal location of the target document as a URL string in normal form,
-          * or the empty string if the target is nominally in the present document.
-          */
-        get documentLocationN() { return this._documentLocationN; }
-
-
-
-        /** One of the four TARGET_DIRECTION_* symbols, indicating the relative direction to the target.
-          */
-        get symbol() { return this._symbol; }
-
-
-
-        /** The waylink target node within the present document, or null if there is none.
-          * This property is null in the case of an inter-document or broken waylink.
-          */
-        get target() { return this._target; }
-
-    }
-
-
-
    // ==================================================================================================
 
 
@@ -2512,6 +2419,94 @@
         return that;
 
     }() );
+
+
+
+
+
+
+
+   // ==================================================================================================
+
+
+    const TARGET_UP   = 'up';
+    const TARGET_DOWN = 'down';
+
+
+
+    /** Where approximately a waylink target node is in relation to its source.
+      */
+    class TargetWhereabouts
+    {
+
+
+        /** Constructs a TargetWhereabouts.
+          *
+          *     @param source (Element) The waylink source node.
+          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
+          */
+        constructor( source, link )
+        {
+            const docLoc = link.targetDocumentLocation;
+            if( docLoc.length > 0 )
+            {
+                const docLocN = URIs.normalized( docLoc );
+                if( docLocN != DOCUMENT_LOCATION ) // then the target is outside the present document
+                {
+                    this._direction = null;
+                    this._documentLocationN = URIs.normalized( docLoc );
+                    this._target = null;
+                    return;
+                }
+            }
+
+            // the target is nominally within the present document
+            this._documentLocationN = '';
+            const target = document.getElementById( link.targetID );
+            this._target = target;
+            if( target )
+            {
+                const targetPosition = source.compareDocumentPosition( target );
+                if( targetPosition & DOCUMENT_POSITION_PRECEDING ) this._direction = TARGET_UP;
+                else
+                {
+                    console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
+                    this._direction = TARGET_DOWN;
+                }
+            }
+            else
+            {
+                tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
+                this._direction = null;
+            }
+        }
+
+
+
+       // ----------------------------------------------------------------------------------------------
+
+
+        /** The relative direction to the target node if it exists in the present document.
+          *
+          *     @return (string) TARGET_UP, TARGET_DOWN or null.
+          */
+        get direction() { return this._direction; }
+
+
+
+        /** The nominal location of the target document as a URL string in normal form,
+          * or the empty string if the target is nominally in the present document.
+          */
+        get documentLocationN() { return this._documentLocationN; }
+
+
+
+        /** The waylink target node within the present document, or null if there is none.
+          * This property is null in the case of an interdocument or broken waylink.
+          */
+        get target() { return this._target; }
+
+    }
 
 
 
