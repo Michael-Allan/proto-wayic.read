@@ -95,7 +95,7 @@
 
 *:root
 {
-    margin: 0; padding: 0; /* see § scene */
+    margin: 0; padding: 0; /* See § scene */
     position: relative; /* Establish a containing block for the absolutely positioned *offWayScreen*.
       Normally its parent (the *body* element) would be given this function.  But its better to size
       and position the screen to cover the document as a whole, including any content that happens
@@ -105,8 +105,8 @@
 
 html|body
 {
-    display: none; /* pending layout completion by readable.js */
-    margin: 0; padding: 0; /* see § scene */
+    display: none; /* Pending layout completion by readable.js */
+    margin: 0; padding: 0; /* See § scene */
 }
 
 
@@ -120,7 +120,7 @@ html|body > rend|offWayScreen
     in off-way and on-way variants, adding a large burden to a style sheet that is already burdened
     by colour variants in its lighting modes.  Hence this technique of screening. */
 
-    background-color: inherit; /* so screening whatever lies beneath */
+    background-color: inherit; /* So screening whatever lies beneath */
     pointer-events: none;
     position: absolute;
     left:0; top:0;
@@ -143,7 +143,7 @@ html|body > rend|offWayScreen
 html[rend|lighting='neon'] > html|body
 {
                color: hsl( 0, 0%, 80% ); /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */
-    background-color: hsl( 0, 0%, 20% ); /* on dark */
+    background-color: hsl( 0, 0%, 20% ); /* On dark */
 }
 
 
@@ -158,7 +158,7 @@ html[rend|lighting='neon'] > html|body > rend|offWayScreen
 html[rend|lighting='paper'] > html|body
 {
                color: hsl( 0, 0%, 7% ); /* DARK_TEXT, yet allowing darker effects elsewhere */
-    background-color: hsl( 0, 0%, 93% ); /* on bright white, yet allowing brighter touches elsewhere */
+    background-color: hsl( 0, 0%, 93% ); /* On bright white, yet allowing brighter touches elsewhere */
 }
 
 
@@ -182,9 +182,11 @@ html[rend|lighting='paper']
 }
 
 
-html|a
+html|a:active
 {
-    color: inherit; /* defeat, avoid the distraction and colour interference */
+    outline: none; /* Defeat any browser default (Firefox).  It looks confusing in composite hyperlinks
+      (e.g. a > verticalTruncator).  Also the need of styling for the active state is questionable;
+      Chrome has none, and the script activated links have none. */
 }
 
 
@@ -194,41 +196,56 @@ html|a[href]
 }
 
 
-rend|a > html|a
+rend|a       > html|a
 {
-    text-decoration-color: transparent; /* redundant but for enabling a transition effect */
- /* text-decoration-skip: ink; *//* no support in Firefox, no matter, but avoid the console warning */
-    transition-property: text-decoration-color,    z-index;
-    transition-duration:                  0.2s,         0s;
-    transition-timing-function:       ease-out, step-start;
-    transition-delay:                     0.1s,       1.0s; /* avoid distracting flash on passing */
+    color: inherit; /* Defeat colour as unecessary and distracting */
+    text-decoration-color: transparent; /* Redundant but for enabling a transition effect */
+ /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
+      while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
+      On the other, the latest standard replaces it with a *text-decoration-skip-ink-property* which is
+      enabled by default.  https://www.w3.org/TR/css-text-decor/#text-decoration-skip-ink-property */
 }
 
 
-rend|a:hover > html|a
+rend|a       > html|a:not([rend|showsBreadcrumb])
+{
+    transition-property: text-decoration-color,    z-index;
+    transition-duration:                  0.2s,         0s;
+    transition-timing-function:       ease-out, step-start;
+    transition-delay:                     0.1s,       1.0s; /* Avoid distracting flash on passing */
+}
+
+
+rend|a:hover > html|a,
+rend|a       > html|a[rend|showsBreadcrumb]
 {
     text-decoration-color: var(--hyperlink-color);
     text-decoration-line: underline;
 }
-
-
-rend|a > html|a,
-rend|a > html|sup
+rend|a       > html|a[rend|showsBreadcrumb]
 {
-    position: relative; /* enabling *z-index* change on hover */
-    z-index: 0; /* so enabling its transition, which the default does not */
+    outline: none; /* Defeat any browser default (Firefox), now made redundant by the underline */
+}
+
+
+rend|a       > html|a,
+rend|a       > html|sup
+{
+    position: relative; /* Enabling *z-index* change on hover */
+    z-index: 0; /* So enabling its transition, which the default does not */
 }
 rend|a:hover > html|a,
+rend|a       > html|a[rend|showsBreadcrumb],
 rend|a:hover > html|sup
 {
-    z-index: 1; /* raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-rend|a > html|sup
+rend|a       > html|sup
 {
     color: var(--hyperlink-color);
-    line-height: 0.5em; /* preserve line spacing despite an (implicit) *vertical-align* of 'super' */
+    line-height: 0.5em; /* Preserve line spacing despite an (implicit) *vertical-align* of 'super' */
 }
 
 
@@ -240,16 +257,16 @@ rend|a > html|sup
 {
     border-radius: 0.5em;
     border-width: 0.1em;
-           left: -0.1em; /* despite the border, maintain a precise text margin for appearance sake */
-    margin-left:          -2.5em; /* meet constraints on COMPOSER_L */
+           left: -0.1em; /* Despite the border, maintain a precise text margin for appearance sake */
+    margin-left:          -2.5em; /* Meet constraints on COMPOSER_L */
     padding: 0.2em 0.2em 0.2em 2.5em; /* TRBL */
     position: relative;
 }
 
 
-*[rend|isComposer] [rend|isComposer] /* when nested */
+*[rend|isComposer] [rend|isComposer] /* When nested */
 {
-    margin-right: 0.7em; /* space between adjacent, vertical border lines to better show the nesting */
+    margin-right: 0.7em; /* Space between adjacent, vertical border lines to better show the nesting */
 }
 
 
@@ -258,13 +275,13 @@ rend|a > html|sup
     font-style: italic;
     opacity: 0.6;
     padding-left: 3em; /* ≥ NEST_INDENT, for any inline composition leader that flows to the next line */
-    text-indent: -3em; /* but not on the first line, rather maintain its alignment */
+    text-indent: -3em; /* But not on the first line, rather maintain its alignment */
 }
 
 
 *[rend|isComposer] > eSTag > eQName > ePrefix
 {
-    display: none; /* assume that it's uninformative */
+    display: none; /* Assume that it's uninformative */
 }
 
 
@@ -280,7 +297,7 @@ html[rend|lighting='neon'] *[rend|isComposer]
 {
     border-color: hsla( 0, 0%, 100%, 0.35 );
     border-style: dashed;
-    margin-top: 0.2em !important; /* accomodate the borders */
+    margin-top: 0.2em !important; /* Accomodate the borders */
     margin-bottom: 0.3em !important;
 }
 
@@ -292,7 +309,7 @@ html[rend|lighting='paper'] *[rend|isComposer]
     border-color: hsla( 0, 0%, 0%, 0.25 );
     border-style: solid none none solid; /* TRBL */
     box-shadow: 0.2em 0.3em 0.5em hsla(0,0%,0%,0.55); /* LR TB blur colour */
-    margin-top: 0.3em !important; /* accomodate the shadows */
+    margin-top: 0.3em !important; /* Accomodate the shadows */
     margin-bottom: 0.7em !important;
 }
 
@@ -303,8 +320,8 @@ html[rend|lighting='paper'] *[rend|isComposer]
 
 @keyframes descreen
 {
-    from { z-index: 1; } /* raised clear of the *offWayScreen* */
-      to { z-index: 1; } /* holding it there for the duration */
+    from { z-index: 1; } /* Raised clear of the *offWayScreen* */
+      to { z-index: 1; } /* Holding it there for the duration */
 }
 
 
@@ -362,21 +379,18 @@ rend|scene#_wayic\.read\.document_scene > *[rend|isWayscript]
 
 rend|forelinker > a
 {
-    text-decoration: none; /* override browser default, looks confusing in this composite hyperlink */
-}
-
-
-rend|forelinker > a:focus:not(:active)
-{
-    outline: none; /* defeat (Firefox) ∵ its coverage of verticalTruncator is awkward and distracting */
+    color: inherit; /* Defeat colour as unecessary and distracting */
+    text-decoration: none; /* Defeat any browser default (Chrome).  It looks confusing
+      in this composite hyperlink.  Moreover the *verticalTruncator* component already suffices
+      to indicate the presence of the hyperlink. */
 }
 
 
 rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 {
-    display: inline-block; /* enables *min-width* */
+    display: inline-block; /* Enables *min-width* */
     min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
-    text-align: center; /* over the left glyph-edge of the *vertical truncator* */
+    text-align: center; /* Over the left glyph-edge of the *verticalTruncator* */
 }
 
 
@@ -385,7 +399,7 @@ rend|forelinker > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
-      then the *br* is wanted to position the verticalTruncator below the node's start tag. */
+      then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
 *:not([rend|hasPreviewString]):not([rend|isChangeable]) >
 rend|forelinker > a > verticalTruncator
@@ -394,40 +408,45 @@ rend|forelinker > a > verticalTruncator
 }
 
 
-rend|forelinker > a > verticalTruncator
+rend|forelinker > a                       > verticalTruncator
 {
-    padding-left: 1em; /* extra click surface + indentation beneath the overlying preview text; VT_PAD_L */
-    padding-right: 4em; /* extra click surface */
-    position: relative; /* enabling *z-index* change on hover */
+    padding-left: 1em; /* Extra click surface + indentation beneath the overlying preview text; VT_PAD_L */
+    padding-right: 4em; /* Extra click surface */
+    position: relative; /* Enabling *z-index* change on hover */
 }
-rend|forelinker > a:hover > verticalTruncator
+rend|forelinker > a:hover                 > verticalTruncator,
+rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator
 {
     color: var(--hyperlink-color);
     opacity: 1 !important;
-    z-index: 1; /* raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the *offWayScreen* */
+}
+rend|forelinker > a[rend|showsBreadcrumb]
+{
+    outline: none; /* Defeat any browser default (Firefox), now made redundant by the styling above */
 }
 
 
 /* - - -  target orientation   - - - - -
  */
-rend|forelinker/*bitform*/ > a:not([href^='#']), /* with a target reference in interdocument form */
+rend|forelinker/*bitform*/ > a:not([href^='#']), /* With a target reference in interdocument form */
 rend|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
 {
     cursor: url('link_cursor/waylink_out.svg') 13 2, pointer;
 }
 
 
-rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='up'], /* intradocument, target above */
+rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='up'], /* Intradocument, target above */
 rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='up'][cog|link]
 {
     cursor: url('link_cursor/waylink_in_up.svg') 13 2, pointer;
 }
-rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='down'], /* target below */
+rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='down'], /* Target below */
 rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='down'][cog|link]
 {
     cursor: url('link_cursor/waylink_in_down.svg') 13 2, pointer;
 }
-rend|forelinker/*bitform*/ > a[href^='#']:not([rend|targetDirection]), /* target missing */
+rend|forelinker/*bitform*/ > a[href^='#']:not([rend|targetDirection]), /* Target missing */
 rend|a       /*hyperform*/ > a[href^='#']:not([rend|targetDirection])[cog|link]
 {
     cursor: url('link_cursor/waylink_in.svg') 13 2, pointer;
@@ -491,32 +510,33 @@ rend|eSTag > eQName
 }
 
 
-rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* renders as a mere bullet */
+rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* Renders as a mere bullet */
 {
-    cursor: default; /* defeat text cursor to avoid flash on passing, which distracts */
+    cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
 
 
-*:target > rend|eSTag > eQName /* for a targeted waybit, whether targeted as a waylink or hyperlink */
+*:target > rend|eSTag > eQName /* For a targeted waybit, whether targeted as a waylink or hyperlink */
 {
     animation-duration: /*descreen*/3s, /*flashFade*/2s;
-    position: relative; /* enabling *z-index* for the descreening animation */
+    position: relative; /* Enabling *z-index* for the descreening animation */
 }
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *:target > rend|eSTag > eQName
+html[rend|lighting='neon']:not([rend|travel^='-']) /* Not on back travel, when user orientation */
+*:target > rend|eSTag > eQName                    /* is better served by the breadcrumb alone. */
 {
-    animation-name: descreen, flashFade_outline_bright; /* as a target locator */
+    animation-name: descreen, flashFade_outline_bright; /* As a travel target locator */
 }
 
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *:target > rend|eSTag > eQName
+html[rend|lighting='paper']:not([rend|travel^='-']) /* Not on back travel, … */
 {
-    animation-name: descreen, flashFade_outline_dark; /* as a target locator */
+    animation-name: descreen, flashFade_outline_dark; /* As a travel target locator */
 }
 
 
@@ -535,7 +555,7 @@ html[rend|lighting='paper'] *:target > rend|eSTag > eQName
 
 *[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
 {
-    float: left; /* rendering the element's start tag in line with its leading text content */
+    float: left; /* Rendering the element's start tag in line with its leading text content */
     margin-right: 0.5em;
 }
 
@@ -576,7 +596,7 @@ step|* > eSTag > eQName
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
-step|* > eSTag > eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then */
+step|* > eSTag > eQName:not([rend|isAnonymous]) > eLocalPart /* Not when isAnonymous ∵ then */
 {                                                           /* it renders as a mere bullet */
     font-weight: bold;
 }
@@ -585,13 +605,13 @@ step|* > eSTag > eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnony
 step|* > eSTag > eQName > ePrefix[rend|isAnonymous],
 step|* > eSTag > eQName:not([rend|isAnonymous]) > ePrefix
 {
-    display: none; /* let the local part stand alone */
+    display: none; /* Let the local part stand alone */
 }
 
 
 step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLocalPart
 {
-    display: none; /* let the prefix stand alone */
+    display: none; /* Let the prefix stand alone */
 }
 
 
@@ -642,13 +662,13 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 [rend|isTargetable] > eSTag
 {
-    position: relative; /* establish containing block for absolutely positioned children */
+    position: relative; /* Establish containing block for absolutely positioned children */
 }
 
 
 [rend|isTargetable] > eSTag > /*marginalis*/div
 {
-    position: absolute; top: 0; /* further placement deferred to readable.js */
+    position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
       Its layout depends on the size of the icon child, however, so don't use display 'none' here. */
 }
@@ -656,7 +676,7 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 [rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
-    position: absolute; top: 0; left: 0; /* [HSP] sizing deferred to readable.js */
+    position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
 
 
@@ -683,14 +703,14 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 
 [rend|isWaybit]
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* when it's an underbit */
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* When it's an underbit */
 {
-    width: 3.5em; /* wider to better separate from overbit content */
+    width: 3.5em; /* Wider to better separate from overbit content */
 }
 
 
 [rend|isWaybit] [rend|isComposer] >
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* when moreover it's a topmost component */
+[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* When moreover it's a topmost component */
 {
     width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there's no direct overbit content */
 }
@@ -772,21 +792,21 @@ html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*
 
 [rend|isTargetable] > eSTag > eQName
 {
-    position: relative; /* enabling *z-index* change on hover */
+    position: relative; /* Enabling *z-index* change on hover */
     transition-property:           z-index;
     transition-duration:                0s;
     transition-timing-function: step-start;
-    transition-delay:                 0.6s; /* avoid distracting flash on passing */
-    z-index: 0; /* so enabling its transition, which the default does not */
+    transition-delay:                 0.6s; /* Avoid distracting flash on passing */
+    z-index: 0; /* So enabling its transition, which the default does not */
 }
 
 
 [rend|isTargetable] > eSTag > eQName:hover,
-                       /* … icon:hover ~ eQName, *//* in lieu of which [GSC], readable.js does: */
-[rend|isTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'],
+[rend|isTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'], /* In lieu
+  of form "… icon:hover ~ eQName", which cannot work as intended [GSC] */
 [rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
-    z-index: 1; /* raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
@@ -840,12 +860,12 @@ rend|textAligner
 *[rend|isWaybit]:not(step|*) > eSTag
 eQName > ePrefix
 {
-    display: none; /* assume that it's uninformative */
+    display: none; /* Assume that it's uninformative */
 }
 
 
 *[rend|isWaybit]:not(step|*) > eSTag
-eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it renders as a mere bullet */
+eQName:not([rend|isAnonymous]) > eLocalPart /* Not when isAnonymous ∵ then it renders as a mere bullet */
 {
     filter: contrast(1.4);
     font-weight: bold;
@@ -894,7 +914,7 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* not when isAnonymous ∵ then it 
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
  *
  *  [IWS]  Informed by the waycast structure, affording it maximal exposure and influence.
-           http://reluk.ca/project/wayic/architecture/doc.task § wayic architecture = waycast form
+ *         http://reluk.ca/project/wayic/architecture/doc.task § wayic architecture = waycast form
  *
  *  [LLR]  Local loading and remote waylinks.  Regardless of the *local load* scheme, the browser
  *         is unlikely to limit access to *remotely linked* targets (once that kind of targeting

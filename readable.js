@@ -30,6 +30,9 @@
   *   html:html
   *   - - - - -
   *      * [lighting] · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
+  *      * [travel]   · Extent of travel in the history stack to reach the present entry: -N, 0, or N
+  *                     (backward by N entries, reload, or forward by N entries).  In other words,
+  *                     the relative position of this entry versus the last (of ours) that was shown.
   *
   *   html:body
   *   - - - - -
@@ -42,12 +45,19 @@
   *
   *      * offWayScreen · Overlay screen for off-way styling, q.v. in readable.css.
   *
-  *   a  (rend:a, that is)
+  *   html:a
+  *   - - - -
+  *      * [showsBreadcrumb] · Holds the breadcrumb for this history entry and prominently shows it?
+  *                            Set after travelling back in history onto this hyperlink source node,
+  *                            it reorients the user by highlighting his original point of departure.
+  *                            Appears at most on one element.  [BA, FIB, SBU]
+  *
+  *   a  (rend:a - waylink source node, hyperform)
   *   -
-  *      * html:a
-  *          * [cog:link]        · Waylink declaration, if the element is a hyperform source node
-  *          * [targetDirection] · Direction to the target node ('up' or 'down') if it’s
-  *                                an intradocument waylink and the target node exists
+  *      * html:a               · (§ q.v.)
+  *          * [cog:link]        ·
+  *          * [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
+  *                                is an intradocument waylink and its target node exists
   *      * html:sup   · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
   *
   *   Wayscript element, any
@@ -78,13 +88,15 @@
   *
   *   Waylink source node, bitform
   *   - - - - - - - - - -
-  *      * [hasPreviewString]    · Has a non-empty preview of the target text?
-  *      * [isBroken]             · Has a broken target reference?
-  *      * [cog:link]              ·
+  *      * [hasPreviewString] · Has a non-empty preview of the target text?
+  *      * [isBroken]         · Has a broken target reference?
+  *      * [cog:link]        ·
+  *
+  *      * eSTag                  · (q.v. under § Wayscript element)
+  *      * textAligner             · (if element is a step)
   *      * forelinker               · Hyperlink effector
-  *          * html:a                ·
-  *              * [targetDirection] · Direction to the target node ('up' or 'down') if it’s
-  *                                    an intradocument waylink and the target node exists
+  *          * html:a                · (§ q.v.)
+  *              * [targetDirection] · (q.v. under § a § html:a)
   *              * preview           · Preview of the target text
   *              * html:br           ·
   *              * verticalTruncator · Indicating the source node as such (half a link)
@@ -187,7 +199,7 @@
     const URIs = ( function()
     {
 
-        const that = {}; // the public interface of URIs
+        const that = {}; // The public interface of URIs
 
 
 
@@ -228,7 +240,7 @@
           */
         that.isDetectedAbnormal = function( uri )
         {
-            return toEnforceCostlyConstraints && uri != that.normalized(uri)
+            return toEnforceCostlyConstraints && uri !== that.normalized(uri)
         };
 
 
@@ -260,8 +272,8 @@
             // http://reluk.ca/project/wayic/lex/_/reader.js
 
             const div = hrefParserDiv;
-            div.firstChild.href = ref; // escaping ref en passant
-            div.innerHTML = div.innerHTML; // reparsing it
+            div.firstChild.href = ref; // Escaping ref en passant
+            div.innerHTML = div.innerHTML; // Reparsing it
             return div.firstChild.href;
         };
 
@@ -317,7 +329,7 @@
       *     @param name (string) The expected value of the *localName* property.
       *     @param node (Node)
       */
-    function asElementNamed( name, node ) { return name == node.localName? node: null; }
+    function asElementNamed( name, node ) { return name === node.localName? node: null; }
 
 
 
@@ -329,7 +341,7 @@
       *
       *     @see URIs#normalized
       */
-    let CAST_BASE_LOCATION; // init below, thence constant
+    let CAST_BASE_LOCATION; // Init below, thence constant
 
 
 
@@ -339,15 +351,15 @@
     {
         let path = '__UNDEFINED_repo_href__';
         const traversal = document.createTreeWalker( document.head, SHOW_ELEMENT );
-        for( let t = traversal.nextNode(); t != null; t = traversal.nextSibling() )
+        for( let t = traversal.nextNode(); t !== null; t = traversal.nextSibling() )
         {
-            if( t.localName == 'cast' && t.namespaceURI == NS_COG )
+            if( t.localName === 'cast' && t.namespaceURI === NS_COG )
             {
                 const p = t.getAttribute( 'base' );
                 if( p )
                 {
                     path = p;
-                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // remove any trailing slash
+                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // Remove any trailing slash
                 }
                 else tsk( 'Missing *base* attribute in *cast* element' );
                 return path;
@@ -386,19 +398,21 @@
         const targetNS = target.namespaceURI;
         const targetLocalPart = target.localName;
         let isMalNameReported = false;
-        if( sourceNS != targetNS )
+        if( sourceNS !== targetNS )
         {
             tsk( 'Source node namespace (' + sourceNS + ') differs from target node namespace ('
               + targetNS + ') for waylink: ' + a2s('link',linkV) );
             isMalNameReported = true;
         }
-        if( !isMalNameReported && !isBit && sourceLocalPart != targetLocalPart )
+        if( !isMalNameReported && !isBit && sourceLocalPart !== targetLocalPart )
         {
             tsk( 'Source node name (' + sourceLocalPart + ') differs from target node name ('
               + targetLocalPart + ') for waylink: ' + a2s('link',linkV) );
         }
-        if( isBit && sourceLocalPart == ELEMENT_NAME_UNCHANGED ) rendering.localPartOverride = targetLocalPart;
-          // thus rendering it with the same name as the target
+        if( isBit && sourceLocalPart === ELEMENT_NAME_UNCHANGED )
+        {
+            rendering.localPartOverride = targetLocalPart; // Rendering with the same name as the target
+        }
     }
 
 
@@ -415,12 +429,12 @@
             const c = preview.className;
             if( c )
             {
-                console.assert( c == 'singleCharacterContent', A ); // removing only that one
+                console.assert( c === 'singleCharacterContent', A ); // Removing only that one
                 preview.removeAttribute( 'class' );
             }
         }
         const pointCount = countCodePoints( previewString );
-        if( pointCount == 0 )
+        if( pointCount === 0 )
         {
             source.removeAttributeNS( NS_REND, 'hasPreviewString' );
             clearStyleClass();
@@ -428,7 +442,7 @@
         else
         {
             source.setAttributeNS( NS_REND, 'hasPreviewString', 'hasPreviewString' );
-            if( pointCount == 1 ) preview.className = 'singleCharacterContent';
+            if( pointCount === 1 ) preview.className = 'singleCharacterContent';
             else clearStyleClass();
         }
     }
@@ -457,10 +471,9 @@
     const DOCUMENT_LOCATION = ( ()=>
     {
         // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-        const wloc = window.location; // [WDL]
-        let loc = wloc.toString();
-        if( wloc.hash ) loc = URIs.defragmented( loc );
-        return URIs.normalized( loc ); // to be sure
+        let loc = location.toString(); // [WDL]
+        if( location.hash ) loc = URIs.defragmented( loc );
+        return URIs.normalized( loc ); // To be sure
     })();
 
 
@@ -526,7 +539,7 @@
     function isBitNS( ns )
     {
         const nsBitLen = NS_BIT.length;
-        return ns.startsWith(NS_BIT) && (ns.length == nsBitLen || ns.charAt(nsBitLen) == '.');
+        return ns.startsWith(NS_BIT) && (ns.length === nsBitLen || ns.charAt(nsBitLen) === '.');
     }
 
 
@@ -538,7 +551,7 @@
       */
     function isBitSubNS( subNS )
     {
-        return subNS.startsWith(SUB_NS_BIT) && (subNS.length == 3 || subNS.charAt(3) == '.');
+        return subNS.startsWith(SUB_NS_BIT) && (subNS.length === 3 || subNS.charAt(3) === '.');
     }
 
 
@@ -563,7 +576,7 @@
         const origin = treeWalker.currentNode;
         while( treeWalker.lastChild() ) {}
         const destination = treeWalker.currentNode;
-        return destination == origin? null: destination;
+        return destination === origin? null: destination;
     }
 
 
@@ -631,7 +644,7 @@
     {
         console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'), AA + 'Strict mode' );
           // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
-          // credit Noseratio, https://stackoverflow.com/a/18916788/2402790
+          // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
         transform();
       // --------------------
       // Layout is now stable, more or less
@@ -657,18 +670,18 @@
       // Detect user's lighting preference
       // ---------------------------------
         let lighting;
-        let defaultTextColour = window.getComputedStyle(body).getPropertyValue( 'color' );
+        let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
           // Using 'color' here because somehow 'background-color' fails;
           // it reads as transparent (Firefox) or black (Chrome), when really it's white.
         const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
         if( cc )
         {
-            const red = cc[1], green = cc[2], blue = cc[3]; // each 0-255
+            const red = cc[1], green = cc[2], blue = cc[3]; // Each 0-255
             const luma = red * 299 + green * 587 + blue * 114; // 0-255,000, perceived brightness
               // formula: https://en.wikipedia.org/wiki/YIQ
             lighting = luma < 127500? 'paper':'neon';
         }
-        else lighting = 'paper'; // defaulting to what's most popular
+        else lighting = 'paper'; // Defaulting to what's most popular
 
       // Set lighting switch
       // -------------------
@@ -676,7 +689,7 @@
 
       // Show document
       // -------------
-        body.style.setProperty( 'display', 'block' ); // overriding readable.css 'none'
+        body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
     }
 
 
@@ -692,7 +705,7 @@
         const body = document.body;
         const scene = body.appendChild( document.createElementNS( NS_REND, 'scene' ));
         scene.setAttribute( 'id', DOCUMENT_SCENE_ID );
-        for( ;; ) // wrap *body* content in *scene*
+        for( ;; ) // Wrap *body* content in *scene*
         {
             const c = body.firstChild;
             if( c === scene ) break;
@@ -702,7 +715,7 @@
         const traversal = document.createTreeWalker( scene, SHOW_ELEMENT, {
             acceptNode: function( node )
             {
-                if( node.namespaceURI == NS_REND ) return NodeFilter.FILTER_REJECT; /* Bypassing this
+                if( node.namespaceURI === NS_REND ) return NodeFilter.FILTER_REJECT; /* Bypassing this
                   branch which was introduced in an earlier iteration and needs no more transforming. */
 
                 return NodeFilter.FILTER_ACCEPT;
@@ -710,12 +723,12 @@
         });
         let layoutBlock = traversal.currentNode; /* Tracking the nearest container element in the
           current hierarchy path (current element or nearest ancestor) that has a block layout. */
-        let layoutBlock_aLast = null; // layout block of the most recent (author's) hyperlink
-        let layoutBlock_aCount = 0; // count of such hyperlinks in that block, so far
+        let layoutBlock_aLast = null; // Layout block of the most recent (author's) hyperlink
+        let layoutBlock_aCount = 0; // Count of such hyperlinks in that block, so far
         tt: for( ;; )
         {
-            const t = traversal.nextNode(); // current element
-            if( t == null ) break;
+            const t = traversal.nextNode(); // Current element
+            if( t === null ) break;
 
 
           // ============
@@ -724,19 +737,19 @@
             const tNS = t.namespaceURI;
             const tLocalPart = t.localName;
             let isBit, isHTML, isWayscript;
-            let tSubNS; // wayscript subnamespace, or null if element t is not wayscript
-            if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // then element t is wayscript
+            let tSubNS; // Wayscript subnamespace, or null if element t is not wayscript
+            if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // Then element t is wayscript
             {
                 isHTML = false;
                 isWayscript = true;
                 t.setAttributeNS( NS_REND, 'isWayscript', 'isWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
                 isBit = isBitSubNS( tSubNS );
-                layoutBlock = t; // sync'd ← readable.css § Wayscript
+                layoutBlock = t; // Sync'd ← readable.css § Wayscript
             }
-            else // element t is non-wayscript
+            else // Element t is non-wayscript
             {
-                isHTML = tNS == NS_HTML;
+                isHTML = tNS === NS_HTML;
                 isBit = isWayscript = false;
                 tSubNS = null;
                 if( !getComputedStyle(t).getPropertyValue('display').startsWith('inline') ) layoutBlock = t;
@@ -746,14 +759,11 @@
           // =================
           // Hyperform linkage by element t
           // =================
-            hyperform: if( isHTML && tLocalPart == 'a' )
+            hyperform: if( isHTML && tLocalPart === 'a' )
             {
                 const href = t.getAttribute( 'href' );
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
-
-              // hyperlink
-              // - - - - -
-                if( href )
+                if( href ) // Then t is a generic hyperlink
                 {
                     if( linkV )
                     {
@@ -761,12 +771,9 @@
                           + a2s('href',href) + ', ' + a2s('link',link) );
                     }
                     if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
-                      // translating waycast space → universal space
+                      // Translating waycast space → universal space
                 }
-
-              // waylink
-              // - - - -
-                else if( linkV )
+                else if( linkV ) // Then t is a hyperform waylink
                 {
                     let link;
                     try { link = new LinkAttribute( linkV ); }
@@ -790,7 +797,7 @@
                 const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
                 const symbol = ( ()=>
                 {
-                    if( layoutBlock != layoutBlock_aLast ) // then t is the 1st hyperlink in this block
+                    if( layoutBlock !== layoutBlock_aLast ) // Then t is the 1st hyperlink in this block
                     {
                         layoutBlock_aLast = layoutBlock;
                         layoutBlock_aCount = 0;
@@ -798,7 +805,7 @@
                     }
 
                     const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
-                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // next in rotation
+                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // Next in rotation
                 })();
                 sup.appendChild( document.createTextNode( symbol ));
             }
@@ -809,7 +816,7 @@
           ///////////////////////////////////////////////////////////////////////////////////  WAYSCRIPT
 
             const isDeclaredEmpty = !t.hasChildNodes();
-            if( tSubNS == SUB_NS_STEP )
+            if( tSubNS === SUB_NS_STEP )
             {
                 const textAligner = document.createElementNS( NS_REND, 'textAligner' );
                 t.insertBefore( textAligner, t.firstChild );
@@ -821,7 +828,7 @@
           // ==================
           // Bitform waylinkage of element t
           // ==================
-            const lidV = ( ()=> // target identifier, non-null if t is a potential waylink target node
+            const lidV = ( ()=> // Target identifier, non-null if t is a potential waylink target node
             {
                 if( !isBit ) return null;
 
@@ -830,7 +837,7 @@
 
                 return null;
             })();
-            const linkV = ( ()=> // waylink declaration, non-null if t is a source node
+            const linkV = ( ()=> // Waylink declaration, non-null if t is a source node
             {
                 let v = t.getAttributeNS( NS_COG, 'link' );
                 if( !v ) return null;
@@ -872,7 +879,7 @@
                 targeting:
                 {
                     const targetDocLocN = targetWhereabouts.documentLocationN;
-                    if( targetDocLocN ) // interdocument waylink
+                    if( targetDocLocN ) // Interdocument waylink
                     {
                         InterDocWaylinkRenderer.registerLink( t, targetDocLocN );
                         partRendering.isChangeable = true;
@@ -881,14 +888,14 @@
                     }
 
                     const direction = targetWhereabouts.direction;
-                    if( direction == null ) // broken waylink
+                    if( direction === null ) // Broken waylink
                     {
                         targetPreviewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
                         break targeting;
                     }
 
-                    // the target is within the present document
+                    // The target is within the present document
                     a.setAttributeNS( NS_REND, 'targetDirection', direction );
                     const target = targetWhereabouts.target;
                     configureForTarget( tNS, tLocalPart, linkV, isBit, target, partRendering );
@@ -909,51 +916,52 @@
          // =========
             partRendering.render();
             const eSTag = partRendering.eSTag;
-            if( lidV ) // then t is waylink targetable
+            if( lidV ) // Then t is waylink targetable
             {
                 t.setAttributeNS( NS_REND, 'isTargetable', 'isTargetable' );
-                t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // till proven otherwise
+                t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // Till proven otherwise
 
               // Marginalis
               // ----------
                 const marginalis = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
                 marginalis.appendChild( TargetLining.newLiner() );
                 marginalis.appendChild( document.createElementNS( NS_REND, 'icon' ))
-                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // to be sure
-                    // see readable.css for the *visible* content
+                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // To be sure
+                    // See readable.css for the *visible* content
                 Marginalia.layWhen( marginalis, eSTag );
 
               // -----
                 TargetControl.addControls( t, eSTag, /*id*/lidV );
             }
-            else if( tSubNS == SUB_NS_COG && (tLocalPart == 'comprising' || tLocalPart == 'including'))
+            else if( tSubNS === SUB_NS_COG
+             && (tLocalPart === 'comprising' || tLocalPart === 'including'))
             {
                 t.setAttributeNS( NS_REND, 'isComposer', 'isComposer' );
 
               // Composition leader alignment  (see readable.css)
               // ----------------------------
-                console.assert( LeaderReader.element == t, A );
+                console.assert( LeaderReader.element === t, A );
                 alignment: if( LeaderReader.hasLeader )
                 {
                     let n = eSTag.nextSibling; /* Whether special alignment is needed depends on the
                       node that follows the start tag. */
                     let type = n.nodeType;
-                    function isNonethelessSafeToMove() // though type ≠ TEXT, an assumption here
+                    function isNonethelessSafeToMove() // Though type ≠ TEXT, an assumption here
                     {
-                        return type == COMMENT || type == ELEMENT && n.namespaceURI == NS_HTML;
+                        return type === COMMENT || type === ELEMENT && n.namespaceURI === NS_HTML;
                     }
 
-                    if( type == TEXT )
+                    if( type === TEXT )
                     {
-                        const cc = n.data; // leading characters
-                        if( cc.length == 0 )
+                        const cc = n.data; // Leading characters
+                        if( cc.length === 0 )
                         {
                             console.assert( false, A );
                             break alignment;
                         }
 
                         const c = cc.charAt( 0 );
-                        if( c == '\n' || c == '\r' ) break alignment; /* Not in line with start tag,
+                        if( c === '\n' || c === '\r' ) break alignment; /* Not in line with start tag,
                           needs no special alignment. */
                     }
                     else if( !isNonethelessSafeToMove() ) break alignment;
@@ -967,17 +975,17 @@
                         const nNext = n.nextSibling;
                         eQName.appendChild( n );
                         n = nNext;
-                        if( n == null ) break;
+                        if( n === null ) break;
 
                         type = n.nodeType;
-                    } while( type == TEXT || isNonethelessSafeToMove() );
-                    n = lastDescendant( eQName ); // last node of the leader
-                    if( n.nodeType == TEXT )
+                    } while( type === TEXT || isNonethelessSafeToMove() );
+                    n = lastDescendant( eQName ); // Last node of the leader
+                    if( n.nodeType === TEXT )
                     {
                         const trailer = n.data;
-                        const m = trailer.match( /\s+$/ ); // trailing whitespace
+                        const m = trailer.match( /\s+$/ ); // Trailing whitespace
                         if( m ) n.replaceData( m.index, trailer.length, '' );
-                          // stripping it so that readable.css can neatly append a colon to eQName
+                          // Stripping it so that readable.css can neatly append a colon to eQName
                     }
                 }
             }
@@ -994,7 +1002,7 @@
         if( !message ) throw 'Null parameter';
 
         console.error( message );
-        if( isUserEditor ) alert( message ); // see readable.css § TROUBLESHOOTING
+        if( isUserEditor ) alert( message ); // See readable.css § TROUBLESHOOTING
     }
 
 
@@ -1010,7 +1018,7 @@
 
     /** Answers whether the given HTML element is very likely to be rendered in line by the browser.
       */
-    function willDisplayInLine_likely( htmlElement ) // a workaround function for its caller, q.v.
+    function willDisplayInLine_likely( htmlElement ) // A workaround function for its caller, q.v.
     {
         switch( htmlElement.localName )
         {
@@ -1053,6 +1061,196 @@
  ///  C o m p o u n d   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
 /// ==================================================================================================
 
+
+
+    /** Dealing with hyperlinks.
+      */
+    const Breadcrumbs = ( function()
+    {
+
+        const that = {}; // The public interface of Breadcrumbs
+
+
+
+        /** The element (Element) on which attribute *showsBreadcrumb* is set, or null if there is none.
+          */
+        let breadcrumbShower = null;
+
+
+
+        /** @param element (HTMLAnchorElement)
+          * @return (string) An unambiguous identifier of the given element in XPath form.
+          */
+        function definitePath( element )
+        {
+            // Modified from Mozilla contributors' *XPath snippets*, licence CC-BY-SA 2.5.
+            // https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets#getXPathForElement
+            const html = document.documentElement;
+            let path = '';
+            path: for( let e = element;; e = e.parentNode )
+            {
+                const eLocalName = e.localName;
+                let seg = "/*[local-name()='" + eLocalName + "']"; // Segment of path
+                if( e === html )
+                {
+                    path = seg + path;
+                    break path;
+                }
+
+                let ordinal = 1; // Ordinals count from 1 in XPath
+                for( let sibling = e;; )
+                {
+                    sibling = sibling.previousElementSibling;
+                    if( sibling === null ) break;
+
+                    if( sibling.localName === eLocalName ) ++ordinal;
+                }
+                seg +=  '[' + ordinal + ']';
+                path = seg + path;
+            }
+            return path;
+        }
+
+
+
+        function ensureNoBreadcrumbShowing()
+        {
+            if( breadcrumbShower === null ) return;
+
+            breadcrumbShower.removeAttributeNS( NS_REND, 'showsBreadcrumb' );
+            breadcrumbShower = null;
+        }
+
+
+
+        /** @param click (MouseEvent) A click event from within the document element.
+          */
+        function hearClick/* event handler */( click )
+        {
+            let a = null; // Hyperlink source node (HTML *a* element) about to activate, if any
+            for( let t = click.target;; t = t.parentNode )
+            {
+                if( t.namespaceURI !== NS_HTML ) continue;
+
+                const tLocalPart = t.localName;
+                if( tLocalPart === 'body' || tLocalPart === 'html' ) break;
+
+                if( tLocalPart !== 'a' ) continue;
+
+                if( !t.hasAttribute( 'href' )) break; // Dud link
+
+                a = t;
+
+              // Drop a breadcrumb before traversing the link
+              // -----------------
+                const state = history.state;
+                console.assert( state !== null, A ); // Already initialized by Breadcrumbs.reorient
+                state.breadcrumbPath = definitePath( a );
+                history.replaceState( state, /*no title*/'' );
+                break;
+            }
+
+            if( breadcrumbShower === a ) return; // None is showing, or none other than *a*; no problem
+
+            ensureNoBreadcrumbShowing(); /* Either the breadcrumb is no longer present
+              where it is showing, because it was just removed and dropped on *a* instead;
+              or the click indicates that the user no longer wants it to show. */
+        }
+
+
+
+        const ORDERED_NODE_ITERATOR_TYPE = XPathResult.ORDERED_NODE_ITERATOR_TYPE;
+
+
+
+        /** Reorient after a position change in the history stack.
+          *
+          *     @param state (Object) The value of history.state subsequent to the change.
+          */
+        function reorient( state )
+        {
+            // Copied in part to https://stackoverflow.com/a/49329267/2402790
+
+            let position; // Absolute position in the history stack
+            let travel; /* (-N, 0, N) = (backward by N entries, reload, forward by N entries)
+              Relative position of this entry versus the last entry (of ours) that was shown */
+            if( state === null ) // Then this entry is new to the stack
+            {
+                position = history.length - 1; // Top of stack
+                travel = 1;
+                state = {};
+
+              // Stamp the entry with its own position in the stack
+              // ---------------
+                state.position = position;
+                history.replaceState( state, /*no title*/'' );
+            }
+            else // This entry was pre-existing
+            {
+                position = state.position;
+                const s = sessionStorage.getItem( 'positionLastShown' ); // [FSS]
+                console.assert( s, A );
+                const positionLastShown = Number( s );
+                travel = position - positionLastShown;
+            }
+         // console.log( 'Travel direction was ' + direction ); // TEST
+            document.documentElement.setAttributeNS( NS_REND, 'travel', String(travel) );
+
+          // Stamp the session with the position last shown, which is now this position
+          // -----------------
+            sessionStorage.setItem( 'positionLastShown', String(position) );
+
+          // Ensure breadcrumb is showing or not, as appropriate
+          // ----------------------------
+            if( travel < 0 )
+            {
+                const p = state.breadcrumbPath;
+                if( p )
+                {
+                    const pR = document.evaluate( p, document, /*namespace resolver*/null,
+                      ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
+                    const a = pR.iterateNext(); // Resolved hyperlink source node, an HTML *a* element
+                    console.assert( pR.iterateNext() === null, A ); /* There must only be the one
+                      if *definitePath* is 'unambiguous' as required */
+                    if( breadcrumbShower !== a )
+                    {
+                      // Show breadcrumb
+                      // ---------------
+                        ensureNoBreadcrumbShowing();
+                        a.setAttributeNS( NS_REND, 'showsBreadcrumb', 'showsBreadcrumb' );
+                        breadcrumbShower = a;
+                    }
+                    return;
+                }
+            }
+
+            ensureNoBreadcrumbShowing();
+        }
+
+
+       // - - -
+
+        document.documentElement.addEventListener( 'click', hearClick );
+        addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Which includes initial page load
+        {
+            reorient( history.state ); // Firefox can have the wrong value here [FHS]
+        });
+        addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Same-page target (fragment) changes
+        {
+         // console.assert( (pop.state === null && history.state === null) // TEST
+         //     || pop.state.position === history.state.position, A );
+              // I thought a failure of this assumption might be behind a bug with Firefox [FHS].
+              // But in fact, it seems never to fail; which suggests the two event types
+              // need not determine the value of *state* differently, after all.
+            reorient( pop.state );
+        });
+        return that;
+
+    }() );
+
+
+
+   // ==================================================================================================
 
 
     /** A reader of documents.
@@ -1115,7 +1313,7 @@
     const Documents = ( function() // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
 
-        const that = {}; // the public interface of Documents
+        const that = {}; // The public interface of Documents
 
 
 
@@ -1123,7 +1321,7 @@
         {
             if( !doc ) throw 'Null parameter';
 
-            if( doc == document ) tsk( message );
+            if( doc === document ) tsk( message );
         }
 
 
@@ -1171,7 +1369,7 @@
             for( const mapping of registry )
             {
                 const entry = mapping[1];
-                if( !( entry instanceof DocumentRegistration )) continue; // registration is pending
+                if( !( entry instanceof DocumentRegistration )) continue; // Registration is pending
 
                 notifyReader( reader, entry, entry.document );
             }
@@ -1200,10 +1398,10 @@
             if( entry )
             {
                 if( entry instanceof DocumentRegistration ) notifyReader( reader, entry, entry.document );
-                else // registration is pending
+                else // Registration is pending
                 {
                     console.assert( entry instanceof Array, A );
-                    entry/*readers*/.push( reader ); // await the registration
+                    entry/*readers*/.push( reader ); // Await the registration
                 }
                 return;
             }
@@ -1215,9 +1413,9 @@
           // Configure a document request
           // ----------------------------
             const req = new XMLHttpRequest();
-            req.open( 'GET', docLoc, /*asynchronous*/true ); // misnomer, opens nothing, only sets config
+            req.open( 'GET', docLoc, /*asynchronous*/true ); // Misnomer, opens nothing, only sets config
          // req.overrideMimeType( 'application/xhtml+xml' );
-         /// still it parses to an XMLDocument (Firefox 52), unlike this document
+         /// Still it parses to an XMLDocument (Firefox 52), unlike this document
             req.responseType = 'document';
             req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
 
@@ -1252,7 +1450,7 @@
                     for( traversal.nextNode()/*onto the document node itself*/;; )
                     {
                         const t = traversal.nextNode();
-                        if( t == null ) break;
+                        if( t === null ) break;
 
                         const id = t.getAttribute( 'id' );
                         if( id ) Documents.testIdForm( t, id );
@@ -1261,7 +1459,7 @@
 
               // load end
               // - - - - -
-                /** @param e (Event) This is a mere ProgressEvent, at least on Firefox,
+                /** @param _event (Event) This is a mere ProgressEvent, at least on Firefox,
                   *   which itself contains no useful information.
                   */
                 req.onloadend = function( _event/*ignored*/ )
@@ -1340,12 +1538,12 @@
     const InterDocScanner = ( function()
     {
 
-        const that = {}; // the public interface of InterDocScanner
+        const that = {}; // The public interface of InterDocScanner
 
 
 
         /** @param doc (Document) The document to scan.
-          * @param docLoc (String) The location of the document in normal form.
+          * @param docLoc (string) The location of the document in normal form.
           */
         function scan( doc, docLoc )
         {
@@ -1353,7 +1551,7 @@
             for( traversal.nextNode()/*onto the document node itself*/;; )
             {
                 const t = traversal.nextNode();
-                if( t == null ) break;
+                if( t === null ) break;
 
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
                 if( !linkV ) continue;
@@ -1366,12 +1564,12 @@
                 // Rather take it as the wayscribe intended.
                 let targDocLoc = link.targetDocumentLocation;
                 targDocLoc = targDocLoc? URIs.normalized(targDocLoc): docLoc;
-                if( targDocLoc != DOCUMENT_LOCATION ) continue;
+                if( targDocLoc !== DOCUMENT_LOCATION ) continue;
 
                 const target = document.getElementById( link.targetID );
                 if( !target) continue;
 
-                if( target.interlinkScene ) continue; // the work is already done
+                if( target.interlinkScene ) continue; // The work is already done
 
                 target.interlinkScene = true;
                 target.removeAttributeNS( NS_REND, 'isOrphan' );
@@ -1421,7 +1619,7 @@
     const InterDocWaylinkRenderer = ( function()
     {
 
-        const that = {}; // the public interface of InterDocWaylinkRenderer
+        const that = {}; // The public interface of InterDocWaylinkRenderer
 
 
 
@@ -1477,9 +1675,9 @@
           */
         that.start = function()
         {
-            if( sourceNodeRegistry.size == 0 ) return;
+            if( sourceNodeRegistry.size === 0 ) return;
 
-            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // enough for a quick, cheap test
+            const NS_WAYSCRIPTISH = NS_WAYSCRIPT_DOT.slice( 0, 2 ); // Enough for a quick, cheap test
             for( const entry of sourceNodeRegistry )
             {
                 const targDocLoc = entry[0];
@@ -1488,7 +1686,7 @@
                 {
                     close( docReg )
                     {
-                        if( docReg.document == null )
+                        if( docReg.document === null )
                         {
                             for( const s of sourceNodes ) setTargetPreview( s, MYSTERY_SYMBOL );
                         }
@@ -1500,7 +1698,7 @@
                       // Try to resolve waylinks, re-rendering the source node of each
                       // -----------------------
                         const traversal = targDoc.createNodeIterator( targDoc, SHOW_ELEMENT );
-                          // seeking the target nodes in *that* document [IDW]
+                          // Seeking the target nodes in *that* document [IDW]
                         tt: for( traversal.nextNode()/*onto the document node itself*/;; )
                         {
                             const target = traversal.nextNode();
@@ -1511,12 +1709,12 @@
 
                             const idN = id.length;
                             let s = sourceNodes.length - 1;
-                            ss: do // seek the source nodes in *this* document that match
+                            ss: do // Seek the source nodes in *this* document that match
                             {
                                 const source = sourceNodes[s];
                                 const linkV = source.getAttributeNS( NS_COG, 'link' );
                                 if( !linkV.endsWith( id )
-                                  || linkV.charAt(linkV.length-idN-1) != '#' ) continue ss;
+                                  || linkV.charAt(linkV.length-idN-1) !== '#' ) continue ss;
 
                               // Amend the source node
                               // ---------------------
@@ -1530,7 +1728,7 @@
                               // De-register it
                               // --------------
                                 sourceNodes.splice( s, /*removal count*/1 );
-                                if( sourceNodes.length == 0 ) break tt; // done with this targDoc
+                                if( sourceNodes.length === 0 ) break tt; // Done with this targDoc
 
                             } while( --s >= 0 )
                         }
@@ -1571,7 +1769,7 @@
     const LeaderReader = ( function()
     {
 
-        const that = {}; // the public interface of LeaderReader
+        const that = {}; // The public interface of LeaderReader
 
 
 
@@ -1630,16 +1828,16 @@
             const dive = document.createTreeWalker( element );
               // Node.innerText and textContent would be too inefficient for this purpose, often diving
               // deeply into the element hierarchy where only a shallow dive is needed.
-            let headroom = maxLength; // space remaining for the next word
-         // let child = null; // tracking the last child that was encountered in the dive
+            let headroom = maxLength; // Space remaining for the next word
+         // let child = null; // Tracking the last child that was encountered in the dive
             dive: for( ;; )
             {
                 const d = dive.nextNode();
                 if( !d ) break dive;
 
-             // if( d.parentNode == element ) child = d;
+             // if( d.parentNode === element ) child = d;
                 const dType = d.nodeType;
-                if( dType == TEXT )
+                if( dType === TEXT )
                 {
                     const words = d.data.match( /\S+/g );
                     if( !words ) continue dive;
@@ -1656,35 +1854,35 @@
 
                         if( leader.length > 0 )
                         {
-                            leader += ' '; // word separator
+                            leader += ' '; // Word separator
                             --headroom;
                         }
                         leader += word;
                         headroom -= wN;
-                     // if( firstContributingChild == null ) firstContributingChild = child;
+                     // if( firstContributingChild === null ) firstContributingChild = child;
                      // lastContributingChild = child;
                     }
                 }
-                else if( dType == ELEMENT )
+                else if( dType === ELEMENT )
                 {
                     const dNS = d.namespaceURI;
-                    if( dNS.endsWith(NS_REND) && dNS.length == NS_REND.length ) // fast failing test
+                    if( dNS.endsWith(NS_REND) && dNS.length === NS_REND.length ) // Fast failing test
                     {
-                        if( !toIncludeRend ) lastNode( dive ); // bypassing d and its content
+                        if( !toIncludeRend ) lastNode( dive ); // Bypassing d and its content
                     }
                     else if( dNS.startsWith( NS_WAYSCRIPT_DOT )) break dive;
                     else
                     {
-                        const styleDeclarations = window.getComputedStyle( d );
+                        const styleDeclarations = getComputedStyle( d );
                         const displayStyle = styleDeclarations.getPropertyValue( 'display' );
-                        if( displayStyle == 'inline' ) continue dive;
+                        if( displayStyle === 'inline' ) continue dive;
 
-                        if( styleDeclarations.length == 0 ) // then something's wrong
+                        if( styleDeclarations.length === 0 ) // Then something's wrong
                         {
                             // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
                             // ties that are supported CSS properties" must be reported, ∴ length should
                             // be > 0.  https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
-                            if( dNS == NS_HTML && willDisplayInLine_likely(d) ) continue dive;
+                            if( dNS === NS_HTML && willDisplayInLine_likely(d) ) continue dive;
                         }
 
                         break dive;
@@ -1696,7 +1894,7 @@
             that.leader = leader;
             that.hasLeader = hasLeader;
          // that.startChild = firstContributingChild;
-         // that.endChild = lastContributingChild == null? null: lastContributingChild.nextSibling;
+         // that.endChild = lastContributingChild === null? null: lastContributingChild.nextSibling;
         };
 
 
@@ -1732,7 +1930,7 @@
         constructor( value )
         {
             this._value = value;
-            let loc = URIs.defragmented( value ); // document location
+            let loc = URIs.defragmented( value ); // Document location
             {
                 const fragment = value.slice( loc.length + 1 );
                 if( !fragment ) throw "Missing fragment sign '#' in target identifier: " + a2s('link',value);
@@ -1741,10 +1939,10 @@
             }
             if( loc.length > 0 )
             {
-                if( loc.charAt(0) == '/'
-                  && /*not a network-path reference*/(loc.length == 1 || loc.charAt(1) != '/') ) // [NPR]
+                if( loc.charAt(0) === '/'
+                  && /*not a network-path reference*/(loc.length === 1 || loc.charAt(1) !== '/') ) // [NPR]
                 {
-                    loc = CAST_BASE_PATH + loc; // waycast space → universal space
+                    loc = CAST_BASE_PATH + loc; // Waycast space → universal space
                 }
                 else if( !URIs.FULL_PATTERN.test( loc ))
                 {
@@ -1830,7 +2028,7 @@
     const Marginalia = ( function()
     {
 
-        const that = {}; // the public interface of Marginalia
+        const that = {}; // The public interface of Marginalia
 
 
 
@@ -1842,11 +2040,11 @@
           */
         function lay( marginalis, tagVpBounds = marginalis.parentNode.getBoundingClientRect() )
         {
-            let s; // style
+            let s; // Style
 
           // Span the left margin from page edge to tag
           // --------------------
-            const width = tagVpBounds.left + window.scrollX;
+            const width = tagVpBounds.left + scrollX;
             s = marginalis.style;
             s.setProperty( 'left', -width + 'px' );
             s.setProperty( 'width', width + 'px' );
@@ -1873,14 +2071,14 @@
             }
 
             const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
-              // allowing it to expand up to MAX_GAP, if that much is available
+              // Allowing it to expand up to MAX_GAP, if that much is available
             const lineWidth = iconX - gap;
             s.setProperty( 'width', lineWidth + 'px' ); // [HSP]
             s.setProperty( 'height',   height + 'px' );
          // liner.setAttribute( 'width', lineWidth );
          // liner.setAttribute( 'height',   height );
-         /// a failed attempt to fix the liner.getBBox failure in TargetLining, q.v.
-            s.setProperty( 'display', UNSET_STYLE ); // to whatever it was
+         /// A failed attempt to fix the liner.getBBox failure in TargetLining, q.v.
+            s.setProperty( 'display', UNSET_STYLE ); // To whatever it was
             TargetLining.redraw( liner, lineWidth, height );
         }
 
@@ -1911,27 +2109,27 @@
           */
         that.layWhen = function( marginalis, eSTag )
         {
-         // window.requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry.
-            window.setTimeout( layIf, 50/*ms*/ ); // Give the browser a breather.
+         // requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry
+            setTimeout( layIf, 50/*ms*/ ); // Give the browser a breather
             let pollCount = 0;
             function layIf( _msTime/*ignored*/ )
             {
                 const tagVpBounds = eSTag.getBoundingClientRect();
-                if( tagVpBounds.width ) // then the tag is laid
+                if( tagVpBounds.width ) // Then the tag is laid
                 {
                   // Lay the marginalis and show it
                   // ------------------------------
                     lay( marginalis, tagVpBounds );
-                    marginalis.style.setProperty( 'visibility', 'visible' ); // overriding readable.css
+                    marginalis.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
 
                   // Ensure it re-lays itself as needed
                   // ------------------------
-                    window.addEventListener( 'resize', (e)=>{lay(marginalis);} );
+                    addEventListener( 'resize', (e)=>{lay(marginalis);} );
                 }
                 else if( pollCount <= 3 )
                 {
                     ++pollCount;
-                    window.requestAnimationFrame( layIf ); // wait for the tag to get laid
+                    requestAnimationFrame( layIf ); // Wait for the tag to get laid
                 }
                 else console.error( "Cannot lay marginalis, start tag isn't being laid" );
             }
@@ -2009,15 +2207,15 @@
           // Leader
           // ------
             const toIncludeRend = true;
-              // else the leader would exclude *forelinker* content in the case of a waylink source node
-            console.assert( e.firstChild == null || e.firstChild.nodeName != 'eSTag', A );
-              // else the leader would include the start tag
+              // Else the leader would exclude *forelinker* content in the case of a waylink source node
+            console.assert( e.firstChild === null || e.firstChild.nodeName !== 'eSTag', A );
+              // Else the leader would include the start tag
             LeaderReader.read( e, /*maxLength*/0, toIncludeRend );
   /*[C2]*/  if( LeaderReader.hasLeader ) e.setAttributeNS( NS_REND, 'hasLeader', 'hasLeader' );
 
           // Start tag
           // ---------
-            console.assert( this.eSTag == null, AA + 'Method *render* is called once only' );
+            console.assert( this.eSTag === null, AA + 'Method *render* is called once only' );
             const eSTag = this.eSTag = document.createElementNS( NS_REND, 'eSTag' );
   /*[C2]*/  e.insertBefore( eSTag, e.firstChild );
             const eQName = eSTag.appendChild( document.createElementNS( NS_REND, 'eQName' ));
@@ -2030,7 +2228,7 @@
             {
                 const ePrefix = eQName.appendChild( document.createElementNS( NS_REND, 'ePrefix' ));
                 ePrefix.appendChild( document.createTextNode( prefix ));
-                if( prefix == ELEMENT_NAME_NONE )
+                if( prefix === ELEMENT_NAME_NONE )
                 {
                     isPrefixAnonymousOrAbsent = true;
                     ePrefix.setAttributeNS( NS_REND, 'isAnonymous', 'isAnonymous' );
@@ -2043,13 +2241,13 @@
           // - - - - - - - - - -
             const eLocalPart = eQName.appendChild( document.createElementNS( NS_REND, 'eLocalPart' ));
             let lp = this.localPartOverride? this.localPartOverride: e.localName;
-            const isAnonymous = lp == ELEMENT_NAME_NONE;
+            const isAnonymous = lp === ELEMENT_NAME_NONE;
             if( isAnonymous )
             {
                 lp = '●'; // Unicode 25cf (black circle)
                 eQName.setAttributeNS( NS_REND, 'isAnonymous', 'isAnonymous' );
             }
-            else if( lp.charAt(0) != '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE ); /* If it starts
+            else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE ); /* If it starts
               with a non-underscore, which hopefully means it has some letters or other visible content,
               then replace any underscores with nonbreaking spaces for sake of readability. */
             eLocalPart.appendChild( document.createTextNode( lp ));
@@ -2058,10 +2256,10 @@
           // - - - - - - - - -
             const eNS = e.namespaceURI;
             let renderedName, maxShort;
-            if( eNS == NS_STEP )
+            if( eNS === NS_STEP )
             {
                 renderedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
-                maxShort = 1; // less to allow room for extra padding that readable.css adds
+                maxShort = 1; // Less to allow room for extra padding that readable.css adds
             }
             else
             {
@@ -2070,7 +2268,6 @@
             }
   /*[C2]*/  if( renderedName.length <= maxShort ) e.setAttributeNS( NS_REND, 'hasShortName', 'hasShortName' );
         }
-
 
     }
 
@@ -2096,7 +2293,7 @@
 
             element.removeChild( eSTag );
 
-            // remove any attributes that might have been set:
+            // Remove any attributes that might have been set:
             element.removeAttributeNS( NS_REND, 'hasLeader' );
             element.removeAttributeNS( NS_REND, 'hasShortName' );
             element.removeAttributeNS( NS_REND, 'isChangeable' );
@@ -2115,66 +2312,62 @@
     const TargetControl = ( function()
     {
 
-        const that = {}; // the public interface of TargetControl
+        const that = {}; // The public interface of TargetControl
 
 
 
-        /** @param event (MouseEvent) A click event from within the start tag.
+        /** @param click (MouseEvent) A click event from within the start tag.
           */
-        function hearClick( event )
+        function hearClick/* event handler */( click )
         {
-            const eSTag = event.currentTarget; // where listening
-            const eClicked = event.target;    // what got clicked
+            const eSTag = click.currentTarget; // Where listening
+            const eClicked = click.target;    // What got clicked
 
           // Empty container space clicked?  no function
           // ---------------------
             const eClickedNS = eClicked.namespaceURI;
-            if( eClickedNS == NS_HTML ) // marginalis
+            if( eClickedNS === NS_HTML ) // Marginalis
             {
-                console.assert( eClicked.parentNode == eSTag && eClicked.localName == 'div', A );
+                console.assert( eClicked.parentNode === eSTag && eClicked.localName === 'div', A );
                 return;
             }
 
-            if( eClicked == eSTag ) return;
+            if( eClicked === eSTag ) return;
 
           // Target liner clicked?  function is scene switching
           // ------------
-            const targetNode = eSTag.parentNode; // *waylink* target node
-            if( eClickedNS == NS_SVG ) // target liner
+            const targetNode = eSTag.parentNode; // *Waylink* target node
+            if( eClickedNS === NS_SVG ) // Target liner
             {
-                if( targetNode != nodeTargeted ) return; // switch is disabled
+                if( targetNode !== nodeTargeted ) return; // Switch is disabled
 
-                const wloc = window.location; // [WDL]
-                const u = new URL( wloc.toString() );
-                u.hash = ''; // remove the fragment
+                const u = new URL( location.toString() ); // [WDL]
+                u.hash = ''; // Remove the fragment
                 const pp = u.searchParams;
                 pp.set( 'sc', 'inter' );
                 pp.set( 'link', targetNode.getAttribute('id') );
-                const h = window.history;
-             // h.replaceState( /*same*/h.state, /*same*/document.title, u.href ); // TEST
+             // history.replaceState( /*same*/history.state, /*no title*/'', u.href ); // TEST
                 return;
             }
 
           // Icon or tag name clicked: Function is self hyperlinking
           // ----------------
-            const view = document.scrollingElement; // within the viewport
+            const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
             const scrollLeftWas = view.scrollLeft;
 
           // toggle the browser location, targeted ⇄ untargeted
           // - - - - - - - - - - - - - -
-            const wloc = window.location; // [WDL]
-            if( targetNode == nodeTargeted ) // then transit targeted → untargeted
+            if( targetNode === nodeTargeted ) // Then transit targeted → untargeted
             {
-                wloc.hash = ''; // navigating to the untargeted location, no URI fragment in address bar
-                const loc = wloc.toString();
+                location.hash = ''; // Moving to the untargeted location, no URI fragment in address bar
+                const loc = location.toString(); // [WDL]
                 if( loc.endsWith( '#' )) // Then it left the fragment delimiter hanging there, visible,
                 {                 // like the grin of the Cheshire Cat (Firefox, Chrome).  Remove it:
-                    const h = window.history;
-                    h.replaceState( /*same*/h.state, /*same*/document.title, loc.slice(0,-1) );
+                    history.replaceState( /*same*/history.state, /*no title*/'', loc.slice(0,-1) );
                 }
             }
-            else wloc.hash = targetNode.getAttribute( 'id' ); // untargeted → targeted
+            else location.hash = targetNode.getAttribute( 'id' ); // Untargeted → targeted
 
           // stabilize the view within the viewport
           // - - - - - - - - - -
@@ -2196,7 +2389,7 @@
               */
             function hearMouse_eQName( event )
             {
-                const icon = event.currentTarget; // where listening
+                const icon = event.currentTarget; // Where listening
                 return asElementNamed( 'eQName', icon.parentNode/*marginalis*/.previousSibling );
             }
 
@@ -2210,10 +2403,10 @@
 
             /** @param event (MouseEvent) A 'mouseenter' event from the target icon.
               */
-            function hearMouseEnter( event )
+            function hearMouseEnter/* event handler */( event )
             {
                 if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
-                  // preclude duplication, to be sure
+                  // Preclude duplication, to be sure
                 const eQName = hearMouse_eQName( event );
                 eQName.setAttribute( 'id', '_wayic.read.TargetControl.iconHover' );
                 hearMouse_eQNameIdentified = eQName;
@@ -2222,7 +2415,10 @@
 
             /** @param event (MouseEvent) A 'mouseleave' event from the target icon.
               */
-            function hearMouseLeave( event ) { hearMouse_unidentify( hearMouse_eQName( event )); }
+            function hearMouseLeave/* event handler */( event )
+            {
+                hearMouse_unidentify( hearMouse_eQName( event ));
+            }
 
 
 
@@ -2232,8 +2428,8 @@
           */
         function idTargeted()
         {
-            const hash = window.location.hash; // [WDL]
-            idTargetedC = hash.length == 0? null: hash.slice(1);
+            const hash = location.hash; // [WDL]
+            idTargetedC = hash.length === 0? null: hash.slice(1);
             return idTargetedC;
         }
 
@@ -2263,7 +2459,7 @@
         that.addControls = function( target, eSTag, id )
         {
             eSTag.addEventListener( 'click', hearClick );
-            if( id == idTargetedC ) nodeTargeted = target;
+            if( id === idTargetedC ) nodeTargeted = target;
 
           // Do hover styling where readable.css cannot [GSC]
           // ----------------
@@ -2276,7 +2472,7 @@
 
        // - - -
 
-        window.addEventListener( 'hashchange', function( _event/*ignored*/ )
+        addEventListener( 'hashchange', ( /*HashChangeEvent ignored*/_event ) =>
         {
             const id = idTargeted();
             if( !id )
@@ -2288,8 +2484,8 @@
             const t = document.getElementById( id );
             nodeTargeted = t? t: null;
         });
-
         return that;
+
 
     }() );
 
@@ -2314,9 +2510,9 @@
     const TargetLining = ( function()
     {
 
-        const that = {}; // the public interface of TargetLining
+        const that = {}; // The public interface of TargetLining
 
-        // Dimensions and coordinates are given in pixels, except where marked otherwise.
+        // Dimensions and coordinates are here given in pixels, except where marked otherwise.
 
 
 
@@ -2363,8 +2559,8 @@
               // https://www.w3.org/TR/SVG11/interact.html#SVGEvents
               //
               // As a workaround, the Marginalis layout calls *redraw* directly.
-            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // edge mark
-            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // line
+            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // Edge mark
+            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // Line
             return liner;
         };
 
@@ -2381,11 +2577,11 @@
          //   declares no *viewBox*.  Therefore the default unit (SVG 'user unit') is pixels. */
          // const width = bounds.width;
          // const height = bounds.height;
-         /// that failed, now they're given as parameters instead
+         /// That failed, now they're given as parameters instead
 
           // Draw the line
           // -------------
-            const midY = height / 2; // vertically centered
+            const midY = height / 2; // Vertically centered
             {
                 const line = asElementNamed( 'path', liner.lastChild );
                 const endX = width - width / 4;
@@ -2398,9 +2594,9 @@
                          'M ' + GAP + ' ' + midY
                       + ' H ' + endX
                       );
-                    display = UNSET_STYLE; // to whatever it was
+                    display = UNSET_STYLE; // To whatever it was
                 }
-                else display = 'none'; // too short
+                else display = 'none'; // Too short
                 line.style.setProperty( 'display', display );
             }
 
@@ -2408,7 +2604,7 @@
           // ------------------
             const mark = asElementNamed( 'circle', liner.firstChild );
             mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
-            mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // abutting the document edge
+            mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // Abutting the document edge
             mark.setAttribute( 'cy', midY + 'px' );
         };
 
@@ -2451,7 +2647,7 @@
             if( docLoc.length > 0 )
             {
                 const docLocN = URIs.normalized( docLoc );
-                if( docLocN != DOCUMENT_LOCATION ) // then the target is outside the present document
+                if( docLocN !== DOCUMENT_LOCATION ) // Then the target is outside the present document
                 {
                     this._direction = null;
                     this._documentLocationN = URIs.normalized( docLoc );
@@ -2460,7 +2656,7 @@
                 }
             }
 
-            // the target is nominally within the present document
+            // The target is nominally within the present document
             this._documentLocationN = '';
             const target = document.getElementById( link.targetID );
             this._target = target;
@@ -2524,7 +2720,7 @@
     const WayTracer = ( function()
     {
 
-        const that = {}; // the public interface of WayTracer
+        const that = {}; // The public interface of WayTracer
 
 
 
@@ -2534,7 +2730,7 @@
           *     @see #shutLeg
           */
         function isShut( legID ) { return legsShut.includes(legID); }
-          // the likely efficiency of this test is asserted by INC FAST, q.v.
+          // The likely efficiency of this test is asserted by INC FAST, q.v.
 
 
 
@@ -2569,7 +2765,7 @@
         {
             legsOpen.push( legID );
          // console.debug( legsOpen.length + '\t\tleg ' + legID ); // TEST
-              // spacing matters here, cf. shutLeg
+              // Spacing matters here, cf. shutLeg
         }
 
 
@@ -2608,14 +2804,14 @@
           // ------------
             legsOpen.splice( o, /*removal count*/1 );
          // console.debug( '\t' + legsOpen.length + '\tleg ' + legID + ' ·' ); // TEST
-              // spacing matters here, cf. openLeg
+              // Spacing matters here, cf. openLeg
             legsShut.push( legID );
             if( legsOpen.length > 0 ) return;
 
           // After all are shut
           // ------------------
             console.assert( legsShut.length < 200, AA + 'INC FAST, q.v.' );
-              // asserting the likely efficiency of the tests legsOpen and legsShut.includes
+              // Asserting the likely efficiency of the tests legsOpen and legsShut.includes
          // console.debug( 'Trace run complete' ); // TEST
         }
 
@@ -2633,7 +2829,7 @@
         {
             const docLoc = docReg.location;
             const doc = branch.ownerDocument;
-            if( doc == document )
+            if( doc === document )
             {
                 branch.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
              // console.debug( '\t\t\t(in present document)' ); // TEST
@@ -2642,7 +2838,7 @@
             const traversal = doc.createTreeWalker( t, SHOW_ELEMENT );
             do
             {
-              // Source node
+              // Source node, case of
               // -----------
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
                 source: if( linkV )
@@ -2664,8 +2860,8 @@
                     {
                         close( tDocReg )
                         {
-                            if( tDocReg.document == null ) shutLeg( targetLegID );
-                            // else readDirectly has (or will) shut it
+                            if( tDocReg.document === null ) shutLeg( targetLegID );
+                            // Else readDirectly has (or will) shut it
                         }
 
                         read( tDocReg, tDoc ) /* The call to this method might come now or later,
@@ -2683,13 +2879,13 @@
                             const target = tDoc.getElementById( targetID );
                             subTrace: if( target )
                             {
-                              // Shield the sub-trace work with a rootward scan
-                              // ----------------------------------------------
+                              // Shield the sub-trace work with a scan of ancestors
+                              // --------------------------------------------------
                                 for( let r = target;; )
                                 {
                                     r = r.parentNode;
                                     const ns = r.namespaceURI;
-                                    if( ns == null ) // then r is the document node
+                                    if( ns === null ) // Then r is the document node
                                     {
                                         tsk( 'Malformed document: Missing HTML *body* element: ' + tDocLoc );
                                         break;
@@ -2704,7 +2900,7 @@
                                           // If only for sake of efficiency, ∵ this target branch is
                                           // already covered (or will be) as part of a larger branch.
                                     }
-                                    else if( r.localName == 'body' && ns == NS_HTML ) break;
+                                    else if( r.localName === 'body' && ns === NS_HTML ) break;
                                 }
 
                               // Sub-trace
@@ -2717,28 +2913,27 @@
 
                         readLater( tDocReg, tDoc )
                         {
-                         // window.setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
-                         /// but more efficiently (as a microtask) and properly bound as a method call:
-                            Promise.resolve().then( function()
+                         // setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
+                         /// But more efficiently (as a microtask) and properly bound as a method call:
+                            Promise.resolve().then( (()=>
                             {
                                 this.readDirectly( tDocReg, tDoc );
-                            }.bind( this ));
-
+                            }).bind( this ));
                             // This merely postpones execution till (I think) the end of the current
                             // event loop.  A more elegant and useful solution might be to specifically
-                            // await the shut state of the present leg.  Maybe that could be done using
-                            // the new Promise/async facility?
+                            // await the shut state of the present leg.  Maybe that too could be done
+                            // using this new Promise/async facility?
                         }
                     });
                 }
 
-              // Target node
+              // Target node, case of
               // -----------
                 const id = t.getAttribute( 'id' );
                 if( id && isShut(newLegID(docLoc,id)) ) lastNode( traversal ); /* Bypass sub-branch
                   t, if only for efficiency's sake, as already it was traced in a separate leg. */
             }
-            while( (t = traversal.nextNode()) != null );
+            while( (t = traversal.nextNode()) !== null );
         }
 
 
@@ -2749,7 +2944,7 @@
           *     @see #openLeg
           */
         function wasOpened( legID ) { return legsOpen.includes(legID) || legsShut.includes(legID); }
-          // the likely efficiency of these tests is asserted by INC FAST, q.v.
+          // The likely efficiency of these tests is asserted by INC FAST, q.v.
 
 
 
@@ -2797,9 +2992,22 @@
   * -----
   *  [BA] · Boolean attribute.  A boolean attribute such as [rend:isFoo] either has the same value
   *         as the local part of its name (‘isFoo’), which makes it true, or it is absent
-  *         and thereby false.
+  *         and thereby false.  cf. http://w3c.github.io/html/infrastructure.html#sec-boolean-attributes
   *
   *  [C2] · The constructor of PartRenderingC2 must remove all such markup.
+  *
+  *  [FHS]  Firefox (52.2) has the wrong history.state after travelling over entries E → E+2 → E+1,
+  *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
+  *
+  *  [FIB]  Focus for inline breadcrumbs.  Here avoiding use of the HTML focus facility as a base
+  *         for inline breadcrumb trails.  It seems unreliable.  The browsers are doing their own
+  *         peculiar things with focus which are hard to work around.
+  *         http://w3c.github.io/html/editing.html#focus
+  *
+  *  [FSS]  Use of the session store by documents loaded on ‘file’ scheme URLs.  On moving from document
+  *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
+  *         by D2 may, after travelling back, be unreadable by D1 as though it had not been stored.
+  *         Affects Firefox 52.6.  Does not affect Chrome running with --allow-file-access-from-files.
   *
   *  [GSC]  General sibling combinator, as per readable.css.
   *
@@ -2822,6 +3030,16 @@
   *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother
   *         of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
+  *
+  *  [SBU]  Spurious breadcrumb with unlinked travel.  This is a BUG.  On moving forward from
+  *         history entry E1 to a new entry E2 by typing in the address bar (not activating a link),
+  *         any breadcrumb in E1 will remain where it lies on some hyperlink source node.
+  *         This is incorrect.  It is incorrect because the unlinked move to E2 had no point
+  *         of departure.  The breadcrumb that records such a point should have been removed.
+  *         Not being removed, it shows itself on moving back to E1.  This is misleading.
+  *             The bug might be repaired by removing any breadcrumb after first showing it.
+  *         But this would partly defeat its purpose in the more typical case of a linked E2:
+  *         the breadcrumb would no longer show during back-and-forth motion between E1 and E2.
   *
   *  [WDL]  ‘window.location’ or ‘document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
