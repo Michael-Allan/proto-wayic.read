@@ -1,4 +1,4 @@
-/** readable.∗ - Way documents that are readable on the web
+/** readable - Way documents that are readable on the web
   *
   *   See readable.css for a general introduction.  The sections below are for programmers.
   *
@@ -183,9 +183,9 @@
 
 
 
-    /** The XML namespace of markup specific to cogs.
+    /** The XML namespace of HTML.
       */
-    const NS_COG  = NS_WAYSCRIPT_DOT + SUB_NS_COG;
+    const NS_HTML = 'http://www.w3.org/1999/xhtml';
 
 
 
@@ -345,34 +345,42 @@
 
 
 
-    /** The path to the base directory of the waycast, without a trailing slash '/'.
+    /** The nominal location of the waycast (string) in the form of a URI reference without a trailing
+      * slash '/'.  Minimally it is formed as either an empty string '' (absolute reference),
+      * or a single dot '.' (relative), such that appending a slash always yield a valid reference.
+      * Otherwise it is taken directly from the waycast reference in the *src* attribute
+      * of the *script* element that loads the waycaster's personal configuration script.
+      *
+      *     @see Personalized configuration, http://reluk.ca/project/wayic/cast/doc.task
       */
-    const CAST_BASE_PATH = ( ()=>
+    const CAST_BASE_REF = ( ()=>
     {
-        let path = '__UNDEFINED_repo_href__';
-        const traversal = document.createTreeWalker( document.head, SHOW_ELEMENT );
-        for( let t = traversal.nextNode(); t !== null; t = traversal.nextSibling() )
+        const configFileName = 'way.js';
+        const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
+        for( let t = traversal.lastChild(); t !== null; t = traversal.previousSibling() )
         {
-            if( t.localName === 'cast' && t.namespaceURI === NS_COG )
+            if( t.localName === 'script' && t.namespaceURI === NS_HTML )
             {
-                const p = t.getAttribute( 'base' );
-                if( p )
+                let r = t.getAttribute( 'src' );
+                if( r && r.endsWith(configFileName) )
                 {
-                    path = p;
-                    while( path.endsWith('/') ) path = path.slice( 0, -1 ); // Remove any trailing slash
+                    let rN = r.length - configFileName.length;
+                    if( rN === 0 ) return '.';
+
+                    --rN;
+                    if( r.charAt(rN) === '/' ) return r.slice( 0, rN ); // r without the trailing slash
                 }
-                else tsk( 'Missing *base* attribute in *cast* element' );
-                return path;
             }
         }
 
-        tsk( 'Missing *cast* element in document *head*' );
-        return path;
+        tsk( 'Missing ' + configFileName + ' *script* element in document *body*' );
+        return '__UNDEFINED_waycast_base__';
     })();
 
 
+
         {
-            let loc = URIs.normalized( CAST_BASE_PATH );
+            let loc = URIs.normalized( CAST_BASE_REF );
             if( !loc.endsWith('/') ) loc = loc + '/';
             CAST_BASE_LOCATION = loc;
         }
@@ -557,26 +565,14 @@
 
 
     /** Returns the last descendant of the given node, or null if the node is empty.
+      *
+      *     @see #toLastDescendant
       */
     function lastDescendant( node )
     {
         do node = node.lastChild;
         while( node.hasChildNodes() );
         return node;
-    }
-
-
-
-    /** Moves the current node of the tree walker to the last *visible* node within the current node,
-      * and returns the found node.  It also moves the current node to this node.
-      * If no such node exists, returns null and the current node is not changed.
-      */
-    function lastNode( treeWalker )
-    {
-        const origin = treeWalker.currentNode;
-        while( treeWalker.lastChild() ) {}
-        const destination = treeWalker.currentNode;
-        return destination === origin? null: destination;
     }
 
 
@@ -591,9 +587,9 @@
 
 
 
-    /** The XML namespace of HTML.
+    /** The XML namespace of markup specific to cogs.
       */
-    const NS_HTML = 'http://www.w3.org/1999/xhtml';
+    const NS_COG  = NS_WAYSCRIPT_DOT + SUB_NS_COG;
 
 
 
@@ -698,6 +694,16 @@
 
 
 
+    /** Moves the given tree walker to the last visible descendant of the current node.
+      *
+      *     @see #lastDescendant
+      *     @see Document Object Model traversal § Visibility of nodes,
+      *       https://www.w3.org/TR/DOM-Level-2-Traversal-Range/traversal.html#Iterator-Visibility-h4
+      */
+    function toLastDescendant( treeWalker ) { while( treeWalker.lastChild() ) {} }
+
+
+
     /** Tranforms the present document.
       */
     function transform()
@@ -770,7 +776,7 @@
                         tsk( 'An *a* element with both *href* and *link* attributes: '
                           + a2s('href',href) + ', ' + a2s('link',link) );
                     }
-                    if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_PATH + href );
+                    if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_REF + href );
                       // Translating waycast space → universal space
                 }
                 else if( linkV ) // Then t is a hyperform waylink
@@ -1189,9 +1195,12 @@
             {
                 position = state.position;
                 const s = sessionStorage.getItem( 'positionLastShown' ); // [FSS]
-                console.assert( s, A );
-                const positionLastShown = Number( s );
-                travel = position - positionLastShown;
+                if( s !== null )
+                {
+                    const positionLastShown = Number( s );
+                    travel = position - positionLastShown;
+                }
+                else travel = 0; // Can happen (e.g.) on forward travel from an entry not "of ours"
             }
          // console.log( 'Travel direction was ' + direction ); // TEST
             document.documentElement.setAttributeNS( NS_REND, 'travel', String(travel) );
@@ -1868,7 +1877,7 @@
                     const dNS = d.namespaceURI;
                     if( dNS.endsWith(NS_REND) && dNS.length === NS_REND.length ) // Fast failing test
                     {
-                        if( !toIncludeRend ) lastNode( dive ); // Bypassing d and its content
+                        if( !toIncludeRend ) toLastDescendant( dive ); // Bypassing d and its content
                     }
                     else if( dNS.startsWith( NS_WAYSCRIPT_DOT )) break dive;
                     else
@@ -1942,7 +1951,7 @@
                 if( loc.charAt(0) === '/'
                   && /*not a network-path reference*/(loc.length === 1 || loc.charAt(1) !== '/') ) // [NPR]
                 {
-                    loc = CAST_BASE_PATH + loc; // Waycast space → universal space
+                    loc = CAST_BASE_REF + loc; // Waycast space → universal space
                 }
                 else if( !URIs.FULL_PATTERN.test( loc ))
                 {
@@ -2930,8 +2939,8 @@
               // Target node, case of
               // -----------
                 const id = t.getAttribute( 'id' );
-                if( id && isShut(newLegID(docLoc,id)) ) lastNode( traversal ); /* Bypass sub-branch
-                  t, if only for efficiency's sake, as already it was traced in a separate leg. */
+                if( id && isShut(newLegID(docLoc,id)) ) toLastDescendant( traversal ); /* Bypassing
+                  sub-branch t, if only for efficiency, as already it was traced in a separate leg. */
             }
             while( (t = traversal.nextNode()) !== null );
         }
