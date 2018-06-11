@@ -203,7 +203,9 @@
 
 
 
-        const hrefParserDiv = document.createElement( 'div' ); hrefParserDiv.innerHTML = '<a/>';
+        const hrefParserDiv = document.createElementNS( NS_HTML, 'div' );
+
+          hrefParserDiv.innerHTML = '<a/>';
 
 
 
