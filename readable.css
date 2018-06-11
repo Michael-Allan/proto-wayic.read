@@ -541,6 +541,7 @@ html[rend|lighting='neon']:not([rend|travel^='-']) /* Not on back travel, when u
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper']:not([rend|travel^='-']) /* Not on back travel, … */
+*:target > rend|eSTag > eQName
 {
     animation-name: descreen, flashFade_outline_dark; /* As a travel target locator */
 }
