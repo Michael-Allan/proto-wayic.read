@@ -1,4 +1,4 @@
-/* readable.∗ - Way documents that are readable on the web
+/* readable - Way documents that are readable on the web
  *
  *   This renderer does what’s needed in order to present a complete, easily readable copy
  *   of a way document (way.xht) for public viewing.  It aims for a conservative presentation,
@@ -12,21 +12,27 @@
  *
  * BASIC USAGE
  * -----------
- *   Insert this in the head element of the way document:
+ *   See also § Personalized configuration § Way declaration documents,
+ *   http://reluk.ca/project/wayic/cast/doc.task
  *
- *       <link rel='stylesheet' href='http://reluk.ca/project/wayic/read/readable.css'/> <!-- HERE CUSTOM -->
+ *   In your personal style sheet, way.css
+ *   - - - - - - - - - - - - - - -
+ *   For a working example, see  http://reluk.ca/project/waycast/way.css
+ *   Insert this atop your way.css:
  *
- *   Append one of the following to the body element:
+ *       @import 'http://reluk.ca/project/wayic/read/readable.css';
  *
- *            <script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
- *       <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
+ *   Optionally add this:
  *
- *   Append the second form when the body’s default namespace is other than XHTML.  For example:
+ *       @import 'http://reluk.ca/project/wayic/read/pre_note.css';
  *
- *       <html:body xmlns='data:,wayscript.bit' xmlns:html='http://www.w3.org/1999/xhtml'>
- *                   ⋮
- *           <html:script src='http://reluk.ca/project/wayic/read/readable.js'/> <!-- HERE CUSTOM -->
- *           </html:body>
+ *   In your personal configuration script, way.js
+ *   - - - - - - - - - - - - - - - - - - -
+ *   For a working example, see  http://reluk.ca/project/waycast/way.js
+ *   Insert the equivalent of this in your way.js:
+ *
+ *       appendScript( 'http://reluk.ca/project/wayic/read/readable.js' );
+ *
  *
  * APPEARANCE
  * ----------
