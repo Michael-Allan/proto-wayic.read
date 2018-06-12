@@ -1,8 +1,8 @@
-/* readable - Way documents that are readable on the web
+/* readable - Way declaration documents that are readable on the web
  *
- *   This renderer does what’s needed in order to present a complete, easily readable copy
- *   of a way document (way.xht) for public viewing.  It aims for a conservative presentation,
- *   true to the appearance of the way document in the context of its native waycast. [IWS]
+ *   This renderer does what’s needed in order to present a complete, easily readable copy of a
+ *   way declaration document (way.xht) for public viewing.  It aims for a conservative presentation,
+ *   true to the appearance of the document in the context of its native waycast. [IWS]
  *
  *   Supported browsers
  *   - - - - - - - - - -
@@ -71,8 +71,8 @@
  *
  *   Direct rendering from the local file system
  *   - - - - - - - - - - - - - - - - - - - - - -
- *   When a way document is loaded into the browser on a ‘file’ scheme URL, the renderer assumes
- *   you are its author.  Then it will open an *alert* window for any problem such as
+ *   When a way declaration document is loaded into the browser on a ‘file’ scheme URL, the renderer
+ *   assumes that you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
  *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked ‘⋯?⋯’.
@@ -83,8 +83,8 @@
  *   or generally to read other local files. [LLR]
  *
  *   There is a workaround.  Among the browsers supported, this works only for Firefox.  The workaround
- *   is to load the root document, or any other document from the base directory of the waycast, first.
- *   Then follow the links from there. [WLL]
+ *   is to first load the root way declaration document, or any other document from the base directory
+ *   of the waycast.  Then follow the links from there. [WLL]
  *
  *
  * NOTES  (continued at bottom)

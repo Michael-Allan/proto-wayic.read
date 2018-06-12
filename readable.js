@@ -1,4 +1,4 @@
-/** readable - Way documents that are readable on the web
+/** readable - Way declaration documents that are readable on the web
   *
   *   See readable.css for a general introduction.  The sections below are for programmers.
   *
@@ -1290,7 +1290,7 @@
    // ==================================================================================================
 
 
-    /** The generalized record of a way document.
+    /** The generalized record of a way declaration document.
       */
     class DocumentRegistration // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
@@ -1319,7 +1319,7 @@
    // ==================================================================================================
 
 
-    /** Dealing with way documents at large, not only the present document.
+    /** Dealing with way declaration documents at large, not only the present document.
       */
     const Documents = ( function() // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
@@ -2781,9 +2781,9 @@
 
 
 
-        /** The location of the root document (string) in normal URL form.
+        /** The location of the root way declaration document (string) in normal URL form.
           *
-          *     @see http://reluk.ca/project/wayic/cast/root#root_document
+          *     @see http://reluk.ca/project/wayic/cast/root#root_way_declaration_document
           *     @see URIs#normalized
           */
         const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
