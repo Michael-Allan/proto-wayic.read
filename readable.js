@@ -62,14 +62,15 @@
   *
   *   Wayscript element, any
   *   - - - - - - - - -
-  *      * [hasLeader]    · Has leading, non-whitespace text?  [BA]
-  *      * [hasShortName] · Has a rendered name no longer than three characters?
-  *      * [isChangeable] · Has a rendering that might later change?
-  *      * [isComposer]   · Is a composer element?
-  *      * [isOrphan]     · Is waylink targetable, yet targeted by no source node?
-  *      * [isTargetable] · Is waylink targetable?
-  *      * [isWaybit]     · Is a waybit?
-  *      * [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
+  *      * [hasLeader]      · Has leading, non-whitespace text?  [BA]
+  *      * [hasShortName]    · Has a rendered name no longer than three characters?
+  *      * [isChangeable]     · Has a rendering that might later change?
+  *      * [isComposer]        · Is a composer element?
+  *      * [isOrphan]           · Is waylink targetable, yet targeted by no source node?
+  *      * [isWaybit]            · Is a waybit?
+  *      * [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
+  *                                is either ‘targeted’ or ‘untargeted’.  [readable.css TPC]
+  *      * [isWayscript]        · Is under a ‘data:,wayscript.’ namespace?
   *
   *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
   *                      except in the wayscript source
@@ -88,7 +89,7 @@
   *
   *   Waylink source node, bitform
   *   - - - - - - - - - -
-  *      * [hasPreviewString] · Has a non-empty preview of the target text?
+  *      * [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
   *      * [isBroken]         · Has a broken target reference?
   *      * [cog:link]        ·
   *
@@ -100,6 +101,7 @@
   *              * preview           · Preview of the target text
   *              * html:br           ·
   *              * verticalTruncator · Indicating the source node as such (half a link)
+  *                  * html:span     · Containing the visible indicator, exclusive of padding
   *
   *
   * DOM EXTENSION
@@ -914,6 +916,7 @@
                 configureForTargetPreview( t, preview, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
+                 .appendChild( document.createElementNS( NS_HTML, 'span' ))
                  .appendChild( document.createTextNode( '⋱⋱' ));
                     // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
             }
@@ -926,7 +929,8 @@
             const eSTag = partRendering.eSTag;
             if( lidV ) // Then t is waylink targetable
             {
-                t.setAttributeNS( NS_REND, 'isTargetable', 'isTargetable' );
+                t.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                  // Assumed untargeted, pending the call below to TargetControl.addControls
                 t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // Till proven otherwise
 
               // Marginalis
@@ -2084,7 +2088,7 @@
             const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
               // Allowing it to expand up to MAX_GAP, if that much is available
             const lineWidth = iconX - gap;
-            s.setProperty( 'width', lineWidth + 'px' ); // [HSP]
+            s.setProperty( 'width', lineWidth + 'px' ); // [readable.css HSP]
             s.setProperty( 'height',   height + 'px' );
          // liner.setAttribute( 'width', lineWidth );
          // liner.setAttribute( 'height',   height );
@@ -2327,6 +2331,47 @@
 
 
 
+        /** The element that is hyperlink-targeted by the browser, or null if there is none.
+          *
+          *     @see #idTargeted
+          */
+        let elementTargeted = null;
+
+
+            let elementTargeted_isWaylinkTargetable = false;
+
+
+            function clearElementTargeted()
+            {
+                if( elementTargeted === null ) return;
+
+                if( elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                {
+                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                }
+                elementTargeted = null;
+                elementTargeted_isWaylinkTargetable = false;
+            }
+
+
+            function setElementTargeted( e, isWaylinkTargetable )
+            {
+                if( elementTargeted === e ) return;
+
+                if( elementTargeted_isWaylinkTargetable )
+                {
+                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                }
+                if( isWaylinkTargetable )
+                {
+                    e.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'targeted' );
+                }
+                elementTargeted = e;
+                elementTargeted_isWaylinkTargetable = isWaylinkTargetable;
+            }
+
+
+
         /** @param click (MouseEvent) A click event from within the start tag.
           */
         function hearClick/* event handler */( click )
@@ -2350,7 +2395,7 @@
             const targetNode = eSTag.parentNode; // *Waylink* target node
             if( eClickedNS === NS_SVG ) // Target liner
             {
-                if( targetNode !== nodeTargeted ) return; // Switch is disabled
+                if( targetNode !== elementTargeted ) return; // Switch is disabled
 
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
@@ -2369,7 +2414,7 @@
 
           // toggle the browser location, targeted ⇄ untargeted
           // - - - - - - - - - - - - - -
-            if( targetNode === nodeTargeted ) // Then transit targeted → untargeted
+            if( targetNode === elementTargeted ) // Then transit targeted → untargeted
             {
                 location.hash = ''; // Moving to the untargeted location, no URI fragment in address bar
                 const loc = location.toString(); // [WDL]
@@ -2419,7 +2464,7 @@
                 if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
                   // Preclude duplication, to be sure
                 const eQName = hearMouse_eQName( event );
-                eQName.setAttribute( 'id', '_wayic.read.TargetControl.iconHover' );
+                eQName.setAttribute( 'id', '_wayic.read.TargetControl.iconHover' ); // [readable.css GSC]
                 hearMouse_eQNameIdentified = eQName;
             }
 
@@ -2436,6 +2481,8 @@
         /** The *id* that is hyperlink-targeted by the browser.
           * Returns the fragment part of window.location without the preceding delimiter character '#',
           * or null if the fragment part is missing.  Caches the return value in *idTargetedC*.
+          *
+          *     @see #elementTargeted
           */
         function idTargeted()
         {
@@ -2452,28 +2499,18 @@
 
 
 
-        /** The waylink target node that is hyperlink-targeted by the browser, or null if there is none.
-          *
-          *     @see #idTargeted
-          */
-        let nodeTargeted = null;
-
-
-
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Adds controls to the given target node.
+        /** Adds controls to the given target node and ensures that *isWaylinkTargetable*
+          * is correctly set upon it.
           *
           *     @param id (string) The value of the target node's *id* attribute.
           */
         that.addControls = function( target, eSTag, id )
         {
             eSTag.addEventListener( 'click', hearClick );
-            if( id === idTargetedC ) nodeTargeted = target;
-
-          // Do hover styling where readable.css cannot [GSC]
-          // ----------------
+            if( id === idTargetedC ) setElementTargeted( target, /*isWaylinkTargetable*/true );
             const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
             icon.addEventListener( 'mouseenter', hearMouseEnter );
             icon.addEventListener( 'mouseleave', hearMouseLeave );
@@ -2486,14 +2523,17 @@
         addEventListener( 'hashchange', ( /*HashChangeEvent ignored*/_event ) =>
         {
             const id = idTargeted();
-            if( !id )
+            if( id !== null )
             {
-                nodeTargeted = null;
-                return;
+                const e = document.getElementById( id );
+                if( e !== null )
+                {
+                    setElementTargeted( e, e.hasAttributeNS(NS_REND,'isWaylinkTargetable') );
+                    return;
+                }
             }
 
-            const t = document.getElementById( id );
-            nodeTargeted = t? t: null;
+            clearElementTargeted();
         });
         return that;
 
@@ -3019,10 +3059,6 @@
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
   *         by D2 may, after travelling back, be unreadable by D1 as though it had not been stored.
   *         Affects Firefox 52.6.  Does not affect Chrome running with --allow-file-access-from-files.
-  *
-  *  [GSC]  General sibling combinator, as per readable.css.
-  *
-  *  [HSP]  HTML-embedded styling property, as per readable.css.
   *
   *  [IDW]  The InterDocWaylinkRenderer might run marginally faster if (instead) it began the traversal
   *         with the source nodes and sought the target of each using Document.getElementById.

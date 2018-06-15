@@ -178,16 +178,6 @@ html[rend|lighting='paper'] > html|body > rend|offWayScreen
 /* ---  a  --  h y p e r l i n k s  --------------------------------------------------------------------
  */
 
-html[rend|lighting='neon']
-{
-    --hyperlink-color: hsl( 190/*∼cyan*/, 100%, 60% );
-}
-html[rend|lighting='paper']
-{
-    --hyperlink-color: hsl( 240/*blue*/, 100%, 50% );
-}
-
-
 html|a:active
 {
     outline: none; /* Defeat any browser default (Firefox).  It looks confusing in composite hyperlinks
@@ -204,7 +194,9 @@ html|a[href]
 
 rend|a       > html|a
 {
+    animation-duration: /*flashFade*/3s;
     color: inherit; /* Defeat colour as unecessary and distracting */
+    outline-offset: 0.5em;
     text-decoration-color: transparent; /* Redundant but for enabling a transition effect */
  /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
       while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
@@ -226,11 +218,7 @@ rend|a:hover > html|a,
 rend|a       > html|a[rend|showsBreadcrumb]
 {
     text-decoration-color: var(--hyperlink-color);
-    text-decoration-line: underline;
-}
-rend|a       > html|a[rend|showsBreadcrumb]
-{
-    outline: none; /* Defeat any browser default (Firefox), now made redundant by the underline */
+    text-decoration-line: underline; /* [FIB] */
 }
 
 
@@ -252,6 +240,36 @@ rend|a       > html|sup
 {
     color: var(--hyperlink-color);
     line-height: 0.5em; /* Preserve line spacing despite an (implicit) *vertical-align* of 'super' */
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[rend|lighting='neon']
+{
+    --hyperlink-color: hsl( 190/*∼cyan*/, 100%, 60% );
+}
+
+
+html[rend|lighting='neon']
+rend|a       > html|a[rend|showsBreadcrumb]
+{
+    animation-name: flashFade_back_bright; /* As a breadcrumb locator */
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[rend|lighting='paper']
+{
+    --hyperlink-color: hsl( 240/*blue*/, 100%, 50% );
+}
+
+
+html[rend|lighting='paper']
+rend|a       > html|a[rend|showsBreadcrumb]
+{
+    animation-name: flashFade_back_dark; /* As a breadcrumb locator */
 }
 
 
@@ -280,7 +298,7 @@ rend|a       > html|sup
 {
     font-style: italic;
     opacity: 0.6;
-    padding-left: 3em; /* ≥ NEST_INDENT, for any inline composition leader that flows to the next line */
+    padding-left: 3em; /* ≥ NEST_INDENT, for any inline composition leader that flows to next line */
     text-indent: -3em; /* But not on the first line, rather maintain its alignment */
 }
 
@@ -335,16 +353,28 @@ html[rend|lighting='paper'] *[rend|isComposer]
 /* ---  F l a s h   f a d e  ---------------------------------------------------------------------------
  */
 
-@keyframes flashFade_outline_bright
-{                                         /* white */
+@keyframes flashFade_back_bright
+{
+    from { outline: thin dotted var(--hyperlink-color); animation-timing-function: linear }
+     33% { outline: thin dotted var(--hyperlink-color); animation-timing-function: ease-out }
+      to { outline: thin dotted transparent }
+}
+@keyframes flashFade_back_dark
+{
+    from { outline: thin solid var(--hyperlink-color); animation-timing-function: linear }
+     33% { outline: thin solid var(--hyperlink-color); animation-timing-function: ease-out }
+      to { outline: thin solid transparent }
+}
+
+
+@keyframes flashFade_fore_bright
+{                                   /*   white   */
     from { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: linear }
      33% { outline: medium solid hsl( 0, 0%, 100% ); animation-timing-function: ease-out }
       to { outline: medium solid transparent }
 }
-
-
-@keyframes flashFade_outline_dark
-{                                        /* black */
+@keyframes flashFade_fore_dark
+{                                   /*   black  */
     from { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: linear }
      33% { outline: medium solid hsl( 0, 0%,  0% ); animation-timing-function: ease-out }
       to { outline: medium solid transparent }
@@ -416,20 +446,25 @@ rend|forelinker > a > verticalTruncator
 
 rend|forelinker > a                       > verticalTruncator
 {
-    padding-left: 1em; /* Extra click surface + indentation beneath the overlying preview text; VT_PAD_L */
+    padding-left: 1em; /* Extra click surface + indentation beneath overlying preview text; VT_PAD_L */
     padding-right: 4em; /* Extra click surface */
     position: relative; /* Enabling *z-index* change on hover */
 }
+
+
 rend|forelinker > a:hover                 > verticalTruncator,
 rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator
 {
-    color: var(--hyperlink-color);
+    color: var(--hyperlink-color); /* [FIB] */
     opacity: 1 !important;
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
-rend|forelinker > a[rend|showsBreadcrumb]
+
+
+rend|forelinker > a                       > verticalTruncator > span
 {
-    outline: none; /* Defeat any browser default (Firefox), now made redundant by the styling above */
+    animation-duration: /*flashFade*/3s;
+    outline-offset: 0.3em;
 }
 
 
@@ -473,9 +508,17 @@ html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
 }
 
 
-html[rend|lighting='neon'] rend|forelinker > a > verticalTruncator
+html[rend|lighting='neon']
+rend|forelinker > a                       > verticalTruncator
 {
     opacity: 0.4;
+}
+
+
+html[rend|lighting='neon']
+rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
+{
+    animation-name: flashFade_back_bright; /* As a breadcrumb locator */
 }
 
 
@@ -493,9 +536,17 @@ html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
 }
 
 
-html[rend|lighting='paper'] rend|forelinker > a > verticalTruncator
+html[rend|lighting='paper']
+rend|forelinker > a                       > verticalTruncator
 {
     opacity: 0.2;
+}
+
+
+html[rend|lighting='paper']
+rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
+{
+    animation-name: flashFade_back_dark; /* As a breadcrumb locator */
 }
 
 
@@ -522,7 +573,8 @@ rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* Renders as a mere bullet *
 }
 
 
-*:target > rend|eSTag > eQName /* For a targeted waybit, whether targeted as a waylink or hyperlink */
+*:target > rend|eSTag > eQName, /* For a targeted waybit, whether targeted as a waylink or hyperlink */
+*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
 {
     animation-duration: /*descreen*/3s, /*flashFade*/2s;
     position: relative; /* Enabling *z-index* for the descreening animation */
@@ -532,18 +584,22 @@ rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* Renders as a mere bullet *
 /* - - -  neon   - - - - - - - - - - - -
  */
 html[rend|lighting='neon']:not([rend|travel^='-']) /* Not on back travel, when user orientation */
-*:target > rend|eSTag > eQName                    /* is better served by the breadcrumb alone. */
+*:target > rend|eSTag > eQName,                   /* is better served by the breadcrumb alone. */
+html[rend|lighting='neon']:not([rend|travel^='-'])
+*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
 {
-    animation-name: descreen, flashFade_outline_bright; /* As a travel target locator */
+    animation-name: descreen, flashFade_fore_bright; /* As a travel target locator */
 }
 
 
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper']:not([rend|travel^='-']) /* Not on back travel, … */
-*:target > rend|eSTag > eQName
+*:target > rend|eSTag > eQName,
+html[rend|lighting='paper']:not([rend|travel^='-'])
+*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
 {
-    animation-name: descreen, flashFade_outline_dark; /* As a travel target locator */
+    animation-name: descreen, flashFade_fore_dark; /* As a travel target locator */
 }
 
 
@@ -553,7 +609,7 @@ html[rend|lighting='paper']:not([rend|travel^='-']) /* Not on back travel, … *
  * These rules render the start tag in line with the leading flow content if it's short enough to allow
  * the flow content to rise alongside yet maintain its horizontal alignment.
  *
- * The inlining is effected by floating the start tag which allows the leading flow content fall in line.
+ * The inlining is done by floating the start tag which allows the leading flow content to fall in line.
  * If this method ever proves too difficult to maintain owing to the complications of the float layout,
  * then consider switching to the simpler, more direct method of the defunct composer elements [DCE],
  * namely shipping the leading flow content into the start tag.  A drawback would be the loss
@@ -598,8 +654,8 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 step|* > eSTag > eQName
 {
     border-radius: 0.15em / 15%; /* H / V */
-    padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is inline, */
-}        /* -------- -------- --------             but rather cause overlapping, ∴ constraints STEP_PAD_*.
+    padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is in-  */
+}        /* -------- -------- --------     line, but rather cause overlapping, ∴ constraints STEP_PAD_*.
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
@@ -667,13 +723,13 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  -----------------------------------------------------
  */
 
-[rend|isTargetable] > eSTag
+[rend|isWaylinkTargetable] > eSTag
 {
     position: relative; /* Establish containing block for absolutely positioned children */
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -681,26 +737,26 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
 {
     fill: currentColor;
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
 {
     opacity: 0.5;
     stroke: currentColor;
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     position: absolute;
     top: 0; right: 0;
@@ -710,24 +766,24 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 
 [rend|isWaybit]
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* When it's an underbit */
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When it's an underbit */
 {
     width: 3.5em; /* Wider to better separate from overbit content */
 }
 
 
 [rend|isWaybit] [rend|isComposer] >
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon /* When moreover it's a topmost component */
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When also it's a topmost component */
 {
     width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there's no direct overbit content */
 }
 
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon::before
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon::before
 {
     content: '\1f78b'; /* Unicode 1f78b (round target) */
 }
-[rend|isTargetable][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
+[rend|isWaylinkTargetable][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
 {
     content: '│'; /* '│' is Unicode 2502 (box drawings light vertical) */
 }
@@ -735,25 +791,28 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.50;
 }
-html[rend|lighting='neon'] [rend|isTargetable] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.25;
 }
 
 
-html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*edge mark*/circle
+html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
 }
-html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*line*/path
+html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 80%, 80% );
 }
-html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div > icon
+html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 80%, 80% );
 }
@@ -761,25 +820,28 @@ html[rend|lighting='neon'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.30;
 }
-html[rend|lighting='paper'] [rend|isTargetable] > eSTag > /*marginalis*/div > icon
+html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.15;
 }
 
 
-html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*edge mark*/circle
+html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
 }
-html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div /*line*/path
+html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 100%, 40% );
 }
-html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*/div > icon
+html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 100%, 40% );
 }
@@ -789,15 +851,15 @@ html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  --  s e l f - h y p e r l i n k i n g  --------------
  */
 
-[rend|isTargetable] > eSTag > /*marginalis*/div > icon,
-[rend|isTargetable] > eSTag > eQName
+[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon,
+[rend|isWaylinkTargetable] > eSTag > eQName
 {
     cursor: url('link_cursor/hyperlink.svg') 13 2 /* = HLINK_CURSOR */, pointer; /* [CVU]
       Has click function, as per readable.js TargetControl handleClick. */
 }
 
 
-[rend|isTargetable] > eSTag > eQName
+[rend|isWaylinkTargetable] > eSTag > eQName
 {
     position: relative; /* Enabling *z-index* change on hover */
     transition-property:           z-index;
@@ -808,17 +870,19 @@ html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*
 }
 
 
-[rend|isTargetable] > eSTag > eQName:hover,
-[rend|isTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'], /* In lieu
+[rend|isWaylinkTargetable] > eSTag > eQName:hover,
+[rend|isWaylinkTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'], /* In lieu
   of form "… icon:hover ~ eQName", which cannot work as intended [GSC] */
-[rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
+[rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-[rend|isTargetable]:target > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path,
-[rend|isTargetable]:target > eSTag > /*marginalis*/div > icon
+[rend|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path,
+[rend|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path, /* [TPC] */
+[rend|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > icon,
+[rend|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > icon /* [TPC] */
 {
     opacity: 1 !important;
 }
@@ -826,7 +890,7 @@ html[rend|lighting='paper'] [rend|isTargetable][rend|isOrphan] > eSTag > /*mar.*
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
+html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.7;
 }
@@ -834,7 +898,7 @@ html[rend|lighting='neon'] [rend|isTargetable] > eSTag:hover > /*marginalis*/div
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isTargetable] > eSTag:hover > /*marginalis*/div > icon
+html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.5;
 }
@@ -930,6 +994,11 @@ eQName:not([rend|isAnonymous]) > eLocalPart /* Not when isAnonymous ∵ then it 
  *         which would then be the standard for all waycast service
  *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
  *         Of course, that won’t help for any *local links* that remain.
+ *
+ *  [TPC]  Target pseudo-class failure.  Here adding selector [rend|isWaylinkTargetable='targeted']
+ *         only because [rend|isWaylinkTargetable]:target was seen to fail on Chrome 65.0.
+ *         It failed during relatively fast (∼1 s interval) back-and-forth travel.
+ *         Otherwise attribute *isWaylinkTargetable* would have only a boolean value [readable.js BA].
  *
  *  [WLL]  Workaround for local loading.  It fails for Chrome.  Chrome (59) rejects all local
  *         read requests, logging the reason in the console as “Cross origin requests are
