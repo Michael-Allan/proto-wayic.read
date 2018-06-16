@@ -929,8 +929,8 @@
             const eSTag = partRendering.eSTag;
             if( lidV ) // Then t is waylink targetable
             {
-                t.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
-                  // Assumed untargeted, pending the call below to TargetControl.addControls
+                t.setAttributeNS( NS_REND, 'isWaylinkTargetable',
+                  lidV === Hyperlinkage.idTargeted()? 'targeted':'untargeted' );
                 t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // Till proven otherwise
 
               // Marginalis
@@ -943,7 +943,7 @@
                 Marginalia.layWhen( marginalis, eSTag );
 
               // -----
-                TargetControl.addControls( t, eSTag, /*id*/lidV );
+                TargetControl.addControls( eSTag );
             }
             else if( tSubNS === SUB_NS_COG
              && (tLocalPart === 'comprising' || tLocalPart === 'including'))
@@ -1075,7 +1075,7 @@
 
 
 
-    /** Dealing with hyperlinks.
+    /** Cueing for the purpose of user reorientation after hyperlink back travel.
       */
     const Breadcrumbs = ( function()
     {
@@ -1541,6 +1541,101 @@
 
 
 
+   // ==================================================================================================
+
+
+    /** Dealing with hyperlinks.
+      */
+    const Hyperlinkage = ( function()
+    {
+
+        const that = {}; // The public interface of Hyperlinkage
+
+
+
+        function hearHashChange/* event handler */( /*HashChangeEvent ignored*/_event )
+        {
+            const hash = location.hash; // [WDL]
+            const id = idTargeted = hash.length === 0? null: hash.slice(1);
+            if( id !== null )
+            {
+                const e = document.getElementById( id );
+                if( e !== null )
+                {
+                    setElementTargeted( e );
+                    return;
+                }
+            }
+
+            clearElementTargeted();
+        }
+
+
+
+       // - P u b l i c --------------------------------------------------------------------------------
+
+
+        /** The element that is hyperlink-targeted by the browser, or null if there is none.
+          *
+          *     @return (Element)
+          *     @see #idTargeted
+          */
+        that.elementTargeted = function() { return elementTargeted; }
+
+
+            let elementTargeted = null;
+
+
+            function clearElementTargeted()
+            {
+                if( elementTargeted === null ) return;
+
+                if( elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                {
+                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                }
+                elementTargeted = null;
+            }
+
+
+            function setElementTargeted( e )
+            {
+                if( elementTargeted === e ) return;
+
+                if( elementTargeted !== null
+                 && elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                {
+                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                }
+                if( e.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                {
+                    e.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'targeted' );
+                }
+                elementTargeted = e;
+            }
+
+
+
+        /** The element identifier that is hyperlink-targeted by the browser, as obtained from
+          * the fragment part of window.location without the preceding delimiter character '#'.
+          * If the fragment part is missing, then the return value is null.
+          *
+          *     @return (string)
+          *     @see #elementTargeted
+          */
+        that.idTargeted = function() { return idTargeted; }
+
+
+            let idTargeted = null;
+
+
+       // - - -
+
+        window.addEventListener( 'hashchange', hearHashChange );
+        hearHashChange.call( /*this*/window ); // initializing
+        return that;
+
+    }() );
 
 
 
@@ -2331,47 +2426,6 @@
 
 
 
-        /** The element that is hyperlink-targeted by the browser, or null if there is none.
-          *
-          *     @see #idTargeted
-          */
-        let elementTargeted = null;
-
-
-            let elementTargeted_isWaylinkTargetable = false;
-
-
-            function clearElementTargeted()
-            {
-                if( elementTargeted === null ) return;
-
-                if( elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
-                {
-                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
-                }
-                elementTargeted = null;
-                elementTargeted_isWaylinkTargetable = false;
-            }
-
-
-            function setElementTargeted( e, isWaylinkTargetable )
-            {
-                if( elementTargeted === e ) return;
-
-                if( elementTargeted_isWaylinkTargetable )
-                {
-                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
-                }
-                if( isWaylinkTargetable )
-                {
-                    e.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'targeted' );
-                }
-                elementTargeted = e;
-                elementTargeted_isWaylinkTargetable = isWaylinkTargetable;
-            }
-
-
-
         /** @param click (MouseEvent) A click event from within the start tag.
           */
         function hearClick/* event handler */( click )
@@ -2379,7 +2433,7 @@
             const eSTag = click.currentTarget; // Where listening
             const eClicked = click.target;    // What got clicked
 
-          // Empty container space clicked?  no function
+          // Empty container space clicked?  No function
           // ---------------------
             const eClickedNS = eClicked.namespaceURI;
             if( eClickedNS === NS_HTML ) // Marginalis
@@ -2390,9 +2444,10 @@
 
             if( eClicked === eSTag ) return;
 
-          // Target liner clicked?  function is scene switching
+          // Target liner clicked?  Function is scene switching
           // ------------
             const targetNode = eSTag.parentNode; // *Waylink* target node
+            const elementTargeted = Hyperlinkage.elementTargeted();
             if( eClickedNS === NS_SVG ) // Target liner
             {
                 if( targetNode !== elementTargeted ) return; // Switch is disabled
@@ -2406,7 +2461,7 @@
                 return;
             }
 
-          // Icon or tag name clicked: Function is self hyperlinking
+          // Icon or tag name clicked:  Function is self hyperlinking
           // ----------------
             const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
@@ -2478,39 +2533,16 @@
 
 
 
-        /** The *id* that is hyperlink-targeted by the browser.
-          * Returns the fragment part of window.location without the preceding delimiter character '#',
-          * or null if the fragment part is missing.  Caches the return value in *idTargetedC*.
-          *
-          *     @see #elementTargeted
-          */
-        function idTargeted()
-        {
-            const hash = location.hash; // [WDL]
-            idTargetedC = hash.length === 0? null: hash.slice(1);
-            return idTargetedC;
-        }
-
-
-
-        /** Cache of the last value returned from *idTargeted*.
-          */
-        let idTargetedC; { idTargeted(); }
-
-
-
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Adds controls to the given target node and ensures that *isWaylinkTargetable*
-          * is correctly set upon it.
+        /** Adds controls for a target node.
           *
-          *     @param id (string) The value of the target node's *id* attribute.
+          *     @param eSTag (Element) The start tag of the target node.
           */
-        that.addControls = function( target, eSTag, id )
+        that.addControls = function( eSTag )
         {
             eSTag.addEventListener( 'click', hearClick );
-            if( id === idTargetedC ) setElementTargeted( target, /*isWaylinkTargetable*/true );
             const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
             icon.addEventListener( 'mouseenter', hearMouseEnter );
             icon.addEventListener( 'mouseleave', hearMouseLeave );
@@ -2520,21 +2552,6 @@
 
        // - - -
 
-        addEventListener( 'hashchange', ( /*HashChangeEvent ignored*/_event ) =>
-        {
-            const id = idTargeted();
-            if( id !== null )
-            {
-                const e = document.getElementById( id );
-                if( e !== null )
-                {
-                    setElementTargeted( e, e.hasAttributeNS(NS_REND,'isWaylinkTargetable') );
-                    return;
-                }
-            }
-
-            clearElementTargeted();
-        });
         return that;
 
 
