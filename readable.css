@@ -391,7 +391,7 @@ rend|scene
 }
 
 
-rend|scene#_wayic\.read\.document_scene
+rend|scene#data\:\,wayic\.read\.document_scene
 {
     --section-margin: 3em;
     margin: var(--section-margin) auto 5em auto; /* TRBL */
@@ -401,8 +401,8 @@ rend|scene#_wayic\.read\.document_scene
 }
 
 
-rend|scene#_wayic\.read\.document_scene html|section,
-rend|scene#_wayic\.read\.document_scene > *[rend|isWayscript]
+rend|scene#data\:\,wayic\.read\.document_scene html|section,
+rend|scene#data\:\,wayic\.read\.document_scene > *[rend|isWayscript]
 {
     margin-top:    var(--section-margin);
     margin-bottom: var(--section-margin);
@@ -430,14 +430,14 @@ rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 }
 
 
-*:not([rend|hasPreviewString]):not([rend|isChangeable]):not([rend|hasShortName]) >
+*:not([rend|hasPreviewString]):not([rend|image='absent']):not([rend|hasShortName]) >
 rend|forelinker > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
       then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
-*:not([rend|hasPreviewString]):not([rend|isChangeable]) >
+*:not([rend|hasPreviewString]):not([rend|image='absent']) >
 rend|forelinker > a > verticalTruncator
 {
     margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
@@ -496,7 +496,14 @@ rend|a       /*hyperform*/ > a[href^='#']:not([rend|targetDirection])[cog|link]
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eLocalPart
+html[rend|lighting='neon'] *[rend|image]:not(step|*) > eSTag > eQName > eName,
+html[rend|lighting='neon'] *[rend|image] > rend|forelinker > a > preview
+{
+    color: hsl( var(--targetImage-hue), 30%, 50% );
+}
+
+
+html[rend|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
@@ -524,7 +531,14 @@ rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eLocalPart
+html[rend|lighting='paper'] *[rend|image] > eSTag > eQName > eName,
+html[rend|lighting='paper'] *[rend|image] > rend|forelinker > a > preview
+{
+    color: hsl( var(--targetImage-hue), 100%, 30% );
+}
+
+
+html[rend|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
@@ -567,7 +581,7 @@ rend|eSTag > eQName
 }
 
 
-rend|eSTag > eQName[rend|isAnonymous] > eLocalPart /* Renders as a mere bullet */
+rend|eSTag > eQName[rend|isAnonymous] > eName /* Renders as a mere bullet */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
@@ -606,7 +620,7 @@ html[rend|lighting='paper']:not([rend|travel^='-'])
 
 /* ---  S t a r t   t a g  --  i n l i n e d  ----------------------------------------------------------
  *
- * These rules render the start tag in line with the leading flow content if it's short enough to allow
+ * These rules render the start tag in line with the leading flow content if it is short enough to allow
  * the flow content to rise alongside yet maintain its horizontal alignment.
  *
  * The inlining is done by floating the start tag which allows the leading flow content to fall in line.
@@ -616,14 +630,14 @@ html[rend|lighting='paper']:not([rend|travel^='-'])
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 
-*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable])[rend|isWaybit] > eSTag
+*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent'])[rend|isWaybit] > eSTag
 {
     float: left; /* Rendering the element's start tag in line with its leading text content */
     margin-right: 0.5em;
 }
 
 
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
 {
     display: block;
 }
@@ -632,7 +646,7 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 /* - - -  neon   - - - - - - - - - - - -
  */
 html[rend|lighting='neon']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
 {
     padding-top: 0.30em; /* = NEO_ST_MARG_T + ST_PAD_T */
 }
@@ -641,7 +655,7 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[rend|lighting='paper']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAligner
+step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
 {
     padding-top: 0.28em; /* = PAP_ST_MARG_T + ST_PAD_T + ST_BOR */
 }
@@ -654,13 +668,13 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|isChangeable]) > rend|textAl
 step|* > eSTag > eQName
 {
     border-radius: 0.15em / 15%; /* H / V */
-    padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB don't affect layout ∵ eLocalPart is in-  */
-}        /* -------- -------- --------     line, but rather cause overlapping, ∴ constraints STEP_PAD_*.
+    padding: 0.10em   0.20em   0.15em   0.25em; /* TRBL.  TB do not affect layout ∵ eName is inline,  */
+}        /* -------- -------- --------    yet they do cause overlapping, ∴ still need ST_PAD constraints
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
-step|* > eSTag > eQName:not([rend|isAnonymous]) > eLocalPart /* Not when isAnonymous ∵ then */
-{                                                           /* it renders as a mere bullet */
+step|* > eSTag > eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then */
+{                                                       /* it renders as a mere bullet */
     font-weight: bold;
 }
 
@@ -672,7 +686,7 @@ step|* > eSTag > eQName:not([rend|isAnonymous]) > ePrefix
 }
 
 
-step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eLocalPart
+step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eName
 {
     display: none; /* Let the prefix stand alone */
 }
@@ -689,11 +703,15 @@ html[rend|lighting='neon'] step|* > eSTag
 }
 
 
-html[rend|lighting='neon'] step|* > eSTag > eQName
+html[rend|lighting='neon'] step|*             > eSTag > eQName
 {
                color: hsl(  0, 0%,   0% );
     background-color: hsla( 0, 0%, 100%, 0.45 );
     margin-left: -0.20em; /* = -ST_PAD_L */
+}
+html[rend|lighting='neon'] step|*[rend|image] > eSTag > eQName
+{
+    background-color: hsla( var(--targetImage-hue), 100%, 60%, 0.45 );;
 }
 
 
@@ -871,7 +889,7 @@ eSTag > /*marginalis*/div > icon
 
 
 [rend|isWaylinkTargetable] > eSTag > eQName:hover,
-[rend|isWaylinkTargetable] > eSTag > eQName[id='_wayic.read.TargetControl.iconHover'], /* In lieu
+[rend|isWaylinkTargetable] > eSTag > eQName[id='data:,wayic.read.TargetControl.iconHover'], /* In lieu
   of form "… icon:hover ~ eQName", which cannot work as intended [GSC] */
 [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
@@ -921,6 +939,7 @@ rend|textAligner
 *[rend|isWaybit]
 {
     margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
+    --targetImage-hue: 44/*reddish brown*/;
 }
 
 
@@ -931,12 +950,12 @@ rend|textAligner
 *[rend|isWaybit]:not(step|*) > eSTag
 eQName > ePrefix
 {
-    display: none; /* Assume that it's uninformative */
+    display: none; /* Assume that it is uninformative */
 }
 
 
 *[rend|isWaybit]:not(step|*) > eSTag
-eQName:not([rend|isAnonymous]) > eLocalPart /* Not when isAnonymous ∵ then it renders as a mere bullet */
+eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it renders as a mere bullet */
 {
     filter: contrast(1.4);
     font-weight: bold;
