@@ -22,17 +22,19 @@
   *              * foo:baz      · Child element ‘baz’
   *
   *                                            † Unless otherwise marked, the namespace
-  *                                              of an element or attribute is NS_REND.
+  *                                              of an element or attribute is NS_REND
   *   Element, any
   *   - - - -
   *      * [isOnWayBranch] · Whether this element is (with all of its descendants) on way  [BA]
   *
   *   html:html
   *   - - - - -
-  *      * [lighting] · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
-  *      * [travel]   · Extent of travel in the history stack to reach the present entry: -N, 0, or N
-  *                     (backward by N entries, reload, or forward by N entries).  In other words,
-  *                     the relative position of this entry versus the last (of ours) that was shown.
+  *      * [lighting]     · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *      * [animatedShow] · Style rules that must animate or re-animate on each load or reload
+  *                         of the document, and on each revisit to it, must depend on this attribute.
+  *      * [travel]       · Extent of travel in session history to reach the present entry: -N, 0, or N
+  *                         (backward by N entries, reload, or forward by N entries).  In other words,
+  *                         the relative position of this entry vs. the last (of ours) that was shown.
   *
   *   html:body
   *   - - - - -
@@ -43,22 +45,22 @@
   *        scene
   *          ⋮
   *
-  *      * offWayScreen · Overlay screen for off-way styling, q.v. in readable.css.
+  *      * offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
   *
   *   html:a
   *   - - - -
-  *      * [showsBreadcrumb] · Holds the breadcrumb for this history entry and prominently shows it?
-  *                            Set after travelling back in history onto this hyperlink source node,
+  *      * [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
+  *                            history?  Set after travelling back in history onto this source node,
   *                            it reorients the user by highlighting his original point of departure.
-  *                            Appears at most on one element.  [BA, FIB, SBU]
+  *                            Appears at most on one element  [BA, FIB, SBU]
   *
   *   a  (rend:a - waylink source node, hyperform)
   *   -
   *      * html:a               · (§ q.v.)
   *          * [cog:link]        ·
   *          * [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
-  *                                is an intradocument waylink and its target node exists
-  *      * html:sup   · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *                                is an intradocument waylink and its target node exists.
+  *      * html:sup   · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’.
   *
   *   Wayscript element, any
   *   - - - - - - - - -
@@ -72,12 +74,12 @@
   *      * [isWayscript]        · Is under a ‘data:,wayscript.’ namespace?
   *
   *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
-  *                      except in the wayscript source
-  *          * eQName            · Qualified name [XN] of the element
+  *                      except in the wayscript source.
+  *          * eQName            · Qualified name [XN] of the element.
   *              * [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
-  *              * ePrefix           · Namespace prefix, if any
+  *              * ePrefix           · Namespace prefix, if any.
   *                  * [isAnonymous] · Has a prefix that is declared to be anonymous?
-  *              * eName             · Local part of the name
+  *              * eName             · Local part of the name.
   *          * html:div             · Marginalis (if element is a waylink target node).  [NNR, ODO]
   *              * svg:svg        · Target liner
   *                 * svg:path   · Line
@@ -91,7 +93,7 @@
   *      * [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
   *      * [image]            · Indicates a rendering that might yet change.  Meantime the rendering
   *                             is either based on a cached image of the target node (value ‘present’)
-  *                             or not (‘absent’)
+  *                             or not (‘absent’).
   *      * [isBroken]     · Has a broken target reference?  [BA]
   *      * [cog:link]    ·
   *
@@ -113,7 +115,7 @@
   *   Waylink target node (Element)
   *   - - - - - - - - - -
   *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
-  *       That’s only its temporary use; later this property will instead point to the *scene* element
+  *       That is only its temporary use; later this property will instead point to the *scene* element
   *       that encodes the target node’s interlink scene.
   *
   *
@@ -143,8 +145,8 @@
 
 
 
-    /** The history entry state for the present load of the document, as captured at load time;
-      * prior to any modification of the entry itself, and prior to any extension of the history stack
+    /** The session history entry state for the present load of the document, as captured at load time;
+      * prior to any modification of the entry itself, and prior to any extension of the session history
       * owing to the addition of a new entry by intradocument travel.
       */
     const loadTimeHistoryState = history.state;
@@ -520,6 +522,62 @@
 
 
 
+    /** Ensures that the content of the document, which initially is invisible on load or reload,
+      * will become visible to the user.
+      */
+    function ensureDocumentWillShow()
+    {
+      // Place the off-way screen
+      // ------------------------
+        const body = document.body;
+        body.appendChild( document.createElementNS( NS_REND, 'offWayScreen' ));
+
+      // Detect user's lighting preference
+      // ---------------------------------
+        let lighting;
+        let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
+          // Using 'color' here because somehow 'background-color' fails;
+          // it reads as transparent (Firefox) or black (Chrome), when really it's white.
+        const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
+        if( cc !== null )
+        {
+            const red = cc[1], green = cc[2], blue = cc[3]; // Each 0-255
+            const luma = red * 299 + green * 587 + blue * 114; // 0-255,000, perceived brightness
+              // formula: https://en.wikipedia.org/wiki/YIQ
+            lighting = luma < 127500? 'paper':'neon';
+        }
+        else lighting = 'paper'; // Defaulting to what's most popular
+
+      // Set lighting switch and enable display of the document
+      // -------------------
+        const html = document.documentElement;
+        html.setAttributeNS( NS_REND, 'lighting', lighting );
+        body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
+
+      // Run page-show animations on load and reload
+      // ------------------------
+        html.setAttributeNS( NS_REND, 'animatedShow', 'animatedShow' );
+
+      // Restart page-show animations on each revisit [PSA]
+      // ----------------------------
+        addEventListener( 'pageshow', ( /*PageTransitionEvent*/e ) => // Load, reload or revisit
+        {
+            if( !/*revisit*/e.persisted ) return;
+
+            html.removeAttributeNS( NS_REND, 'animatedShow' );
+            requestAnimationFrame( (()=> { requestAnimationFrame( (()=>
+            {
+                html.setAttributeNS( NS_REND, 'animatedShow', 'animatedShow' );
+            })); }));
+        });
+        addEventListener( 'pagehide', ( /*PageTransitionEvent*/e ) =>
+        {
+            if( /*might later revisit*/e.persisted ) html.removeAttributeNS( NS_REND, 'pageShowCount' );
+        });
+    }
+
+
+
     /** The allowance for rounding errors and other imprecisions in graphics rendering.
       */
     const GRAPHICAL_ERROR_MARGIN = 0.01;
@@ -574,7 +632,7 @@
 
 
 
-    /** Answers whether this load of the document has extended the history stack, breaking new ground
+    /** Answers whether this load of the document has extended the session history, breaking new ground
       * there by adding at least one new entry.  (Multiple entries may be added by a single load
       * owing to intradocument travel.)  A reload never breaks new ground.
       */
@@ -641,51 +699,14 @@
 
       // Document shown, view stable in the typical case [TIC]
       // --------------
-        showDocument();
-        if( LOAD_BREAKS_GROUND ) ViewPortage.ensureTargetShows();
+        ensureDocumentWillShow();
+        if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
 
       // Processes launched, view may deflect in atypical cases
       // ------------------
         InterdocScanner.start();
         InterdocWaylinkRenderer.start();
         WayTracer.start();
-    }
-
-
-
-    /** Makes the document visible to the user.
-      */
-    function showDocument()
-    {
-        const body = document.body;
-
-      // Place the off-way screen
-      // ------------------------
-        body.appendChild( document.createElementNS( NS_REND, 'offWayScreen' ));
-
-      // Detect user's lighting preference
-      // ---------------------------------
-        let lighting;
-        let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
-          // Using 'color' here because somehow 'background-color' fails;
-          // it reads as transparent (Firefox) or black (Chrome), when really it's white.
-        const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
-        if( cc !== null )
-        {
-            const red = cc[1], green = cc[2], blue = cc[3]; // Each 0-255
-            const luma = red * 299 + green * 587 + blue * 114; // 0-255,000, perceived brightness
-              // formula: https://en.wikipedia.org/wiki/YIQ
-            lighting = luma < 127500? 'paper':'neon';
-        }
-        else lighting = 'paper'; // Defaulting to what's most popular
-
-      // Set lighting switch
-      // -------------------
-        document.documentElement.setAttributeNS( NS_REND, 'lighting', lighting );
-
-      // Show document
-      // -------------
-        body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
     }
 
 
@@ -1095,12 +1116,12 @@
 
 
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose,
-      * Breadcrumbs gives to each entry (of ours) in the history stack the following state properties:
+      * Breadcrumbs gives to each entry (of ours) in the session history the following state properties:
       * <ul><li>
       *     breadcrumbPath (string in XPath form) Identifier of the last HTML *a* element
       *                    that was activated within this entry, or null if none was activated </li><li>
-      *     position (number) Ordinal of the entry itself within the history stack,
-      *              a number from zero (inclusive) to the length of the stack (exclusive) </li></ul>
+      *     position (number) Ordinal of the entry itself within the session history,
+      *              a number from zero (inclusive) to the history length (exclusive) </li></ul>
       */
     const Breadcrumbs = ( function()
     {
@@ -1204,9 +1225,9 @@
 
 
 
-        /** Reorient after a position change in the history stack.
+        /** Reorient after a position change in the session history.
           *
-          *     @param state (Object) The value of history.state subsequent to the change.
+          *     @param state (Object) The value of History.state subsequent to the change.
           */
         function reorient( state )
         {
@@ -1217,9 +1238,9 @@
             let position = state.position;
             let travel; /* (-N, 0, N) = (backward by N entries, reload, forward by N entries)
               Relative position of this entry versus the last entry (of ours) that was shown */
-            if( position === undefined ) // Then this entry is new to the stack
+            if( position === undefined ) // Then this entry is new to the session history
             {
-                position = history.length - 1; // Top of stack
+                position = history.length - 1; // Last entry of session history
                 travel = 1;
 
               // Initialize state properties
@@ -1240,7 +1261,7 @@
                 else travel = 0; // Can happen (e.g.) on forward travel from an entry not "of ours"
             }
          // console.log( 'Travel direction was ' + direction ); // TEST
-            document.documentElement.setAttributeNS( NS_REND, 'travel', String(travel) );
+            document.documentElement.setAttributeNS( NS_REND, 'travel', travel );
 
           // Stamp the session with the position last shown, which is now this position
           // -----------------
@@ -1256,7 +1277,7 @@
                     const pR = document.evaluate( p, document, /*namespace resolver*/null,
                       ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
                     const a = pR.iterateNext(); // Resolved hyperlink source node, an HTML *a* element
-                    console.assert( pR.iterateNext() === null, A ); /* There must only be the one
+                    console.assert( pR.iterateNext() === null, A ); /* At most there is the one
                       if *definitePath* is 'unambiguous' as required */
                     if( crumbHolder !== a )
                     {
@@ -1278,11 +1299,11 @@
        // - - -
 
         document.documentElement.addEventListener( 'click', hearClick );
-        addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Which includes initial page load
+        addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Document load, reload or revisit
         {
             reorient( history.state ); // Firefox can have the wrong value here [FHS]
         });
-        addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Same-page target (fragment) changes
+        addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Intradocument travel
         {
          // console.assert( (pop.state === null && history.state === null) // TEST
          //     || pop.state.position === history.state.position, A );
@@ -1588,7 +1609,7 @@
 
 
 
-        function hearHashChange/* event handler */( /*HashChangeEvent ignored*/_event )
+        function hearHashChange/* event handler */( _HashChangeEvent )
         {
             const hash = location.hash; // [WDL]
             const id = idTargeted = hash.length === 0? null: hash.slice(1);
@@ -2407,7 +2428,7 @@
 
                   // Ensure it re-lays itself as needed
                   // ------------------------
-                    addEventListener( 'resize', (e)=>{lay(marginalis);} );
+                    addEventListener( 'resize', (_UIEvent)=>{lay(marginalis);} );
                 }
                 else if( pollCount <= 3 )
                 {
@@ -2920,7 +2941,7 @@
         that.newLiner = function()
         {
             const liner = document.createElementNS( NS_SVG, 'svg' );
-         // liner.addEventListener( 'resize', (e)=>{that.redraw(liner);} );
+         // liner.addEventListener( 'resize', (_UIEvent)=>{that.redraw(liner);} );
               // Ensuring it draws when first laid, then redraws as needed.
               //
               // Except it's not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
@@ -3077,10 +3098,10 @@
 
     /** Dealing with the viewport and its scroller.
       */
-    const ViewPortage = ( function()
+    const Viewporting = ( function()
     {
 
-        const that = {}; // The public interface of ViewPortage
+        const that = {}; // The public interface of Viewporting
 
 
 
@@ -3095,7 +3116,7 @@
           *
           *     @see Hyperlinkage#elementTargeted
           */
-        that.ensureTargetShows = function() // [HTP]
+        that.ensureTargetWillShow = function() // [HTP]
         {
             const e = Hyperlinkage.elementTargeted();
             if( e === null ) return;
@@ -3111,7 +3132,7 @@
                 if( eTop < vHeight / 4 ) return; // Top alone is visible, yet reaches upper quarter
             }
 
-         // console.debug( 'ViewPortage.ensureTargetShows: Repositioning' ); // TEST
+         // console.debug( 'Viewporting.ensureTargetWillShow: Repositioning' ); // TEST
             e.scrollIntoView( targetPositioningOptions );
         };
 
@@ -3424,7 +3445,7 @@
   *
   *  [C2] · The constructor of PartRenderingC2 must remove all such markup.
   *
-  *  [FHS]  Firefox (52.2) has the wrong history.state after travelling over entries E → E+2 → E+1,
+  *  [FHS]  Firefox (52.2) has the wrong History.state after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
   *
   *  [FIB]  Focus for inline breadcrumbs.  Here avoiding use of the HTML focus facility as a base
@@ -3468,7 +3489,10 @@
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother
   *         of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
   *
-  *  [SBU]  Spurious breadcrumb with unlinked travel.  This is a BUG.  On moving forward from
+  *  [PSA]  Page-show animation.  On revisiting a loaded page in session history (forward or backward),
+  *         sometimes Firefox (60) fails to start or restart an animation commanded by a style rule.
+  *
+  *  [SBU]  Spurious breadcrumb with unlinked travel.  This is a BUG.  On moving forward from session
   *         history entry E1 to a new entry E2 by typing in the address bar (not activating a link),
   *         any breadcrumb in E1 will remain where it lies on some hyperlink source node.
   *         This is incorrect.  It is incorrect because the unlinked move to E2 had no point

@@ -197,7 +197,7 @@ rend|a       > html|a
     animation-duration: /*flashFade*/3s;
     color: inherit; /* Defeat colour as unecessary and distracting */
     outline-offset: 0.5em;
-    text-decoration-color: transparent; /* Redundant but for enabling a transition effect */
+    text-decoration-color: transparent; /* Redundant but for enabling a *transition* effect */
  /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
       while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
       On the other, the latest standard replaces it with a *text-decoration-skip-ink-property* which is
@@ -226,7 +226,7 @@ rend|a       > html|a,
 rend|a       > html|sup
 {
     position: relative; /* Enabling *z-index* change on hover */
-    z-index: 0; /* So enabling its transition, which the default does not */
+    z-index: 0; /* So enabling its *transition*, which the default does not */
 }
 rend|a:hover > html|a,
 rend|a       > html|a[rend|showsBreadcrumb],
@@ -251,7 +251,7 @@ html[rend|lighting='neon']
 }
 
 
-html[rend|lighting='neon']
+html[rend|lighting='neon'][rend|animatedShow]
 rend|a       > html|a[rend|showsBreadcrumb]
 {
     animation-name: flashFade_back_bright; /* As a breadcrumb locator */
@@ -266,7 +266,7 @@ html[rend|lighting='paper']
 }
 
 
-html[rend|lighting='paper']
+html[rend|lighting='paper'][rend|animatedShow]
 rend|a       > html|a[rend|showsBreadcrumb]
 {
     animation-name: flashFade_back_dark; /* As a breadcrumb locator */
@@ -522,7 +522,7 @@ rend|forelinker > a                       > verticalTruncator
 }
 
 
-html[rend|lighting='neon']
+html[rend|lighting='neon'][rend|animatedShow]
 rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: flashFade_back_bright; /* As a breadcrumb locator */
@@ -557,7 +557,7 @@ rend|forelinker > a                       > verticalTruncator
 }
 
 
-html[rend|lighting='paper']
+html[rend|lighting='paper'][rend|animatedShow]
 rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: flashFade_back_dark; /* As a breadcrumb locator */
@@ -577,7 +577,9 @@ rend|eSTag
 
 rend|eSTag > eQName
 {
+    animation-duration: /*descreen*/3s, /*flashFade*/2s;
     outline-offset: 0.2em;
+    position: relative; /* Enabling *z-index* for the descreening animation */
 }
 
 
@@ -587,19 +589,11 @@ rend|eSTag > eQName[rend|isAnonymous] > eName /* Renders as a mere bullet */
 }
 
 
-*:target > rend|eSTag > eQName, /* For a targeted waybit, whether targeted as a waylink or hyperlink */
-*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
-{
-    animation-duration: /*descreen*/3s, /*flashFade*/2s;
-    position: relative; /* Enabling *z-index* for the descreening animation */
-}
-
-
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon']:not([rend|travel^='-']) /* Not on back travel, when user orientation */
-*:target > rend|eSTag > eQName,                   /* is better served by the breadcrumb alone. */
-html[rend|lighting='neon']:not([rend|travel^='-'])
+html[rend|lighting='neon'][rend|animatedShow][rend|travel]:not([rend|travel^='-']) /* [NBT] */
+*:target > rend|eSTag > eQName,
+html[rend|lighting='neon'][rend|animatedShow][rend|travel]:not([rend|travel^='-'])
 *[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
 {
     animation-name: descreen, flashFade_fore_bright; /* As a travel target locator */
@@ -608,9 +602,9 @@ html[rend|lighting='neon']:not([rend|travel^='-'])
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper']:not([rend|travel^='-']) /* Not on back travel, … */
+html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-']) /* [NBT] */
 *:target > rend|eSTag > eQName,
-html[rend|lighting='paper']:not([rend|travel^='-'])
+html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-'])
 *[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
 {
     animation-name: descreen, flashFade_fore_dark; /* As a travel target locator */
@@ -751,7 +745,7 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
-      Its layout depends on the size of the icon child, however, so don't use display 'none' here. */
+      But the layout depends on the size of the icon child, therefore do not use display 'none' here. */
 }
 
 
@@ -884,7 +878,7 @@ eSTag > /*marginalis*/div > icon
     transition-duration:                0s;
     transition-timing-function: step-start;
     transition-delay:                 0.6s; /* Avoid distracting flash on passing */
-    z-index: 0; /* So enabling its transition, which the default does not */
+    z-index: 0; /* So enabling its *transition*, which the default does not */
 }
 
 
@@ -1013,6 +1007,11 @@ eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it rende
  *         which would then be the standard for all waycast service
  *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
  *         Of course, that won’t help for any *local links* that remain.
+ *
+ *  [NBT]  Not on back travel, as then user orientation is better served by the breadcrumb alone.
+ *         Here the selector [rend|travel] combines with :not([rend|travel^='-']) to transform
+ *         its negative test to a positive one.  This prevents premature firing of the rule
+ *         immediately after back travel while the *travel* attribute is yet unset.
  *
  *  [TPC]  Target pseudo-class failure.  Here adding selector [rend|isWaylinkTargetable='targeted']
  *         only because [rend|isWaylinkTargetable]:target was seen to fail on Chrome 65.0.
