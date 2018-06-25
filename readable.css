@@ -1,8 +1,8 @@
 /* readable - Way declaration documents that are readable on the web
  *
- *   This renderer does what’s needed in order to present a complete, easily readable copy of a
+ *   This transformer does what is needed in order to present a complete, easily readable view of a
  *   way declaration document (way.xht) for public viewing.  It aims for a conservative presentation,
- *   true to the appearance of the document in the context of its native waycast. [IWS]
+ *   true to the formal source of the document in the context of its native waycast. [IWS]
  *
  *   Supported browsers
  *   - - - - - - - - - -
@@ -12,8 +12,7 @@
  *
  * BASIC USAGE
  * -----------
- *   See also § Personalized configuration § Way declaration documents,
- *   http://reluk.ca/project/wayic/cast/doc.task
+ *   See also http://reluk.ca/project/wayic/cast/doc.task § Personal configuration.
  *
  *   In your personal style sheet, way.css
  *   - - - - - - - - - - - - - - -
@@ -36,16 +35,16 @@
  *
  * APPEARANCE
  * ----------
- *   This renderer automatically chooses one of two overall lighting modes for the display: [LM]
+ *   This transformer automatically chooses one of two overall lighting modes for the display: [LM]
  *   either a black-on-white *paper* mode. or a reverse video *neon* mode.  It bases the choice
  *   on what it detects of the browser’s settings, which it takes to be the user’s preference.
  *
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
  * -----------------------------------------
- *   This renderer takes as anonymous any wayscript element in which the local part of the name
- *   is encoded by a single underscore ‘_’.  It renders the element accordingly.  Likewise it gives
- *   an element with a namespace prefix of ‘_’ the same rendering as an element that has no prefix.
+ *   This transformer takes as anonymous any wayscript element in which the local part of the name
+ *   is encoded by a single underscore ‘_’.  It transforms the element accordingly.  Likewise it gives
+ *   an element with a namespace prefix of ‘_’ the same form as an element that has no prefix.
  *
  *
  * COMPOSITION LEADER ALIGNMENT
@@ -55,28 +54,28 @@
  *
  *       <cog:including>, as it may happen
  *
- *   When the renderer encounters this, it tries to reproduce a similar layout.
+ *   When the transformer encounters this, it tries to reproduce a similar layout.
  *
  *
  * SECTIONING
  * ----------
- *   This renderer puts vertical margins on HTML *section* elements.  It adds the same margins
+ *   This transformer puts vertical margins on HTML *section* elements.  It adds the same margins
  *   to wayscript elements that are *direct children of the body*.  To defeat this automatic margining
  *   for a given group of *body* children, put them together in a single *section* element.
  *
  *
  * TROUBLESHOOTING
  * ---------------
- *   This renderer reports problems it detects to the browser’s debugging console. [CON]
+ *   This transformer reports problems it detects to the browser’s debugging console. [CON]
  *
- *   Direct rendering from the local file system
- *   - - - - - - - - - - - - - - - - - - - - - -
- *   When a way declaration document is loaded into the browser on a ‘file’ scheme URL, the renderer
+ *   Direct viewing from the local file system
+ *   - - - - - - - - - - - - - - - - - - - - -
+ *   When a way declaration document is loaded into the browser on a ‘file’ scheme URL, the transformer
  *   assumes that you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
  *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked ‘⋯?⋯’.
- *   This affects the quality of rendering, making the way definition harder to view.
+ *   This affects the quality of presentation, making the way definition harder to view.
  *   (Instructions on dealing with this are given further below.)  What causes this:
  *   when a document is loaded on a ‘file’ scheme URL, the browser grants to JavaScript
  *   only a limited ability to resolve external waylinks, to trace the way across multiple files,
@@ -91,7 +90,7 @@
  * -----
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
-@namespace rend 'data:,wayic.read';
+@namespace read 'data:,wayic.read';
 @namespace  cog 'data:,wayscript.cog';
 @namespace step 'data:,wayscript.bit.step'; /*
               ↗ 'data:,wayscript.bit' covers waybits *simply*.  They have no styling of their own;
@@ -116,7 +115,7 @@ html|body
 }
 
 
-html|body > rend|offWayScreen
+html|body > read|offWayScreen
 {
  /* A semi-opaque screen that extends out to cover the document element.  On-way branches rise clear
     of this screen, distinct from any off-way ancestors that are left behind, still dimmed by it.
@@ -135,7 +134,7 @@ html|body > rend|offWayScreen
 }
 
 
-*[rend|isOnWayBranch]
+*[read|isOnWayBranch]
 {
     position: relative; z-index: 1; /* Raised clear of the *offWayScreen*.
       But if an ancestor is already so raising the branch, then this only raises it
@@ -146,14 +145,14 @@ html|body > rend|offWayScreen
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] > html|body
+html[read|lighting='neon'] > html|body
 {
                color: hsl( 0, 0%, 80% ); /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */
     background-color: hsl( 0, 0%, 20% ); /* On dark */
 }
 
 
-html[rend|lighting='neon'] > html|body > rend|offWayScreen
+html[read|lighting='neon'] > html|body > read|offWayScreen
 {
     opacity: 0.5;
 }
@@ -161,14 +160,14 @@ html[rend|lighting='neon'] > html|body > rend|offWayScreen
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] > html|body
+html[read|lighting='paper'] > html|body
 {
                color: hsl( 0, 0%, 7% ); /* DARK_TEXT, yet allowing darker effects elsewhere */
     background-color: hsl( 0, 0%, 93% ); /* On bright white, yet allowing brighter touches elsewhere */
 }
 
 
-html[rend|lighting='paper'] > html|body > rend|offWayScreen
+html[read|lighting='paper'] > html|body > read|offWayScreen
 {
     opacity: 0.6;
 }
@@ -192,7 +191,7 @@ html|a[href]
 }
 
 
-rend|a       > html|a
+read|a       > html|a
 {
     animation-duration: /*flashFade*/3s;
     color: inherit; /* Defeat colour as unecessary and distracting */
@@ -205,7 +204,7 @@ rend|a       > html|a
 }
 
 
-rend|a       > html|a:not([rend|showsBreadcrumb])
+read|a       > html|a:not([read|showsBreadcrumb])
 {
     transition-property: text-decoration-color,    z-index;
     transition-duration:                  0.2s,         0s;
@@ -214,29 +213,29 @@ rend|a       > html|a:not([rend|showsBreadcrumb])
 }
 
 
-rend|a:hover > html|a,
-rend|a       > html|a[rend|showsBreadcrumb]
+read|a:hover > html|a,
+read|a       > html|a[read|showsBreadcrumb]
 {
     text-decoration-color: var(--hyperlink-color);
     text-decoration-line: underline; /* [FIB] */
 }
 
 
-rend|a       > html|a,
-rend|a       > html|sup
+read|a       > html|a,
+read|a       > html|sup
 {
     position: relative; /* Enabling *z-index* change on hover */
     z-index: 0; /* So enabling its *transition*, which the default does not */
 }
-rend|a:hover > html|a,
-rend|a       > html|a[rend|showsBreadcrumb],
-rend|a:hover > html|sup
+read|a:hover > html|a,
+read|a       > html|a[read|showsBreadcrumb],
+read|a:hover > html|sup
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-rend|a       > html|sup
+read|a       > html|sup
 {
     color: var(--hyperlink-color);
     line-height: 0.5em; /* Preserve line spacing despite an (implicit) *vertical-align* of 'super' */
@@ -245,14 +244,14 @@ rend|a       > html|sup
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon']
+html[read|lighting='neon']
 {
     --hyperlink-color: hsl( 190/*∼cyan*/, 100%, 60% );
 }
 
 
-html[rend|lighting='neon'][rend|animatedShow]
-rend|a       > html|a[rend|showsBreadcrumb]
+html[read|lighting='neon'][read|animatedShow]
+read|a       > html|a[read|showsBreadcrumb]
 {
     animation-name: flashFade_back_bright; /* As a breadcrumb locator */
 }
@@ -260,14 +259,14 @@ rend|a       > html|a[rend|showsBreadcrumb]
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper']
+html[read|lighting='paper']
 {
     --hyperlink-color: hsl( 240/*blue*/, 100%, 50% );
 }
 
 
-html[rend|lighting='paper'][rend|animatedShow]
-rend|a       > html|a[rend|showsBreadcrumb]
+html[read|lighting='paper'][read|animatedShow]
+read|a       > html|a[read|showsBreadcrumb]
 {
     animation-name: flashFade_back_dark; /* As a breadcrumb locator */
 }
@@ -277,7 +276,7 @@ rend|a       > html|a[rend|showsBreadcrumb]
 /* ---  C o m p o s e r  -------------------------------------------------------------------------------
  */
 
-*[rend|isComposer]
+*[read|isComposer]
 {
     border-radius: 0.5em;
     border-width: 0.1em;
@@ -288,13 +287,13 @@ rend|a       > html|a[rend|showsBreadcrumb]
 }
 
 
-*[rend|isComposer] [rend|isComposer] /* When nested */
+*[read|isComposer] [read|isComposer] /* When nested */
 {
     margin-right: 0.7em; /* Space between adjacent, vertical border lines to better show the nesting */
 }
 
 
-*[rend|isComposer] > eSTag
+*[read|isComposer] > eSTag
 {
     font-style: italic;
     opacity: 0.6;
@@ -303,13 +302,13 @@ rend|a       > html|a[rend|showsBreadcrumb]
 }
 
 
-*[rend|isComposer] > eSTag > eQName > ePrefix
+*[read|isComposer] > eSTag > eQName > ePrefix
 {
     display: none; /* Assume that it's uninformative */
 }
 
 
-*[rend|isComposer] > eSTag > eQName::after
+*[read|isComposer] > eSTag > eQName::after
 {
     content: ':';
 }
@@ -317,7 +316,7 @@ rend|a       > html|a[rend|showsBreadcrumb]
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *[rend|isComposer]
+html[read|lighting='neon'] *[read|isComposer]
 {
     border-color: hsla( 0, 0%, 100%, 0.35 );
     border-style: dashed;
@@ -328,7 +327,7 @@ html[rend|lighting='neon'] *[rend|isComposer]
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *[rend|isComposer]
+html[read|lighting='paper'] *[read|isComposer]
 {
     border-color: hsla( 0, 0%, 0%, 0.25 );
     border-style: solid none none solid; /* TRBL */
@@ -385,13 +384,13 @@ html[rend|lighting='paper'] *[rend|isComposer]
 /* ---  S c e n e  -------------------------------------------------------------------------------------
  */
 
-rend|scene
+read|scene
 {
     display: block;
 }
 
 
-rend|scene#data\:\,wayic\.read\.document_scene
+read|scene#data\:\,wayic\.read\.document_scene
 {
     --section-margin: 3em;
     margin: var(--section-margin) auto 5em auto; /* TRBL */
@@ -401,8 +400,8 @@ rend|scene#data\:\,wayic\.read\.document_scene
 }
 
 
-rend|scene#data\:\,wayic\.read\.document_scene html|section,
-rend|scene#data\:\,wayic\.read\.document_scene > *[rend|isWayscript]
+read|scene#data\:\,wayic\.read\.document_scene html|section,
+read|scene#data\:\,wayic\.read\.document_scene > *[read|isWayscript]
 {
     margin-top:    var(--section-margin);
     margin-bottom: var(--section-margin);
@@ -413,7 +412,7 @@ rend|scene#data\:\,wayic\.read\.document_scene > *[rend|isWayscript]
 /* ---  S o u r c e   n o d e   ( w a y l i n k )  -----------------------------------------------------
  */
 
-rend|forelinker > a
+read|forelinker > a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
     text-decoration: none; /* Defeat any browser default (Chrome).  It looks confusing
@@ -422,7 +421,7 @@ rend|forelinker > a
 }
 
 
-rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
+read|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 {
     display: inline-block; /* Enables *min-width* */
     min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
@@ -430,21 +429,21 @@ rend|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 }
 
 
-*:not([rend|hasPreviewString]):not([rend|image='absent']):not([rend|hasShortName]) >
-rend|forelinker > a > br
+*:not([read|hasPreviewString]):not([read|image='absent']):not([read|hasShortName]) >
+read|forelinker > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
       then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
-*:not([rend|hasPreviewString]):not([rend|image='absent']) >
-rend|forelinker > a > verticalTruncator
+*:not([read|hasPreviewString]):not([read|image='absent']) >
+read|forelinker > a > verticalTruncator
 {
     margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
 }
 
 
-rend|forelinker > a                       > verticalTruncator
+read|forelinker > a                       > verticalTruncator
 {
     padding-left: 1em; /* Extra click surface + indentation beneath overlying preview text; VT_PAD_L */
     padding-right: 4em; /* Extra click surface */
@@ -452,8 +451,8 @@ rend|forelinker > a                       > verticalTruncator
 }
 
 
-rend|forelinker > a:hover                 > verticalTruncator,
-rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator
+read|forelinker > a:hover                 > verticalTruncator,
+read|forelinker > a[read|showsBreadcrumb] > verticalTruncator
 {
     color: var(--hyperlink-color); /* [FIB] */
     opacity: 1 !important;
@@ -461,7 +460,7 @@ rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator
 }
 
 
-rend|forelinker > a                       > verticalTruncator > span
+read|forelinker > a                       > verticalTruncator > span
 {
     animation-duration: /*flashFade*/3s;
     outline-offset: 0.3em;
@@ -470,25 +469,25 @@ rend|forelinker > a                       > verticalTruncator > span
 
 /* - - -  target orientation   - - - - -
  */
-rend|forelinker/*bitform*/ > a:not([href^='#']), /* With a target reference in interdocument form */
-rend|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
+read|forelinker/*bitform*/ > a:not([href^='#']), /* With a target reference in interdocument form */
+read|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
 {
     cursor: url('link_cursor/waylink_out.svg') 13 2, pointer;
 }
 
 
-rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='up'], /* Intradocument, target above */
-rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='up'][cog|link]
+read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='up'], /* Intradocument, target above */
+read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='up'][cog|link]
 {
     cursor: url('link_cursor/waylink_in_up.svg') 13 2, pointer;
 }
-rend|forelinker/*bitform*/ > a[href^='#'][rend|targetDirection='down'], /* Target below */
-rend|a       /*hyperform*/ > a[href^='#'][rend|targetDirection='down'][cog|link]
+read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='down'], /* Target below */
+read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='down'][cog|link]
 {
     cursor: url('link_cursor/waylink_in_down.svg') 13 2, pointer;
 }
-rend|forelinker/*bitform*/ > a[href^='#']:not([rend|targetDirection]), /* Target missing */
-rend|a       /*hyperform*/ > a[href^='#']:not([rend|targetDirection])[cog|link]
+read|forelinker/*bitform*/ > a[href^='#']:not([read|targetDirection]), /* Target missing */
+read|a       /*hyperform*/ > a[href^='#']:not([read|targetDirection])[cog|link]
 {
     cursor: url('link_cursor/waylink_in.svg') 13 2, pointer;
 }
@@ -496,34 +495,34 @@ rend|a       /*hyperform*/ > a[href^='#']:not([rend|targetDirection])[cog|link]
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] *[rend|image]:not(step|*) > eSTag > eQName > eName,
-html[rend|lighting='neon'] *[rend|image] > rend|forelinker > a > preview
+html[read|lighting='neon'] *[read|image]:not(step|*) > eSTag > eQName > eName,
+html[read|lighting='neon'] *[read|image] > read|forelinker > a > preview
 {
     color: hsl( var(--targetImage-hue), 30%, 50% );
 }
 
 
-html[rend|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
+html[read|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
 
 
-html[rend|lighting='neon'] *[rend|isBroken] > rend|forelinker > a > preview
+html[read|lighting='neon'] *[read|isBroken] > read|forelinker > a > preview
 {
     color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
 }
 
 
-html[rend|lighting='neon']
-rend|forelinker > a                       > verticalTruncator
+html[read|lighting='neon']
+read|forelinker > a                       > verticalTruncator
 {
     opacity: 0.4;
 }
 
 
-html[rend|lighting='neon'][rend|animatedShow]
-rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
+html[read|lighting='neon'][read|animatedShow]
+read|forelinker > a[read|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: flashFade_back_bright; /* As a breadcrumb locator */
 }
@@ -531,34 +530,34 @@ rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] *[rend|image] > eSTag > eQName > eName,
-html[rend|lighting='paper'] *[rend|image] > rend|forelinker > a > preview
+html[read|lighting='paper'] *[read|image] > eSTag > eQName > eName,
+html[read|lighting='paper'] *[read|image] > read|forelinker > a > preview
 {
     color: hsl( var(--targetImage-hue), 100%, 30% );
 }
 
 
-html[rend|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
+html[read|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
 
 
-html[rend|lighting='paper'] *[rend|isBroken] > rend|forelinker > a > preview
+html[read|lighting='paper'] *[read|isBroken] > read|forelinker > a > preview
 {
     color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
 }
 
 
-html[rend|lighting='paper']
-rend|forelinker > a                       > verticalTruncator
+html[read|lighting='paper']
+read|forelinker > a                       > verticalTruncator
 {
     opacity: 0.2;
 }
 
 
-html[rend|lighting='paper'][rend|animatedShow]
-rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
+html[read|lighting='paper'][read|animatedShow]
+read|forelinker > a[read|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: flashFade_back_dark; /* As a breadcrumb locator */
 }
@@ -568,14 +567,14 @@ rend|forelinker > a[rend|showsBreadcrumb] > verticalTruncator > span
 /* ---  S t a r t   t a g  -----------------------------------------------------------------------------
  */
 
-rend|eSTag
+read|eSTag
 {
     display: block;
     margin-left: -2em; /* -NEST_INDENT, undoing it */
 }
 
 
-rend|eSTag > eQName
+read|eSTag > eQName
 {
     animation-duration: /*descreen*/3s, /*flashFade*/2s;
     outline-offset: 0.2em;
@@ -583,7 +582,7 @@ rend|eSTag > eQName
 }
 
 
-rend|eSTag > eQName[rend|isAnonymous] > eName /* Renders as a mere bullet */
+read|eSTag > eQName[read|isAnonymous] > eName /* Transformed to a mere bullet by readable.jss */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
@@ -591,10 +590,10 @@ rend|eSTag > eQName[rend|isAnonymous] > eName /* Renders as a mere bullet */
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'][rend|animatedShow][rend|travel]:not([rend|travel^='-']) /* [NBT] */
-*:target > rend|eSTag > eQName,
-html[rend|lighting='neon'][rend|animatedShow][rend|travel]:not([rend|travel^='-'])
-*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
+html[read|lighting='neon'][read|animatedShow][read|travel]:not([read|travel^='-']) /* [NBT] */
+*:target > read|eSTag > eQName,
+html[read|lighting='neon'][read|animatedShow][read|travel]:not([read|travel^='-'])
+*[read|isWaylinkTargetable='targeted'] > read|eSTag > eQName /* [TPC] */
 {
     animation-name: descreen, flashFade_fore_bright; /* As a travel target locator */
 }
@@ -602,10 +601,10 @@ html[rend|lighting='neon'][rend|animatedShow][rend|travel]:not([rend|travel^='-'
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-']) /* [NBT] */
-*:target > rend|eSTag > eQName,
-html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-'])
-*[rend|isWaylinkTargetable='targeted'] > rend|eSTag > eQName /* [TPC] */
+html[read|lighting='paper'][read|animatedShow][read|travel]:not([read|travel^='-']) /* [NBT] */
+*:target > read|eSTag > eQName,
+html[read|lighting='paper'][read|animatedShow][read|travel]:not([read|travel^='-'])
+*[read|isWaylinkTargetable='targeted'] > read|eSTag > eQName /* [TPC] */
 {
     animation-name: descreen, flashFade_fore_dark; /* As a travel target locator */
 }
@@ -614,7 +613,7 @@ html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-
 
 /* ---  S t a r t   t a g  --  i n l i n e d  ----------------------------------------------------------
  *
- * These rules render the start tag in line with the leading flow content if it is short enough to allow
+ * These rules put the start tag in line with the leading flow content if it is short enough to allow
  * the flow content to rise alongside yet maintain its horizontal alignment.
  *
  * The inlining is done by floating the start tag which allows the leading flow content to fall in line.
@@ -624,14 +623,14 @@ html[rend|lighting='paper'][rend|animatedShow][rend|travel]:not([rend|travel^='-
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 
-*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent'])[rend|isWaybit] > eSTag
+*[read|hasShortName][read|hasLeader]:not([read|image='absent'])[read|isWaybit] > eSTag
 {
-    float: left; /* Rendering the element's start tag in line with its leading text content */
+    float: left; /* Putting the element's start tag in line with its leading text content */
     margin-right: 0.5em;
 }
 
 
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
+step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
 {
     display: block;
 }
@@ -639,8 +638,8 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|text
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
+html[read|lighting='neon']
+step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
 {
     padding-top: 0.30em; /* = NEO_ST_MARG_T + ST_PAD_T */
 }
@@ -648,8 +647,8 @@ step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|text
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper']
-step|*[rend|hasShortName][rend|hasLeader]:not([rend|image='absent']) > rend|textAligner
+html[read|lighting='paper']
+step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
 {
     padding-top: 0.28em; /* = PAP_ST_MARG_T + ST_PAD_T + ST_BOR */
 }
@@ -667,20 +666,20 @@ step|* > eSTag > eQName
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
-step|* > eSTag > eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then */
-{                                                       /* it renders as a mere bullet */
+step|* > eSTag > eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then */
+{                                                       /* it is formed as a mere bullet */
     font-weight: bold;
 }
 
 
-step|* > eSTag > eQName > ePrefix[rend|isAnonymous],
-step|* > eSTag > eQName:not([rend|isAnonymous]) > ePrefix
+step|* > eSTag > eQName > ePrefix[read|isAnonymous],
+step|* > eSTag > eQName:not([read|isAnonymous]) > ePrefix
 {
     display: none; /* Let the local part stand alone */
 }
 
 
-step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eName
+step|* > eSTag > eQName[read|isAnonymous] > ePrefix:not([read|isAnonymous]) + eName
 {
     display: none; /* Let the prefix stand alone */
 }
@@ -688,7 +687,7 @@ step|* > eSTag > eQName[rend|isAnonymous] > ePrefix:not([rend|isAnonymous]) + eN
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] step|* > eSTag
+html[read|lighting='neon'] step|* > eSTag
 {
      margin-top:    0.20em; /* NEO_ST_MARG_T */
     padding-top:    0.10em; /* = ST_PAD_T */
@@ -697,13 +696,13 @@ html[rend|lighting='neon'] step|* > eSTag
 }
 
 
-html[rend|lighting='neon'] step|*             > eSTag > eQName
+html[read|lighting='neon'] step|*             > eSTag > eQName
 {
                color: hsl(  0, 0%,   0% );
     background-color: hsla( 0, 0%, 100%, 0.45 );
     margin-left: -0.20em; /* = -ST_PAD_L */
 }
-html[rend|lighting='neon'] step|*[rend|image] > eSTag > eQName
+html[read|lighting='neon'] step|*[read|image] > eSTag > eQName
 {
     background-color: hsla( var(--targetImage-hue), 100%, 60%, 0.45 );;
 }
@@ -711,7 +710,7 @@ html[rend|lighting='neon'] step|*[rend|image] > eSTag > eQName
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] step|* > eSTag
+html[read|lighting='paper'] step|* > eSTag
 {
      margin-top:    0.10em; /* PAP_ST_MARG_T */
     padding-top:    0.18em; /* = ST_PAD_T + ST_BOR */
@@ -720,7 +719,7 @@ html[rend|lighting='paper'] step|* > eSTag
 }
 
 
-html[rend|lighting='paper'] step|* > eSTag > eQName
+html[read|lighting='paper'] step|* > eSTag > eQName
 {
     /* prominence for the steps, making them stand out at a glance from the other waybits */
     background-color: hsla( 0, 0%, 100%, 0.40 );
@@ -735,13 +734,13 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  -----------------------------------------------------
  */
 
-[rend|isWaylinkTargetable] > eSTag
+[read|isWaylinkTargetable] > eSTag
 {
     position: relative; /* Establish containing block for absolutely positioned children */
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -749,26 +748,26 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*edge mark*/circle
 {
     fill: currentColor;
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg > /*line*/path
 {
     opacity: 0.5;
     stroke: currentColor;
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     position: absolute;
     top: 0; right: 0;
@@ -777,25 +776,25 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[rend|isWaybit]
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When it's an underbit */
+[read|isWaybit]
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When it's an underbit */
 {
     width: 3.5em; /* Wider to better separate from overbit content */
 }
 
 
-[rend|isWaybit] [rend|isComposer] >
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When also it's a topmost component */
+[read|isWaybit] [read|isComposer] >
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon /* When also it's a topmost component */
 {
     width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there's no direct overbit content */
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon::before
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon::before
 {
     content: '\1f78b'; /* Unicode 1f78b (round target) */
 }
-[rend|isWaylinkTargetable][rend|isOrphan] > eSTag > /*marginalis*/div > icon::before
+[read|isWaylinkTargetable][read|isOrphan] > eSTag > /*marginalis*/div > icon::before
 {
     content: '│'; /* '│' is Unicode 2502 (box drawings light vertical) */
 }
@@ -803,27 +802,27 @@ html[rend|lighting='paper'] step|* > eSTag > eQName
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+html[read|lighting='neon'] [read|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.50;
 }
-html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
+html[read|lighting='neon'] [read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.25;
 }
 
 
-html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
 }
-html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 80%, 80% );
 }
-html[rend|lighting='neon'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 80%, 80% );
@@ -832,27 +831,27 @@ eSTag > /*marginalis*/div > icon
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
+html[read|lighting='paper'] [read|isWaylinkTargetable] > eSTag > /*marginalis*/div > /*liner*/svg
 {
     opacity: 0.30;
 }
-html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
+html[read|lighting='paper'] [read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon
 {
     opacity: 0.15;
 }
 
 
-html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div /*edge mark*/circle
 {
     fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
 }
-html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div /*line*/path
 {
     stroke: hsl( 0, 100%, 40% );
 }
-html[rend|lighting='paper'] [rend|isWaylinkTargetable][rend|isOrphan] >
+html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] >
 eSTag > /*marginalis*/div > icon
 {
     color:  hsl( 0, 100%, 40% );
@@ -863,15 +862,15 @@ eSTag > /*marginalis*/div > icon
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  --  s e l f - h y p e r l i n k i n g  --------------
  */
 
-[rend|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon,
-[rend|isWaylinkTargetable] > eSTag > eQName
+[read|isWaylinkTargetable] > eSTag > /*marginalis*/div > icon,
+[read|isWaylinkTargetable] > eSTag > eQName
 {
     cursor: url('link_cursor/hyperlink.svg') 13 2 /* = HLINK_CURSOR */, pointer; /* [CVU]
       Has click function, as per readable.js TargetControl handleClick. */
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > eQName
+[read|isWaylinkTargetable] > eSTag > eQName
 {
     position: relative; /* Enabling *z-index* change on hover */
     transition-property:           z-index;
@@ -882,19 +881,19 @@ eSTag > /*marginalis*/div > icon
 }
 
 
-[rend|isWaylinkTargetable] > eSTag > eQName:hover,
-[rend|isWaylinkTargetable] > eSTag > eQName[id='wayic.read.TargetControl.iconHover'], /* In lieu of form
+[read|isWaylinkTargetable] > eSTag > eQName:hover,
+[read|isWaylinkTargetable] > eSTag > eQName[id='wayic.read.TargetControl.iconHover'], /* In lieu of form
                                          "… icon:hover ~ eQName", which cannot work as intended [GSC] */
-[rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
+[read|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-[rend|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path,
-[rend|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path, /* [TPC] */
-[rend|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > icon,
-[rend|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > icon /* [TPC] */
+[read|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path,
+[read|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > /*liner*/svg > /*line*/path, /* [TPC] */
+[read|isWaylinkTargetable]:target     > eSTag > /*marg.*/div > icon,
+[read|isWaylinkTargetable='targeted'] > eSTag > /*marg.*/div > icon /* [TPC] */
 {
     opacity: 1 !important;
 }
@@ -902,7 +901,7 @@ eSTag > /*marginalis*/div > icon
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
+html[read|lighting='neon'] [read|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.7;
 }
@@ -910,7 +909,7 @@ html[rend|lighting='neon'] [rend|isWaylinkTargetable] > eSTag:hover > /*marginal
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
+html[read|lighting='paper'] [read|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     opacity: 0.5;
 }
@@ -920,7 +919,7 @@ html[rend|lighting='paper'] [rend|isWaylinkTargetable] > eSTag:hover > /*margina
 /* ---  t e x t - A l i g n e r  -----------------------------------------------------------------------
  */
 
-rend|textAligner
+read|textAligner
 {
     display: none;
 }
@@ -930,9 +929,9 @@ rend|textAligner
 /* ---  W a y b i t  -----------------------------------------------------------------------------------
  */
 
-*[rend|isWaybit]
+*[read|isWaybit]
 {
-    margin-left: 2em; /* NEST_INDENT to render the nesting of waybit dependents */
+    margin-left: 2em; /* NEST_INDENT to effect the nesting of waybit dependents */
     --targetImage-hue: 44/*reddish brown*/;
 }
 
@@ -941,15 +940,15 @@ rend|textAligner
 /* ---  W a y b i t  --  n o n - s t e p  --------------------------------------------------------------
  */
 
-*[rend|isWaybit]:not(step|*) > eSTag
+*[read|isWaybit]:not(step|*) > eSTag
 eQName > ePrefix
 {
     display: none; /* Assume that it is uninformative */
 }
 
 
-*[rend|isWaybit]:not(step|*) > eSTag
-eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it renders as a mere bullet */
+*[read|isWaybit]:not(step|*) > eSTag
+eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is formed as a mere bullet */
 {
     filter: contrast(1.4);
     font-weight: bold;
@@ -960,7 +959,7 @@ eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it rende
 /* ---  W a y s c r i p t  -----------------------------------------------------------------------------
  */
 
-*[rend|isWayscript]
+*[read|isWayscript]
 {
     clear: left;
     display: block; /* Changing the wayscript *display* property?  sync'd → readable.js layoutBlock. */
@@ -972,8 +971,8 @@ eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it rende
 
 /* NOTES
  * -----
- *  [C]  · Class selectors.  These fail for NS_REND elements under Chrome (59).  Instead select
- *         the class of NS_REND element using the general attribute selector [class~='CLASS'].
+ *  [C]  · Class selectors.  These fail for NS_READ elements under Chrome (59).  Instead select
+ *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
  *
  *  [DCE]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
  *
@@ -997,24 +996,24 @@ eQName:not([rend|isAnonymous]) > eName /* Not when isAnonymous ∵ then it rende
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
  *
- *  [IWS]  Informed by the waycast structure, affording it maximal exposure and influence.
+ *  [IWS]  Informed by the waycast structure, affording it maximal exposure and effect.
  *         http://reluk.ca/project/wayic/architecture/doc.task § wayic architecture = waycast form
  *
  *  [LLR]  Local loading and remote waylinks.  Regardless of the *local load* scheme, the browser
  *         is unlikely to limit access to *remotely linked* targets (once that kind of targeting
- *         is supported by this renderer, viz. a full URI with a proper web scheme, such as ‘http’).
+ *         is supported by this transformer, viz. a full URI with a proper web scheme, such as ‘http’).
  *         Such a target would be served with a response header of ‘Access-Control-Allow-Origin: *’,
  *         which would then be the standard for all waycast service
  *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
  *         Of course, that won’t help for any *local links* that remain.
  *
  *  [NBT]  Not on back travel, as then user orientation is better served by the breadcrumb alone.
- *         Here the selector [rend|travel] combines with :not([rend|travel^='-']) to transform
+ *         Here the selector [read|travel] combines with :not([read|travel^='-']) to transform
  *         its negative test to a positive one.  This prevents premature firing of the rule
  *         immediately after back travel while the *travel* attribute is yet unset.
  *
- *  [TPC]  Target pseudo-class failure.  Here adding selector [rend|isWaylinkTargetable='targeted']
- *         only because [rend|isWaylinkTargetable]:target was seen to fail on Chrome 65.0.
+ *  [TPC]  Target pseudo-class failure.  Here adding selector [read|isWaylinkTargetable='targeted']
+ *         only because [read|isWaylinkTargetable]:target was seen to fail on Chrome 65.0.
  *         It failed during relatively fast (∼1 s interval) back-and-forth travel.
  *         Otherwise attribute *isWaylinkTargetable* would have only a boolean value [readable.js BA].
  *

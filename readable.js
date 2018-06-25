@@ -11,18 +11,18 @@
   *
   * SPECIAL MARKUP
   * --------------
-  *   The renderer introduces its own markup to the document as outlined in this section.
+  *   The transformer introduces its own markup to the document as outlined in this section.
   *   Key to the outline:
   *
-  *          * blah          · Element ‘blah’ in namespace NS_REND, the default in this notation †
+  *          * blah          · Element ‘blah’ in namespace NS_READ, the default in this notation †
   *          * foo:bar        · Element ‘bar’ in namespace NS_*FOO*
-  *              * [attrib]    · Attribute of the element in namespace NS_REND †
+  *              * [attrib]    · Attribute of the element in namespace NS_READ †
   *              * [:attrib]    · Attribute of the element in no namespace
   *              * [foo:attrib] · Attribute of the element in namespace NS_*FOO*
   *              * foo:baz      · Child element ‘baz’
   *
   *                                            † Unless otherwise marked, the namespace
-  *                                              of an element or attribute is NS_REND
+  *                                              of an element or attribute is NS_READ
   *   Element, any
   *   - - - -
   *      * [isOnWayBranch] · Whether this element is (with all of its descendants) on way  [BA]
@@ -54,7 +54,7 @@
   *                            it reorients the user by highlighting his original point of departure.
   *                            Appears at most on one element  [BA, FIB, SBU]
   *
-  *   a  (rend:a - waylink source node, hyperform)
+  *   a  (read:a - waylink source node, hyperform)
   *   -
   *      * html:a               · (§ q.v.)
   *          * [cog:link]        ·
@@ -65,7 +65,7 @@
   *   Wayscript element, any
   *   - - - - - - - - -
   *      * [hasLeader]      · Has leading, non-whitespace text?  [BA]
-  *      * [hasShortName]    · Has a rendered name no longer than three characters?
+  *      * [hasShortName]    · Has a visible name no longer than three characters?
   *      * [isComposer]        · Is a composer element?  [BA]
   *      * [isOrphan]           · Is waylink targetable, yet targeted by no source node?
   *      * [isWaybit]            · Is a waybit?
@@ -91,9 +91,8 @@
   *   Waylink source node, bitform
   *   - - - - - - - - - -
   *      * [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
-  *      * [image]            · Indicates a rendering that might yet change.  Meantime the rendering
-  *                             is either based on a cached image of the target node (value ‘present’)
-  *                             or not (‘absent’).
+  *      * [image]            · Indicates a form that might yet change.  Meantime it is either based on
+  *                             a cached image of the target node (value ‘present’) or not (‘absent’).
   *      * [isBroken]     · Has a broken target reference?  [BA]
   *      * [cog:link]    ·
   *
@@ -155,7 +154,7 @@
 
     /** The XML namespace of markup specific to this project.
       */
-    const NS_REND = 'data:,wayic.read';
+    const NS_READ = 'data:,wayic.read';
 
 
 
@@ -408,9 +407,9 @@
       *     @param linkV (string) The value of the source node's *link* attribute.
       *     @param isBit (boolean) Whether the source node is a waybit.
       *     @param target (Element | TargetImage) The target node, or its cached image.
-      *     @param rendering (PartRenderingC)
+      *     @param transform (PartTransformC)
       */
-    function configureForTarget( sourceNS, sourceN, linkV, isBit, target, rendering )
+    function configureForTarget( sourceNS, sourceN, linkV, isBit, target, transform )
     {
         const targetNS = target.namespaceURI;
         const targetN = target.localName;
@@ -428,7 +427,7 @@
         }
         if( isBit && sourceN === ELEMENT_NAME_UNCHANGED )
         {
-            rendering.localPartOverride = targetN; // Rendering with the same name as the target
+            transform.localPartOverride = targetN; // Transforming to the same name as the target
         }
     }
 
@@ -444,12 +443,12 @@
         const pointCount = countCodePoints( previewString );
         if( pointCount === 0 )
         {
-            source.removeAttributeNS( NS_REND, 'hasPreviewString' );
+            source.removeAttributeNS( NS_READ, 'hasPreviewString' );
             preview.classList.remove( 'singleCharacterContent' ); // If present
         }
         else
         {
-            source.setAttributeNS( NS_REND, 'hasPreviewString', 'hasPreviewString' );
+            source.setAttributeNS( NS_READ, 'hasPreviewString', 'hasPreviewString' );
             preview.classList.toggle( 'singleCharacterContent', pointCount === 1 ); // [AEP]
         }
     }
@@ -490,7 +489,7 @@
 
 
 
-    const DOCUMENT_SCENE_ID = NS_REND + '.document_scene';
+    const DOCUMENT_SCENE_ID = NS_READ + '.document_scene';
 
 
 
@@ -530,7 +529,7 @@
       // Place the off-way screen
       // ------------------------
         const body = document.body;
-        body.appendChild( document.createElementNS( NS_REND, 'offWayScreen' ));
+        body.appendChild( document.createElementNS( NS_READ, 'offWayScreen' ));
 
       // Detect user's lighting preference
       // ---------------------------------
@@ -551,12 +550,12 @@
       // Set lighting switch and enable display of the document
       // -------------------
         const html = document.documentElement;
-        html.setAttributeNS( NS_REND, 'lighting', lighting );
+        html.setAttributeNS( NS_READ, 'lighting', lighting );
         body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
 
       // Run page-show animations on load and reload
       // ------------------------
-        html.setAttributeNS( NS_REND, 'animatedShow', 'animatedShow' );
+        html.setAttributeNS( NS_READ, 'animatedShow', 'animatedShow' );
 
       // Restart page-show animations on each revisit [PSA]
       // ----------------------------
@@ -564,15 +563,15 @@
         {
             if( !/*revisit*/e.persisted ) return;
 
-            html.removeAttributeNS( NS_REND, 'animatedShow' );
+            html.removeAttributeNS( NS_READ, 'animatedShow' );
             requestAnimationFrame( (()=> { requestAnimationFrame( (()=>
             {
-                html.setAttributeNS( NS_REND, 'animatedShow', 'animatedShow' );
+                html.setAttributeNS( NS_READ, 'animatedShow', 'animatedShow' );
             })); }));
         });
         addEventListener( 'pagehide', ( /*PageTransitionEvent*/e ) =>
         {
-            if( /*might later revisit*/e.persisted ) html.removeAttributeNS( NS_REND, 'pageShowCount' );
+            if( /*might later revisit*/e.persisted ) html.removeAttributeNS( NS_READ, 'pageShowCount' );
         });
     }
 
@@ -584,7 +583,7 @@
 
 
 
-    /** The symbol to indicate a hyperlink.  It is rendered in superscript.
+    /** The symbol to indicate a hyperlink.  It is styled as superscript.
       */
     const HYPERLINK_SYMBOL = '*'; // '*' is Unicode 2a (asterisk)
 
@@ -705,7 +704,7 @@
       // Processes launched, view may deflect in atypical cases
       // ------------------
         InterdocScanner.start();
-        InterdocWaylinkRenderer.start();
+        InterdocWaylinkTransformer.start();
         WayTracer.start();
     }
 
@@ -730,7 +729,7 @@
     function transform()
     {
         const body = document.body;
-        const scene = body.appendChild( document.createElementNS( NS_REND, 'scene' ));
+        const scene = body.appendChild( document.createElementNS( NS_READ, 'scene' ));
         scene.setAttribute( 'id', DOCUMENT_SCENE_ID );
         for( ;; ) // Wrap *body* content in *scene*
         {
@@ -742,7 +741,7 @@
         const traversal = document.createTreeWalker( scene, SHOW_ELEMENT, {
             acceptNode: function( node )
             {
-                if( node.namespaceURI === NS_REND ) return NodeFilter.FILTER_REJECT; /* Bypassing this
+                if( node.namespaceURI === NS_READ ) return NodeFilter.FILTER_REJECT; /* Bypassing this
                   branch which was introduced in an earlier iteration and needs no more transforming. */
 
                 return NodeFilter.FILTER_ACCEPT;
@@ -769,7 +768,7 @@
             {
                 isHTML = false;
                 isWayscript = true;
-                t.setAttributeNS( NS_REND, 'isWayscript', 'isWayscript' );
+                t.setAttributeNS( NS_READ, 'isWayscript', 'isWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
                 isBit = isBitSubNS( tSubNS );
                 layoutBlock = t; // Sync'd ← readable.css § Wayscript
@@ -820,16 +819,16 @@
                     const targetWhereabouts = new TargetWhereabouts( t, link );
                     targetExtradocLocN = targetWhereabouts.documentLocationN;
                     const direction = targetWhereabouts.direction;
-                    if( direction !== null ) t.setAttributeNS( NS_REND, 'targetDirection', direction );
+                    if( direction !== null ) t.setAttributeNS( NS_READ, 'targetDirection', direction );
                 }
                 if( targetExtradocLocN.endsWith( '/way.xht' )) // Likely a way declaration document.
-                {                                             // So tell the renderer:
-                    InterdocWaylinkRenderer.noteTargetDocument( targetExtradocLocN );
+                {                                             // So tell the transformer:
+                    InterdocWaylinkTransformer.noteTargetDocument( targetExtradocLocN );
                 }
 
               // Superscripting
               // --------------
-                const aWrapper = document.createElementNS( NS_REND, 'a' );
+                const aWrapper = document.createElementNS( NS_READ, 'a' );
                 t.parentNode.insertBefore( aWrapper, t );
                 aWrapper.appendChild( t );
                 const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
@@ -856,11 +855,11 @@
             const isDeclaredEmpty = !t.hasChildNodes();
             if( tSubNS === SUB_NS_STEP )
             {
-                const textAligner = document.createElementNS( NS_REND, 'textAligner' );
+                const textAligner = document.createElementNS( NS_READ, 'textAligner' );
                 t.insertBefore( textAligner, t.firstChild );
             }
-            if( isBit ) t.setAttributeNS( NS_REND, 'isWaybit', 'isWaybit' );
-            const partRendering = new PartRenderingC( t );
+            if( isBit ) t.setAttributeNS( NS_READ, 'isWaybit', 'isWaybit' );
+            const partTransform = new PartTransformC( t );
 
 
           // ==================
@@ -909,7 +908,7 @@
                     break source;
                 }
 
-                const forelinker = t.appendChild( document.createElementNS( NS_REND, 'forelinker' ));
+                const forelinker = t.appendChild( document.createElementNS( NS_READ, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
                 const targetWhereabouts = new TargetWhereabouts( t, link );
@@ -919,19 +918,19 @@
                     const targetDocLocN = targetWhereabouts.documentLocationN;
                     if( targetDocLocN.length > 0 ) // Then *t* links to a separate document
                     {
-                        const registration = InterdocWaylinkRenderer.registerBitformLink( t,
+                        const registration = InterdocWaylinkTransformer.registerBitformLink( t,
                           targetDocLocN, link.targetID );
                         const image = registration.targetImage;
                         if( image === null )
                         {
-                            partRendering.image = 'absent';
+                            partTransform.image = 'absent';
                             targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
                         }
                         else
                         {
-                            partRendering.image = 'present';
+                            partTransform.image = 'present';
                             targetPreviewString = image.leader;
-                            configureForTarget( tNS, tN, linkV, isBit, image, partRendering );
+                            configureForTarget( tNS, tN, linkV, isBit, image, partTransform );
                         }
                         break targeting;
                     }
@@ -940,22 +939,22 @@
                     if( direction === null ) // Then *t* is a broken waylink
                     {
                         targetPreviewString = BREAK_SYMBOL;
-                        t.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
+                        t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
                         break targeting;
                     }
 
                     // The target is within the present document
-                    a.setAttributeNS( NS_REND, 'targetDirection', direction );
+                    a.setAttributeNS( NS_READ, 'targetDirection', direction );
                     const target = targetWhereabouts.target;
-                    configureForTarget( tNS, tN, linkV, isBit, target, partRendering );
+                    configureForTarget( tNS, tN, linkV, isBit, target, partTransform );
                     LeaderReader.read( target );
                     targetPreviewString = LeaderReader.leader;
                 }
-                const preview = a.appendChild( document.createElementNS( NS_REND, 'preview' ));
+                const preview = a.appendChild( document.createElementNS( NS_READ, 'preview' ));
                 preview.appendChild( document.createTextNode( targetPreviewString ));
                 configureForTargetPreview( t, preview, targetPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
-                a.appendChild( document.createElementNS( NS_REND, 'verticalTruncator' ))
+                a.appendChild( document.createElementNS( NS_READ, 'verticalTruncator' ))
                  .appendChild( document.createElementNS( NS_HTML, 'span' ))
                  .appendChild( document.createTextNode( '⋱⋱' ));
                     // '⋱' is Unicode 22f1 (down right diagonal ellipsis)
@@ -965,19 +964,19 @@
          // =========
          // Start tag of element t
          // =========
-            partRendering.render();
-            const eSTag = partRendering.eSTag;
+            partTransform.run();
+            const eSTag = partTransform.eSTag;
             if( lidV !== null ) // Then t is waylink targetable
             {
-                t.setAttributeNS( NS_REND, 'isWaylinkTargetable',
+                t.setAttributeNS( NS_READ, 'isWaylinkTargetable',
                   lidV === Hyperlinkage.idTargeted()? 'targeted':'untargeted' );
-                t.setAttributeNS( NS_REND, 'isOrphan', 'isOrphan' ); // Till proven otherwise
+                t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
 
               // Marginalis
               // ----------
                 const marginalis = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
                 marginalis.appendChild( TargetLining.newLiner() );
-                marginalis.appendChild( document.createElementNS( NS_REND, 'icon' ))
+                marginalis.appendChild( document.createElementNS( NS_READ, 'icon' ))
                   .appendChild( document.createTextNode( NO_BREAK_SPACE )); // To be sure
                     // See readable.css for the *visible* content
                 Marginalia.layWhen( marginalis, eSTag );
@@ -988,7 +987,7 @@
             else if( tSubNS === SUB_NS_COG
              && (tN === 'comprising' || tN === 'including'))
             {
-                t.setAttributeNS( NS_REND, 'isComposer', 'isComposer' );
+                t.setAttributeNS( NS_READ, 'isComposer', 'isComposer' );
 
               // Composition leader alignment  (see readable.css)
               // ----------------------------
@@ -1068,7 +1067,7 @@
 
 
 
-    /** Answers whether the given HTML element is very likely to be rendered in line by the browser.
+    /** Answers whether the given HTML element is very likely to be placed in line by the browser.
       */
     function willDisplayInLine_likely( htmlElement ) // A workaround function for its caller, q.v.
     {
@@ -1175,7 +1174,7 @@
         {
             if( crumbHolder === null ) return;
 
-            crumbHolder.removeAttributeNS( NS_REND, 'showsBreadcrumb' );
+            crumbHolder.removeAttributeNS( NS_READ, 'showsBreadcrumb' );
             crumbHolder = null;
         }
 
@@ -1221,7 +1220,7 @@
 
 
 
-        const KEY_positionLastShown = NS_REND + '.Breadcrumbs.positionLastShown';
+        const KEY_positionLastShown = NS_READ + '.Breadcrumbs.positionLastShown';
 
 
 
@@ -1261,7 +1260,7 @@
                 else travel = 0; // Can happen (e.g.) on forward travel from an entry not "of ours"
             }
          // console.log( 'Travel direction was ' + direction ); // TEST
-            document.documentElement.setAttributeNS( NS_REND, 'travel', travel );
+            document.documentElement.setAttributeNS( NS_READ, 'travel', travel );
 
           // Stamp the session with the position last shown, which is now this position
           // -----------------
@@ -1284,7 +1283,7 @@
                       // Show crumb
                       // ----------
                         ensureNoCrumbShowing();
-                        a.setAttributeNS( NS_REND, 'showsBreadcrumb', 'showsBreadcrumb' );
+                        a.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
                         crumbHolder = a;
                     }
                     return;
@@ -1646,9 +1645,9 @@
             {
                 if( elementTargeted === null ) return;
 
-                if( elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                if( elementTargeted.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                    elementTargeted.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'untargeted' );
                 }
                 elementTargeted = null;
             }
@@ -1659,13 +1658,13 @@
                 if( elementTargeted === e ) return;
 
                 if( elementTargeted !== null
-                 && elementTargeted.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                 && elementTargeted.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    elementTargeted.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'untargeted' );
+                    elementTargeted.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'untargeted' );
                 }
-                if( e.hasAttributeNS( NS_REND, 'isWaylinkTargetable' ))
+                if( e.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    e.setAttributeNS( NS_REND, 'isWaylinkTargetable', 'targeted' );
+                    e.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'targeted' );
                 }
                 elementTargeted = e;
             }
@@ -1699,7 +1698,7 @@
 
 
     /** A scanner of related documents.  It discovers related documents, scans them for references
-      * to the present document, and updates the rendering of the present document based on the results.
+      * to the present document, and updates the form of the present document based on the results.
       */
     const InterdocScanner = ( function()
     {
@@ -1738,7 +1737,7 @@
                 if( target.interlinkScene ) continue; // The work is already done
 
                 target.interlinkScene = true;
-                target.removeAttributeNS( NS_REND, 'isOrphan' );
+                target.removeAttributeNS( NS_READ, 'isOrphan' );
             }
         }
 
@@ -1778,20 +1777,20 @@
    // ==================================================================================================
 
 
-    /** A device to complete the rendering of interdocument bitform waylinks, those whose target nodes
+    /** A device to complete the formation of interdocument bitform waylinks, those whose target nodes
       * are outside of the present document.  It fetches the documents, reads their target nodes
-      * and amends the rendered wayscript accordingly.
+      * and transforms the wayscript accordingly.
       */
-    const InterdocWaylinkRenderer = ( function()
+    const InterdocWaylinkTransformer = ( function()
     {
 
-        const that = {}; // The public interface of InterdocWaylinkRenderer
+        const that = {}; // The public interface of InterdocWaylinkTransformer
 
 
 
         /** Map of registered links.  The key to each entry is the location (string) in normal URL form
-          * of a targeted way declaration document; the value a list of registrations (Array of Inter-
-          * docWaylinkRenderer_Registration), one for each bitform, waylink source node of the present
+          * of a targeted way declaration document; the value a registration list (Array of Interdoc-
+          * WaylinkTransformer_Registration), one for each bitform, waylink source node of the present
           * document that targets the keyed document, if any.  The keys cover every directly reachable
           * way declaration document as far as possible, regardless of how its source nodes are formed,
           * while the registration lists cover only those source nodes in waylink bitform.
@@ -1805,7 +1804,7 @@
 
 
         /** @param loc (string) The location of the target document in normal URL form.
-          * @return (Array of InterdocWaylinkRenderer_Registration)
+          * @return (Array of InterdocWaylinkTransformer_Registration)
           *
           * @see URIs#normalized
           */
@@ -1842,7 +1841,7 @@
 
 
 
-        /** Ensures that all interdocument bitform waylinks are rendered and their target images cached.
+        /** Ensures that all interdocument bitform waylinks are formed and their target images cached.
           */
         function start1_presentDocument( linkRegistry )
         {
@@ -1876,7 +1875,7 @@
                               // --------------------
                                 tsk( 'Broken link: No such *id* in that document: ' + a2s('link',linkV) );
                                 setTargetPreview( source, BREAK_SYMBOL );
-                                source.setAttributeNS( NS_REND, 'isBroken', 'isBroken' );
+                                source.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
                                 continue;
                             }
 
@@ -1889,15 +1888,15 @@
                             {
                               // Affirm the source node as is
                               // ----------------------
-                                source.removeAttributeNS( NS_REND, 'image' );
+                                source.removeAttributeNS( NS_READ, 'image' );
                                 continue;
                             }
 
                           // Amend the source node, as it shows an outdated image
                           // ---------------------
-                            const reRendering = new PartRenderingC2( source );
-                            configureForTarget( sNS, sN, linkV, isBitNS(sNS), target, reRendering );
-                            reRendering.render();
+                            const part2 = new PartTransformC2( source );
+                            configureForTarget( sNS, sN, linkV, isBitNS(sNS), target, part2 );
+                            part2.run();
                             setTargetPreview( source, sL );
 
                           // Update the cached image
@@ -1973,7 +1972,7 @@
        // - P u b l i c --------------------------------------------------------------------------------
 
 
-        /** Tells this renderer of a separate way declaration document that the user may reach
+        /** Tells this transformer of a separate way declaration document that the user may reach
           * from the present document by a direct link, which is not a bitform waylink.
           *
           *     @param loc (string) The location of the other document in normal URL form.
@@ -1991,13 +1990,13 @@
           *     @param targDocLoc (string) The location of the other document in normal URL form.
           *     @param id (string) The identifier of the target within the other document.
           *
-          *     @return (InterdocWaylinkRenderer_Registration)
+          *     @return (InterdocWaylinkTransformer_Registration)
           *
           *     @see URIs#normalized
           */
         that.registerBitformLink = function( sourceNode, targDocLoc, id )
         {
-            const reg = new InterdocWaylinkRenderer_Registration( sourceNode, targDocLoc, id );
+            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, targDocLoc, id );
             const regList = registerTargetDocument( targDocLoc );
             regList.push( reg );
             return reg;
@@ -2005,7 +2004,7 @@
 
 
 
-        /** Starts this renderer.
+        /** Starts this transformer.
           */
         that.start = function()
         {
@@ -2028,7 +2027,7 @@
    // ==================================================================================================
 
 
-    class InterdocWaylinkRenderer_Registration
+    class InterdocWaylinkTransformer_Registration
     {
 
         constructor( sourceNode, targDocLoc, id )
@@ -2116,10 +2115,10 @@
           *
           *     @param maxLength (number) The length limit on the read.  A read that would exceed this
           *       limit will instead be truncated at the preceding word boundary.
-          *     @param toIncludeRend (boolean) Whether to include any text contained within
-          *       project-specific (NS_REND) elements.
+          *     @param toIncludeRead (boolean) Whether to include any text contained within
+          *       special markup (NS_READ) elements.
           */
-        that.read = function( element, maxLength=Number.MAX_VALUE, toIncludeRend=false )
+        that.read = function( element, maxLength=Number.MAX_VALUE, toIncludeRead=false )
         {
             let leader = '';
             let hasLeader = false;
@@ -2167,9 +2166,9 @@
                 else if( dType === ELEMENT )
                 {
                     const dNS = d.namespaceURI;
-                    if( dNS.endsWith(NS_REND) && dNS.length === NS_REND.length ) // Fast failing test
+                    if( dNS.endsWith(NS_READ) && dNS.length === NS_READ.length ) // Fast failing test
                     {
-                        if( !toIncludeRend ) toLastDescendant( dive ); // Bypassing d and its content
+                        if( !toIncludeRead ) toLastDescendant( dive ); // Bypassing d and its content
                     }
                     else if( dNS.startsWith( NS_WAYSCRIPT_DOT )) break dive;
                     else
@@ -2452,14 +2451,14 @@
    // ==================================================================================================
 
 
-    /** The part of the rendering of a wayscript element that is generally open to being re-rendered.
+    /** The part of the transformation of a wayscript element that is generally open to being redone.
       * This is a disposable, single-use class.
       */
-    class PartRenderingC
+    class PartTransformC
     {
 
 
-        /** Constructs a PartRenderingC.
+        /** Constructs a PartTransformC.
           *
           *     @see #element
           */
@@ -2468,13 +2467,13 @@
 
            // - i n p u t - / - c o n f i g u r a t i o n - - - - - - - - - - - - - - - - - - - - - - -
 
-            /** The wayscript element whose tag to render.
+            /** The wayscript element to transform.
               */
             this.element = element;
 
 
-            /** A non-null value indicates a rendering that might actually be re-rendered.
-              * Meantime the rendering is either based on a cached image of the target node
+            /** A non-null value indicates a tranformation that might actually be redone.
+              * Meantime the form is either based on a cached image of the target node
               * (value ‘present’) or not (‘absent’).
               */
             this.image = null;
@@ -2488,7 +2487,7 @@
 
            // - o u t p u t - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            /** The inserted start tag element, or null if *render* was not called.
+            /** The inserted start tag element, or null if *run* was not called.
               */
             this.eSTag = null;
 
@@ -2499,33 +2498,33 @@
        // ----------------------------------------------------------------------------------------------
 
 
-        /** Does the partial rendering of the element.  Specifically this method:
-          * (a) reads this rendering's input/configuration properties and sets its output properties;
+        /** Does the partial transformation of the element.  Specifically this method:
+          * (a) reads this transform's input/configuration properties and sets its output properties;
           * (b) reads the element's leader and leaves the results in the LeaderReader; and
-          * (c) sets attributes on the element and inserts an *eSTag* child to render its start tag.
+          * (c) sets attributes on the element and inserts an *eSTag* child to form its start tag.
           * Call once only.
           */
-        render()
+        run()
         {
             const e = this.element;
             const image = this.image;
-  /*[C2]*/  if( image !== null ) e.setAttributeNS( NS_REND, 'image', image );
+  /*[C2]*/  if( image !== null ) e.setAttributeNS( NS_READ, 'image', image );
 
           // Leader
           // ------
-            const toIncludeRend = true;
+            const toIncludeRead = true;
               // Else the leader would exclude *forelinker* content in the case of a waylink source node
             console.assert( e.firstChild === null || e.firstChild.nodeName !== 'eSTag', A );
               // Else the leader would include the start tag
-            LeaderReader.read( e, /*maxLength*/0, toIncludeRend );
-  /*[C2]*/  if( LeaderReader.hasLeader ) e.setAttributeNS( NS_REND, 'hasLeader', 'hasLeader' );
+            LeaderReader.read( e, /*maxLength*/0, toIncludeRead );
+  /*[C2]*/  if( LeaderReader.hasLeader ) e.setAttributeNS( NS_READ, 'hasLeader', 'hasLeader' );
 
           // Start tag
           // ---------
-            console.assert( this.eSTag === null, AA + 'Method *render* is called once only' );
-            const eSTag = this.eSTag = document.createElementNS( NS_REND, 'eSTag' );
+            console.assert( this.eSTag === null, AA + 'Method *run* is called once only' );
+            const eSTag = this.eSTag = document.createElementNS( NS_READ, 'eSTag' );
   /*[C2]*/  e.insertBefore( eSTag, e.firstChild );
-            const eQName = eSTag.appendChild( document.createElementNS( NS_REND, 'eQName' ));
+            const eQName = eSTag.appendChild( document.createElementNS( NS_READ, 'eQName' ));
 
           // prefix part of name
           // - - - - - - - - - -
@@ -2533,12 +2532,12 @@
             let isPrefixAnonymousOrAbsent;
             if( prefix !== null )
             {
-                const ePrefix = eQName.appendChild( document.createElementNS( NS_REND, 'ePrefix' ));
+                const ePrefix = eQName.appendChild( document.createElementNS( NS_READ, 'ePrefix' ));
                 ePrefix.appendChild( document.createTextNode( prefix ));
                 if( prefix === ELEMENT_NAME_NONE )
                 {
                     isPrefixAnonymousOrAbsent = true;
-                    ePrefix.setAttributeNS( NS_REND, 'isAnonymous', 'isAnonymous' );
+                    ePrefix.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
                 }
                 else isPrefixAnonymousOrAbsent = false;
             }
@@ -2546,34 +2545,37 @@
 
           // local part of name
           // - - - - - - - - - -
-            const eName = eQName.appendChild( document.createElementNS( NS_REND, 'eName' ));
+            const eName = eQName.appendChild( document.createElementNS( NS_READ, 'eName' ));
             let lp = this.localPartOverride === null? e.localName : this.localPartOverride;
             const isAnonymous = lp === ELEMENT_NAME_NONE;
             if( isAnonymous )
             {
                 lp = '●'; // Unicode 25cf (black circle)
-                eQName.setAttributeNS( NS_REND, 'isAnonymous', 'isAnonymous' );
+                eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
             }
             else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE ); /* If it starts
               with a non-underscore, which hopefully means it has some letters or other visible content,
               then replace any underscores with nonbreaking spaces for sake of readability. */
             eName.appendChild( document.createTextNode( lp ));
 
-          // rendering of name
+          // formation of name
           // - - - - - - - - -
             const eNS = e.namespaceURI;
-            let renderedName, maxShort;
+            let formedName, maxShort;
             if( eNS === NS_STEP )
             {
-                renderedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
+                formedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
                 maxShort = 1; // Less to allow room for extra padding that readable.css adds
             }
             else
             {
-                renderedName = lp;
+                formedName = lp;
                 maxShort = 2;
             }
-  /*[C2]*/  if( renderedName.length <= maxShort ) e.setAttributeNS( NS_REND, 'hasShortName', 'hasShortName' );
+  /*[C2]*/  if( formedName.length <= maxShort )
+            {
+                e.setAttributeNS( NS_READ, 'hasShortName', 'hasShortName' );
+            }
         }
 
     }
@@ -2583,14 +2585,14 @@
    // ==================================================================================================
 
 
-    /** PartRenderingC for an element that is already rendered and needs re-rendering.
+    /** PartTransformC for an element whose initial transformation needs to be redone.
       */
-    class PartRenderingC2 extends PartRenderingC
+    class PartTransformC2 extends PartTransformC
     {
 
-        /** Constructs a PartRenderingC2, first removing the markup of the previous rendering.
+        /** Constructs a PartTransformC2, first removing the markup of the previous transform.
           *
-          *     @see PartRenderingC#element
+          *     @see PartTransformC#element
           */
         constructor( element )
         {
@@ -2601,9 +2603,9 @@
             element.removeChild( eSTag );
 
             // Remove any attributes that might have been set:
-            element.removeAttributeNS( NS_REND, 'hasLeader' );
-            element.removeAttributeNS( NS_REND, 'hasShortName' );
-            element.removeAttributeNS( NS_REND, 'image' );
+            element.removeAttributeNS( NS_READ, 'hasLeader' );
+            element.removeAttributeNS( NS_READ, 'hasShortName' );
+            element.removeAttributeNS( NS_READ, 'image' );
         }
 
     }
@@ -2689,7 +2691,7 @@
           * or null if there is none.
           */
         let hearMouse_eQNameIdentified = null; /* This approach to styling is a workaround for the
-          problem that *style* attributes are unsupported for NS_REND elements, such as *eQName*. */
+          problem that *style* attributes are unsupported for NS_READ elements, such as *eQName*. */
 
 
             /** @param event (MouseEvent) A mouse event from the target icon.
@@ -2716,7 +2718,7 @@
                 if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
                   // Preclude duplication, to be sure
                 const eQName = hearMouse_eQName( event );
-                eQName.setAttribute( 'id', NS_REND + '.TargetControl.iconHover' ); // [readable.css GSC]
+                eQName.setAttribute( 'id', NS_READ + '.TargetControl.iconHover' ); // [readable.css GSC]
                 hearMouse_eQNameIdentified = eQName;
             }
 
@@ -2759,7 +2761,7 @@
    // ==================================================================================================
 
 
-    /** The image of a waylink target node as mirrored in the rendering of its source nodes.
+    /** The image of a waylink target node as mirrored by its source nodes.
       */
     class TargetImage
     {
@@ -2822,7 +2824,7 @@
 
 
 
-        const KEY_PREFIX = NS_REND + '.TargetImageCache.';
+        const KEY_PREFIX = NS_READ + '.TargetImageCache.';
 
 
 
@@ -3152,7 +3154,7 @@
     /** A device for tracing the way across multiple waylinked documents.  It traces the root element's
       * waylinks to their target nodes, thence onward till it traces the full network of waylinks.
       * The trace serves two purposes: (1) to discover documents for omnireaders; and (2) to adjust the
-      * rendering of the present document based on the results.
+      * form of the present document based on the results.
       *
       *     @see http://reluk.ca/project/wayic/cast/root#root_element
       *     @see Documents#addOmnireader
@@ -3271,7 +3273,7 @@
             const doc = branch.ownerDocument;
             if( doc === document )
             {
-                branch.setAttributeNS( NS_REND, 'isOnWayBranch', 'isOnWayBranch' );
+                branch.setAttributeNS( NS_READ, 'isOnWayBranch', 'isOnWayBranch' );
              // console.debug( '\t\t\t(in present document)' ); // TEST
             }
             let t = branch;
@@ -3439,11 +3441,11 @@
   *
   *         See also Element.classList.
   *
-  *  [BA] · Boolean attribute.  A boolean attribute such as [rend:isFoo] either has the same value
+  *  [BA] · Boolean attribute.  A boolean attribute such as [read:isFoo] either has the same value
   *         as the local part of its name (‘isFoo’), which makes it true, or it is absent
   *         and thereby false.  cf. http://w3c.github.io/html/infrastructure.html#sec-boolean-attributes
   *
-  *  [C2] · The constructor of PartRenderingC2 must remove all such markup.
+  *  [C2] · The constructor of PartTransformC2 must remove all such markup.
   *
   *  [FHS]  Firefox (52.2) has the wrong History.state after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
@@ -3476,9 +3478,9 @@
   *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [NNR]  Not NS_REND.  Here avoiding renderer-specific elements in favour of standard HTML.
+  *  [NNR]  Not NS_READ.  Here avoiding transformer-specific elements in favour of standard HTML.
   *         This is for sake of properties such as the *style* attribute which are unsupported
-  *         for NS_REND elements.
+  *         for NS_READ elements.
   *
   *  [ODO]  Out of display order.  This element which is not always present (variant) is declared out of
   *         display order so not to interfere with the *declaration* order of its invariant siblings.
