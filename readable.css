@@ -883,8 +883,8 @@ eSTag > /*marginalis*/div > icon
 
 
 [rend|isWaylinkTargetable] > eSTag > eQName:hover,
-[rend|isWaylinkTargetable] > eSTag > eQName[id='data:,wayic.read.TargetControl.iconHover'], /* In lieu
-  of form "… icon:hover ~ eQName", which cannot work as intended [GSC] */
+[rend|isWaylinkTargetable] > eSTag > eQName[id='wayic.read.TargetControl.iconHover'], /* In lieu of form
+                                         "… icon:hover ~ eQName", which cannot work as intended [GSC] */
 [rend|isWaylinkTargetable] > eSTag:hover > /*marginalis*/div > icon
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */

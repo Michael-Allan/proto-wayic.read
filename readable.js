@@ -39,7 +39,7 @@
   *   html:body
   *   - - - - -
   *      * scene      · Document scene
-  *          * [:id]   · ‘data:,wayic.read.document_scene’
+  *          * [:id]   · ‘wayic.read.document_scene’
   *      * scene        · Interlink scene(s), if any
   *          * [:class] · ‘interlink’
   *        scene
