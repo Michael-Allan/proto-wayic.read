@@ -1,19 +1,52 @@
-/* readable - Way declaration documents that are readable on the web
+/* readable - Way declarations that are readable on the web
  *
- *   This transformer does what is needed in order to present a complete, easily readable view of a
- *   way declaration document (way.xht) for public viewing.  It aims for a conservative presentation,
- *   true to the formal source of the document in the context of its native waycast. [IWS]
- *
- *   Supported browsers
- *   - - - - - - - - - -
- *   See the list of <a href='http://reluk.ca/project/wayic/read/README.html#browser_support'>
- *   browsers tested</a>.
+ *   Here are usage instructions and advice for waycasters who wish to use this transformer.
  *
  *
- * BASIC USAGE
- * -----------
+ * INSTALLATION
+ * ------------
  *   See also http://reluk.ca/project/wayic/cast/doc.task § Personal configuration.
+ *   For a working example of an installation, see:
  *
+ *       * http://reluk.ca/project/waycast/way.css
+ *       * http://reluk.ca/project/waycast/way.js
+ *
+ *
+ *   In your personal style sheet, way.css
+ *   - - - - - - - - - - - - - - -
+ *   Insert this at the top:
+ *
+ *       @import 'http://reluk.ca/project/wayic/read/readable.css';
+ *
+ *   Optionally add this:
+ *
+ *       @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+ *
+ *
+ *   In your personal configuration script, way.js
+ *   - - - - - - - - - - - - - - - - - - -
+ *   Insert this:
+ *
+ *       const s = document.body.appendChild(
+ *         document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
+ *       s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
+ *       s.addEventListener( 'load', ( _Event ) =>
+ *       {
+ *          wayic.read.readable.start();
+ *       });
+ *
+ *   Optionally configure the transformer before starting it.  For example:
+ *
+ *       {
+ *          wayic.read.readable.setEnforceConstraints( true );
+ *          wayic.read.readable.start();
+ *       });
+ *
+ *   The available configuration options are detailed in readable.js § Public interface.
+ *
+ *
+ * CONFIGURATION
+ * -------------
  *   In your personal style sheet, way.css
  *   - - - - - - - - - - - - - - -
  *   For a working example, see  http://reluk.ca/project/waycast/way.css
@@ -31,13 +64,6 @@
  *   Insert the equivalent of this in your way.js:
  *
  *       appendScript( 'http://reluk.ca/project/wayic/read/readable.js' );
- *
- *
- * APPEARANCE
- * ----------
- *   This transformer automatically chooses one of two overall lighting modes for the display: [LM]
- *   either a black-on-white *paper* mode. or a reverse video *neon* mode.  It bases the choice
- *   on what it detects of the browser’s settings, which it takes to be the user’s preference.
  *
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
@@ -70,20 +96,20 @@
  *
  *   Direct viewing from the local file system
  *   - - - - - - - - - - - - - - - - - - - - -
- *   When a way declaration document is loaded into the browser on a ‘file’ scheme URL, the transformer
+ *   When a way declaration document is requested from a ‘file’ scheme URL, the transformer
  *   assumes that you are its author.  Then it will open an *alert* window for any problem such as
  *   malformed content, or anything else that an author might be able to remedy.
  *
- *   Cross-file waylinks may fail to resolve under a ‘file’ scheme URL, instead being marked ‘⋯?⋯’.
+ *   Interdocument waylinks may fail to resolve for a document so requested, instead being marked ‘⋯?⋯’.
  *   This affects the quality of presentation, making the way definition harder to view.
  *   (Instructions on dealing with this are given further below.)  What causes this:
- *   when a document is loaded on a ‘file’ scheme URL, the browser grants to JavaScript
- *   only a limited ability to resolve external waylinks, to trace the way across multiple files,
- *   or generally to read other local files. [LLR]
+ *   when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
+ *   only a limited ability to resolve interdocument links, to trace the way across multiple files,
+ *   or generally to read other local files. [FSI]
  *
- *   There is a workaround.  Among the browsers supported, this works only for Firefox.  The workaround
- *   is to first load the root way declaration document, or any other document from the base directory
- *   of the waycast.  Then follow the links from there. [WLL]
+ *   There is a workaround.  Among the browsers supported, this works only for Firefox.
+ *   The workaround is to first request the root way declaration document, or any other document
+ *   from the base directory of the waycast.  Then follow the links from there. [WFS]
  *
  *
  * NOTES  (continued at bottom)
@@ -123,7 +149,7 @@ html|body > read|offWayScreen
     except that on-way descendants could not then undo the effect.  Or with semi-opaque colours in
     their foreground properties, except that each distinct colour would then have to be declared twice,
     in off-way and on-way variants, adding a large burden to a style sheet that is already burdened
-    by colour variants in its lighting modes.  Hence this technique of screening. */
+    by colour variants in its lighting styles.  Hence this technique of screening. */
 
     background-color: inherit; /* So screening whatever lies beneath */
     pointer-events: none;
@@ -981,6 +1007,14 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
  *         wrongly resolves the relative URL against the document rather than the style sheet.
  *
+ *  [FSI]  File scheme and intercast waylinks.  Regardless of the  document request scheme,
+ *         the browser is unlikely to block the resolution of intercast links (once that kind
+ *         is supported by this transformer, viz. a full URI with a proper web scheme such as ‘http’).
+ *         The target would be served with a response header of ‘Access-Control-Allow-Origin: *’
+ *         in that case, which would then be the standard for all waycast service
+ *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
+ *         Of course, that will not help for any intracast links that remain.
+ *
  *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
  *         “general sibling combinator” is really rather particular in its application, in that it
  *         can only combine siblings in document order.  It cannot express a combination like this:
@@ -996,17 +1030,6 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
  *
- *  [IWS]  Informed by the waycast structure, affording it maximal exposure and effect.
- *         http://reluk.ca/project/wayic/architecture/doc.task § wayic architecture = waycast form
- *
- *  [LLR]  Local loading and remote waylinks.  Regardless of the *local load* scheme, the browser
- *         is unlikely to limit access to *remotely linked* targets (once that kind of targeting
- *         is supported by this transformer, viz. a full URI with a proper web scheme, such as ‘http’).
- *         Such a target would be served with a response header of ‘Access-Control-Allow-Origin: *’,
- *         which would then be the standard for all waycast service
- *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
- *         Of course, that won’t help for any *local links* that remain.
- *
  *  [NBT]  Not on back travel, as then user orientation is better served by the breadcrumb alone.
  *         Here the selector [read|travel] combines with :not([read|travel^='-']) to transform
  *         its negative test to a positive one.  This prevents premature firing of the rule
@@ -1017,7 +1040,7 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         It failed during relatively fast (∼1 s interval) back-and-forth travel.
  *         Otherwise attribute *isWaylinkTargetable* would have only a boolean value [readable.js BA].
  *
- *  [WLL]  Workaround for local loading.  It fails for Chrome.  Chrome (59) rejects all local
+ *  [WFS]  Workaround for file scheme requests.  It fails for Chrome.  Chrome (59) rejects all local
  *         read requests, logging the reason in the console as “Cross origin requests are
  *         only supported for protocol schemes: http, data, chrome, chrome-extension, https.”
  *         Firefox (52) is more lenient.  It at least forwards the in-branch requests, viz. where

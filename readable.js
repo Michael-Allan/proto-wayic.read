@@ -1,17 +1,28 @@
-/** readable - Way declaration documents that are readable on the web
+/** readable - Way declarations that are readable on the web
   *
-  *   See readable.css for a general introduction.  The sections below are for programmers.
+  *   See readable.css for a waycaster’s introduction.  The sections below are for programmers.
   *
   *
-  * ENTRY
-  * -----
-  *   This program starts itself at function *run*, declared below.  It provides no exports
-  *   but does extend the DOM (see § further below).
+  * SUPPORTED BROWSERS
+  * ------------------
+  *   See README.html#browser_support
+  *
+  *
+  * HTML DOM EXTENSION
+  * ------------------
+  *   This program adds one property to the HTML DOM.  It does this for internal purposes only.
+  *
+  *   Element
+  *   - - - -
+  *   * interlinkScene (boolean) Answers whether this element has an interlink scene.
+  *       Set on waylink target node.
+  *       That is only its temporary use; later this property will instead point to the *scene* element
+  *       that encodes the target node’s interlink scene.
   *
   *
   * SPECIAL MARKUP
   * --------------
-  *   The transformer introduces its own markup to the document as outlined in this section.
+  *   This program introduces its own markup to the document as outlined in this section.
   *   Key to the outline:
   *
   *          * blah          · Element ‘blah’ in namespace NS_READ, the default in this notation †
@@ -107,40 +118,120 @@
   *                  * html:span     · Containing the visible indicator, exclusive of padding
   *
   *
-  * DOM EXTENSION
-  * -------------
-  *   This program adds a property to the DOM.  It does this for internal purposes only.
-  *
-  *   Waylink target node (Element)
-  *   - - - - - - - - - -
-  *   * interlinkScene (boolean) Answers whether a waylink is formed on this target node.
-  *       That is only its temporary use; later this property will instead point to the *scene* element
-  *       that encodes the target node’s interlink scene.
-  *
-  *
   * NOTES  (continued at bottom)
   * -----
   */
 'use strict';
-( function()
+console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'),
+  'Failed assertion: Strict mode is in effect' );
+  // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
+  // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
+if( window.wayic      === undefined ) window.wayic      = {};
+if( window.wayic.read === undefined ) window.wayic.read = {};
+                                      window.wayic.read.readable = ( function()
 {
 
+    const expo = {}; // The public interface of this program
 
-    /** Whether the present document is loaded on a 'file' scheme URL.
+
+
+  /// ==================================================================================================
+ ///  P u b l i c   i n t e r f a c e
+/// ====================================================================================================
+
+
+    /** The lighting style (aka ‘theme’) of the display, or null if none is yet set.  By default,
+      * this program will set one of two lighting styles: either a black-on-white style called ‘paper’,
+      * or a reverse video style called ‘neon’.  The choice it bases on what it can detect
+      * of the browser’s settings, which it takes to be the user’s preference.
+      *
+      *     @return (string)
+      *
+      *     @see #setLightingStyle
       */
-    const isDocumentLocallyStored = document.URL.startsWith( 'file:' );
+    expo.lightingStyle = function()
+    {
+        return document.documentElement/*html*/.getAttributeNS( NS_READ, 'lighting' );
+    };
+
+
+
+    /** Sets whether to enforce program constraints whose violations are expensive to detect.
+      *
+      *     @param to (boolean)
+      *
+      *     @see #toEnforceConstraints
+      */
+    expo.setEnforceConstraints = function( to ) { toEnforceConstraints = to? true: false; };
+
+
+
+    /** Whether to enforce program constraints whose violations are expensive to detect.
+      * The default is not to enforce them.  When enforced, a violation that is detected will cause
+      * an exception to be thrown.
+      *
+      *     @return (boolean)
+      *
+      *     @see #setEnforceConstraints
+      */
+    expo.toEnforceConstraints = function() { return toEnforceConstraints; };
+
+
+        let toEnforceConstraints = false;
+
+
+
+    /** Sets the lighting style of the display, overriding the default.
+      *
+      *     @param lighting (string)
+      *
+      *     @see #lightingStyle
+      */
+    expo.setLightingStyle = function( lighting )
+    {
+        if( lighting === null ) throw NULL_PARAMETER;
+
+        document.documentElement/*html*/.setAttributeNS( NS_READ, 'lighting', lighting )
+    };
+
+
+
+    /** Starts this program.
+      */
+    expo.start = function()
+    {
+      // Gross form
+      // ----------
+        transform();
+
+      // Document shown, view stable in the typical case [TIC]
+      // --------------
+        ensureDocumentWillShow();
+        if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
+
+      // Processes launched, view may deflect in atypical cases
+      // ------------------
+        InterdocScanner.start();
+        InterdocWaylinkTransformer.start();
+        WayTracer.start();
+    };
+
+
+
+  /// ==================================================================================================
+ ///  P r e l i m i n a r y   d e c l a r a t i o n s
+/// ====================================================================================================
+
+
+    /** Whether the present document was requested from a 'file' scheme URL.
+      */
+    const wasRequestFileSchemed = document.URL.startsWith( 'file:' );
 
 
 
     /** Whether the user can likely edit the present document.
       */
-    const isUserEditor = isDocumentLocallyStored;
-
-
-
-    /** Whether it appears that the user would be unable to correct faults in this program.
-      */
-    const isUserNonProgrammer = !isDocumentLocallyStored;
+    const isUserEditor = wasRequestFileSchemed;
 
 
 
@@ -196,12 +287,6 @@
 
 
 
-    /** Whether to enforce program constraints whose violations are expensive to detect.
-      */
-    const toEnforceCostlyConstraints = !isUserNonProgrammer;
-
-
-
     /** The XML namespace of HTML.
       */
     const NS_HTML = 'http://www.w3.org/1999/xhtml';
@@ -218,22 +303,13 @@
     const URIs = ( function()
     {
 
-        const that = {}; // The public interface of URIs
+        const expo = {}; // The public interface of URIs
 
-
-
-        const hrefParserDiv = document.createElementNS( NS_HTML, 'div' );
-
-          hrefParserDiv.innerHTML = '<a/>';
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
 
 
         /** Returns the same URI, but without a fragment.
           */
-        that.defragmented = function( uri )
+        expo.defragmented = function( uri )
         {
             // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
             const c = uri.lastIndexOf( '#' );
@@ -250,25 +326,25 @@
           *     @see https://tools.ietf.org/html/rfc3986#section-3
           *     @see https://tools.ietf.org/html/rfc3986#section-3.1
           */
-        that.FULL_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
+        expo.FULL_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
 
 
 
         /** Answers whether the given URI is detected to have an abnormal form,
-          * where such detection depends on whether *toEnforceCostlyConstraints*.
+          * where such detection depends on whether *toEnforceConstraints*.
           *
           *     @see #normalized
           */
-        that.isDetectedAbnormal = function( uri )
+        expo.isDetectedAbnormal = function( uri )
         {
-            return toEnforceCostlyConstraints && uri !== that.normalized(uri)
+            return toEnforceConstraints && uri !== expo.normalized(uri)
         };
 
 
 
         /** Returns a message that the given URI is not in normal form.
           */
-        that.message_abnormal = function( uri ) { return 'Not in normal form:' + uri; };
+        expo.message_abnormal = function( uri ) { return 'Not in normal form:' + uri; };
 
 
 
@@ -279,7 +355,7 @@
           *
           *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           */
-        that.normalized = function( ref )
+        expo.normalized = function( ref )
         {
             // Modified from Matt Mastracci.
             // https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript/
@@ -300,9 +376,16 @@
 
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-        return that;
+
+        const hrefParserDiv = document.createElementNS( NS_HTML, 'div' );
+
+          hrefParserDiv.innerHTML = '<a/>';
+
+
+
+        return expo;
 
     }() );
 
@@ -310,7 +393,7 @@
 
   /// ==================================================================================================
  ///  S i m p l e   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
-/// ==================================================================================================
+/// ====================================================================================================
 
 
 
@@ -531,26 +614,34 @@
         const body = document.body;
         body.appendChild( document.createElementNS( NS_READ, 'offWayScreen' ));
 
-      // Detect user's lighting preference
-      // ---------------------------------
-        let lighting;
-        let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
-          // Using 'color' here because somehow 'background-color' fails;
-          // it reads as transparent (Firefox) or black (Chrome), when really it's white.
-        const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
-        if( cc !== null )
-        {
-            const red = cc[1], green = cc[2], blue = cc[3]; // Each 0-255
-            const luma = red * 299 + green * 587 + blue * 114; // 0-255,000, perceived brightness
-              // formula: https://en.wikipedia.org/wiki/YIQ
-            lighting = luma < 127500? 'paper':'neon';
-        }
-        else lighting = 'paper'; // Defaulting to what's most popular
-
-      // Set lighting switch and enable display of the document
-      // -------------------
+      // Ensure a lighting style is set  (cf. expo.setLightingStyle)
+      // -----------------------
         const html = document.documentElement;
-        html.setAttributeNS( NS_READ, 'lighting', lighting );
+        if( !html.hasAttributeNS( NS_READ, 'lighting' ))
+        {
+          // Detect user's lighting preference, or guess it
+          // ---------------------------------
+            let lighting;
+            let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
+              // Using 'color' here because somehow 'background-color' fails;
+              // it reads as transparent (Firefox) or black (Chrome), when really it's white.
+            const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
+            if( cc !== null )
+            {
+                const red = cc[1], green = cc[2], blue = cc[3]; // Each 0-255
+                const luma = red * 299 + green * 587 + blue * 114; // 0-255,000, perceived brightness
+                  // formula: https://en.wikipedia.org/wiki/YIQ
+                lighting = luma < 127500? 'paper':'neon';
+            }
+            else lighting = 'paper'; // Defaulting to what's most popular
+
+          // Set lighting switch
+          // -------------------
+            html.setAttributeNS( NS_READ, 'lighting', lighting );
+        }
+
+      // Enable display of the document
+      // --------------
         body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
 
       // Run page-show animations on load and reload
@@ -631,6 +722,12 @@
 
 
 
+    /** Whether it appears that the user would be unable to correct faults in this program.
+      */
+    const isUserNonProgrammer = !wasRequestFileSchemed;
+
+
+
     /** Answers whether this load of the document has extended the session history, breaking new ground
       * there by adding at least one new entry.  (Multiple entries may be added by a single load
       * owing to intradocument travel.)  A reload never breaks new ground.
@@ -681,32 +778,6 @@
       *     @see https://www.w3.org/TR/css-values/#rem
       */
     const REM = emLength( /*root element 'r', sensu 'rem'*/document.documentElement );
-
-
-
-    /** Runs this program.
-      */
-    function run()
-    {
-        console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'), AA + 'Strict mode' );
-          // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
-          // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-
-      // Gross form
-      // ----------
-        transform();
-
-      // Document shown, view stable in the typical case [TIC]
-      // --------------
-        ensureDocumentWillShow();
-        if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
-
-      // Processes launched, view may deflect in atypical cases
-      // ------------------
-        InterdocScanner.start();
-        InterdocWaylinkTransformer.start();
-        WayTracer.start();
-    }
 
 
 
@@ -1110,7 +1181,7 @@
 
   /// ==================================================================================================
  ///  C o m p o u n d   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
-/// ==================================================================================================
+/// ====================================================================================================
 
 
 
@@ -1125,8 +1196,11 @@
     const Breadcrumbs = ( function()
     {
 
-        const that = {}; // The public interface of Breadcrumbs
+        const expo = {}; // The public interface of Breadcrumbs
 
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** The element (Element) on which attribute *showsBreadcrumb* is set, or null if there is none.
@@ -1295,8 +1369,6 @@
 
 
 
-       // - - -
-
         document.documentElement.addEventListener( 'click', hearClick );
         addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Document load, reload or revisit
         {
@@ -1311,7 +1383,7 @@
               // need not determine the value of *state* differently, after all.
             reorient( pop.state );
         });
-        return that;
+        return expo;
 
     }() );
 
@@ -1380,45 +1452,8 @@
     const Documents = ( function() // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
 
-        const that = {}; // The public interface of Documents
+        const expo = {}; // The public interface of Documents
 
-
-
-        function d_tsk( doc, message )
-        {
-            if( doc === null ) throw NULL_PARAMETER;
-
-            if( doc === document ) tsk( message );
-        }
-
-
-
-        function notifyReader( r, docReg, doc )
-        {
-            if( doc !== null ) r.read( docReg, doc );
-            r.close( docReg );
-        }
-
-
-        /** The reader of all documents as registered by *addOmnireader*, or null if there is none.
-          */
-        let omnireader = null;
-
-
-
-        const PRESENT_DOCUMENT_REGISTRATION = new DocumentRegistration( DOCUMENT_LOCATION, document );
-
-
-
-        /** Map of pending and complete document registrations, including that of the present document.
-          * The entry key is DocumentRegistration#location.  The value is either the registration itself
-          * (DocumentRegistration) or the readers (Array of DocumentReader) that await it.
-          */
-        const registry = new Map().set( DOCUMENT_LOCATION, PRESENT_DOCUMENT_REGISTRATION );
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
 
 
         /** Registers a reader of all documents.  Immediately the reader is given the present document
@@ -1428,7 +1463,7 @@
           *     @throws (string) Error message if one reader was already registered;
           *       the support for multiple readers is not yet coded.
           */
-        that.addOmnireader = function( reader )
+        expo.addOmnireader = function( reader )
         {
             if( omnireader !== null ) throw 'Cannot add reader, one was already added';
 
@@ -1457,7 +1492,7 @@
           *
           *     @see URIs#normalized
           */
-        that.readNowOrLater = function( docLoc, reader )
+        expo.readNowOrLater = function( docLoc, reader )
         {
             if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
 
@@ -1506,8 +1541,9 @@
               // - - -
                 req.onload = function( event )
                 {
-                    // If this listener is registered instead by req.addEventListener, then local load
-                    // access fails on Firefox (52), even the in-branch requests. [readable.css WLL]
+                    // If this listener is registered instead by req.addEventListener,
+                    // then the file scheme workaround fails for Firefox (52),
+                    // even for in-branch requests. [readable.css WFS]
                     const doc = event.target.response;
                     docReg.document = doc;
 
@@ -1520,7 +1556,7 @@
                         if( t === null ) break;
 
                         const id = t.getAttribute( 'id' );
-                        if( id !== null ) that.testIdForm( t, id );
+                        if( id !== null ) expo.testIdForm( t, id );
                     }
                 };
 
@@ -1568,7 +1604,7 @@
           *     @param t (Element) A waylink target node.
           *     @param id (string) The value of t's *id* attribute.
           */
-        that.testIdForm = function( t, id )
+        expo.testIdForm = function( t, id )
         {
             if( id === null ) throw NULL_PARAMETER;
 
@@ -1588,9 +1624,44 @@
 
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-        return that;
+
+        function d_tsk( doc, message )
+        {
+            if( doc === null ) throw NULL_PARAMETER;
+
+            if( doc === document ) tsk( message );
+        }
+
+
+
+        function notifyReader( r, docReg, doc )
+        {
+            if( doc !== null ) r.read( docReg, doc );
+            r.close( docReg );
+        }
+
+
+        /** The reader of all documents as registered by *addOmnireader*, or null if there is none.
+          */
+        let omnireader = null;
+
+
+
+        const PRESENT_DOCUMENT_REGISTRATION = new DocumentRegistration( DOCUMENT_LOCATION, document );
+
+
+
+        /** Map of pending and complete document registrations, including that of the present document.
+          * The entry key is DocumentRegistration#location.  The value is either the registration itself
+          * (DocumentRegistration) or the readers (Array of DocumentReader) that await it.
+          */
+        const registry = new Map().set( DOCUMENT_LOCATION, PRESENT_DOCUMENT_REGISTRATION );
+
+
+
+        return expo;
 
     }() );
 
@@ -1604,30 +1675,8 @@
     const Hyperlinkage = ( function()
     {
 
-        const that = {}; // The public interface of Hyperlinkage
+        const expo = {}; // The public interface of Hyperlinkage
 
-
-
-        function hearHashChange/* event handler */( _HashChangeEvent )
-        {
-            const hash = location.hash; // [WDL]
-            const id = idTargeted = hash.length === 0? null: hash.slice(1);
-            if( id !== null )
-            {
-                const e = document.getElementById( id );
-                if( e !== null )
-                {
-                    setElementTargeted( e );
-                    return;
-                }
-            }
-
-            clearElementTargeted();
-        }
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
 
 
         /** The element that is hyperlink-targeted by the browser, or null if there is none.
@@ -1635,7 +1684,7 @@
           *     @return (Element)
           *     @see #idTargeted
           */
-        that.elementTargeted = function() { return elementTargeted; };
+        expo.elementTargeted = function() { return elementTargeted; };
 
 
             let elementTargeted = null;
@@ -1678,17 +1727,37 @@
           *     @return (string)
           *     @see #elementTargeted
           */
-        that.idTargeted = function() { return idTargeted; };
+        expo.idTargeted = function() { return idTargeted; };
 
 
             let idTargeted = null;
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        function hearHashChange/* event handler */( _HashChangeEvent )
+        {
+            const hash = location.hash; // [WDL]
+            const id = idTargeted = hash.length === 0? null: hash.slice(1);
+            if( id !== null )
+            {
+                const e = document.getElementById( id );
+                if( e !== null )
+                {
+                    setElementTargeted( e );
+                    return;
+                }
+            }
+
+            clearElementTargeted();
+        }
+
+
 
         window.addEventListener( 'hashchange', hearHashChange );
         hearHashChange.call( /*this*/window ); // initializing
-        return that;
+        return expo;
 
     }() );
 
@@ -1703,8 +1772,31 @@
     const InterdocScanner = ( function()
     {
 
-        const that = {}; // The public interface of InterdocScanner
+        const expo = {}; // The public interface of InterdocScanner
 
+
+
+        /** Starts this scanner.
+          */
+        expo.start = function()
+        {
+          // Enable passive discovery
+          // ------------------------
+            Documents.addOmnireader( new class extends DocumentReader
+            {
+                read( docReg, doc ) { scan( doc, docReg.location ); }
+            });
+
+          // Start active discovery
+          // ----------------------
+          //// TODO.  Start by traversing the waycast directory indeces.
+            // Though the DOM for these on a 'file' scheme URL is self generated by the browser,
+            // still it seems to be accessible (console tests, Chrome and Firefox).
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** @param doc (Document) The document to scan.
@@ -1743,32 +1835,7 @@
 
 
 
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Starts this scanner.
-          */
-        that.start = function()
-        {
-          // Enable passive discovery
-          // ------------------------
-            Documents.addOmnireader( new class extends DocumentReader
-            {
-                read( docReg, doc ) { scan( doc, docReg.location ); }
-            });
-
-          // Start active discovery
-          // ----------------------
-          //// TODO.  Start by traversing the waycast directory indeces.
-            // Though the DOM for these on a 'file' scheme URL is self generated by the browser,
-            // still it seems to be accessible (console tests, Chrome and Firefox).
-        };
-
-
-
-       // - - -
-
-        return that;
+        return expo;
 
     }() );
 
@@ -1784,8 +1851,55 @@
     const InterdocWaylinkTransformer = ( function()
     {
 
-        const that = {}; // The public interface of InterdocWaylinkTransformer
+        const expo = {}; // The public interface of InterdocWaylinkTransformer
 
+
+
+        /** Tells this transformer of a separate way declaration document that the user may reach
+          * from the present document by a direct link, which is not a bitform waylink.
+          *
+          *     @param loc (string) The location of the other document in normal URL form.
+          *
+          *     @see #registerBitformLink
+          *     @see URIs#normalized
+          */
+        expo.noteTargetDocument = function( loc ) { registerTargetDocument( loc ); };
+
+
+
+        /** Registers an unresolved, interdocument bitform waylink and returns the registration.
+          *
+          *     @param sourceNode (Element) A bitform waylink source node that targets another document.
+          *     @param targDocLoc (string) The location of the other document in normal URL form.
+          *     @param id (string) The identifier of the target within the other document.
+          *
+          *     @return (InterdocWaylinkTransformer_Registration)
+          *
+          *     @see URIs#normalized
+          */
+        expo.registerBitformLink = function( sourceNode, targDocLoc, id )
+        {
+            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, targDocLoc, id );
+            const regList = registerTargetDocument( targDocLoc );
+            regList.push( reg );
+            return reg;
+        };
+
+
+
+        /** Starts this transformer.
+          */
+        expo.start = function()
+        {
+            start1_presentDocument( linkRegistry );
+            setTimeout( start2_targetDocuments, 191/*ms, browser rest*/, linkRegistry );
+            linkRegistry = null; /* Freeing it for eventual garbage collection,
+              and blocking henceforth any further attempt to register */
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** Map of registered links.  The key to each entry is the location (string) in normal URL form
@@ -1969,56 +2083,7 @@
 
 
 
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Tells this transformer of a separate way declaration document that the user may reach
-          * from the present document by a direct link, which is not a bitform waylink.
-          *
-          *     @param loc (string) The location of the other document in normal URL form.
-          *
-          *     @see #registerBitformLink
-          *     @see URIs#normalized
-          */
-        that.noteTargetDocument = function( loc ) { registerTargetDocument( loc ); };
-
-
-
-        /** Registers an unresolved, interdocument bitform waylink and returns the registration.
-          *
-          *     @param sourceNode (Element) A bitform waylink source node that targets another document.
-          *     @param targDocLoc (string) The location of the other document in normal URL form.
-          *     @param id (string) The identifier of the target within the other document.
-          *
-          *     @return (InterdocWaylinkTransformer_Registration)
-          *
-          *     @see URIs#normalized
-          */
-        that.registerBitformLink = function( sourceNode, targDocLoc, id )
-        {
-            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, targDocLoc, id );
-            const regList = registerTargetDocument( targDocLoc );
-            regList.push( reg );
-            return reg;
-        };
-
-
-
-        /** Starts this transformer.
-          */
-        that.start = function()
-        {
-            start1_presentDocument( linkRegistry );
-            setTimeout( start2_targetDocuments, 191/*ms, browser rest*/, linkRegistry );
-            linkRegistry = null; /* Freeing it for eventual garbage collection,
-              and blocking henceforth any further attempt to register */
-        };
-
-
-
-       // - - -
-
-        return that;
+        return expo;
 
     }() );
 
@@ -2069,44 +2134,41 @@
     const LeaderReader = ( function()
     {
 
-        const that = {}; // The public interface of LeaderReader
+        const expo = {}; // The public interface of LeaderReader
 
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
 
 
         /** The element whose leader was last read, or null if *read* has yet to be called.
           *
           *     @see #read
           */
-        that.element = null;
+        expo.element = null;
 
 
 
      // /** The successor of the last child node that contributed to the leader, or null if either
      //   * no child contributed or the last to contribute has no successor.
      //   */
-     // that.endChild = null;
+     // expo.endChild = null;
 
 
 
         /** Answers whether the element has a leader of non-zero length.
           */
-        that.hasLeader = false;
+        expo.hasLeader = false;
 
 
 
         /** Answers whether the leader is truncated.
           */
-        that.isTruncated = false;
+        expo.isTruncated = false;
 
 
 
         /** The leader as read from the element in the form of a string, possibly truncated.  It will be
           * an empty string if either the element has no leader, or the leader was truncated to nothing.
           */
-        that.leader = '';
+        expo.leader = '';
 
 
 
@@ -2118,13 +2180,13 @@
           *     @param toIncludeRead (boolean) Whether to include any text contained within
           *       special markup (NS_READ) elements.
           */
-        that.read = function( element, maxLength=Number.MAX_VALUE, toIncludeRead=false )
+        expo.read = function( element, maxLength=Number.MAX_VALUE, toIncludeRead=false )
         {
             let leader = '';
             let hasLeader = false;
          // let firstContributingChild = null;
          // let lastContributingChild = null;
-            that.isTruncated = false;
+            expo.isTruncated = false;
             const dive = document.createTreeWalker( element );
               // Node.innerText and textContent would be too inefficient for this purpose, often diving
               // deeply into the element hierarchy where only a shallow dive is needed.
@@ -2148,7 +2210,7 @@
                         const wN = word.length;
                         if( wN > headroom )
                         {
-                            that.isTruncated = true;
+                            expo.isTruncated = true;
                             break dive;
                         }
 
@@ -2190,24 +2252,22 @@
                 }
             }
 
-            that.element = element;
-            that.leader = leader;
-            that.hasLeader = hasLeader;
-         // that.startChild = firstContributingChild;
-         // that.endChild = lastContributingChild === null? null: lastContributingChild.nextSibling;
+            expo.element = element;
+            expo.leader = leader;
+            expo.hasLeader = hasLeader;
+         // expo.startChild = firstContributingChild;
+         // expo.endChild = lastContributingChild === null? null: lastContributingChild.nextSibling;
         };
 
 
 
      // /** The first child node that contributed to the leader, or null if none did.
      //   */
-     // that.startChild = null;
+     // expo.startChild = null;
 
 
 
-       // - - -
-
-        return that;
+        return expo;
 
     }() );
 
@@ -2331,8 +2391,46 @@
     const Marginalia = ( function()
     {
 
-        const that = {}; // The public interface of Marginalia
+        const expo = {}; // The public interface of Marginalia
 
+
+
+        /** Ensures the given marginalis will be laid and shown.
+          *
+          *     @param marginalis (HTMLElement)
+          *     @param eSTag (Element) The start tag beside which to lay it.
+          */
+        expo.layWhen = function( marginalis, eSTag )
+        {
+         // requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry
+            setTimeout( layIf, 49/*ms, browser rest*/ );
+            let pollCount = 0;
+            function layIf( _msTime/*ignored*/ )
+            {
+                const tagVpBounds = eSTag.getBoundingClientRect();
+                if( tagVpBounds.width ) // Then the tag is laid
+                {
+                  // Lay the marginalis and show it
+                  // ------------------------------
+                    lay( marginalis, tagVpBounds );
+                    marginalis.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
+
+                  // Ensure it re-lays itself as needed
+                  // ------------------------
+                    addEventListener( 'resize', (_UIEvent)=>{lay(marginalis);} );
+                }
+                else if( pollCount <= 3 )
+                {
+                    ++pollCount;
+                    requestAnimationFrame( layIf ); // Wait for the tag to get laid
+                }
+                else console.error( "Cannot lay marginalis, start tag is not being laid" );
+            }
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** Lays or re-lays the given marginalis.
@@ -2365,7 +2463,7 @@
             const liner = marginalis.firstChild;
             s = liner.style;
             const iconX = width - iconVpBounds.width;
-            const availableGap/*liner ↔ icon*/ = iconX - TargetLining.MIN_WIDTH;
+            const availableGap/*liner ↔ icon*/ = iconX - TargetLining.minimumWidth();
             if( MIN_GAP - availableGap > GRAPHICAL_ERROR_MARGIN )
             {
                 console.error( 'Marginalis availableGap ' + availableGap + ' < MIN_GAP ' + MIN_GAP );
@@ -2402,47 +2500,7 @@
 
 
 
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Ensures the given marginalis will be laid and shown.
-          *
-          *     @param marginalis (HTMLElement)
-          *     @param eSTag (Element) The start tag beside which to lay it.
-          */
-        that.layWhen = function( marginalis, eSTag )
-        {
-         // requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry
-            setTimeout( layIf, 49/*ms, browser rest*/ );
-            let pollCount = 0;
-            function layIf( _msTime/*ignored*/ )
-            {
-                const tagVpBounds = eSTag.getBoundingClientRect();
-                if( tagVpBounds.width ) // Then the tag is laid
-                {
-                  // Lay the marginalis and show it
-                  // ------------------------------
-                    lay( marginalis, tagVpBounds );
-                    marginalis.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
-
-                  // Ensure it re-lays itself as needed
-                  // ------------------------
-                    addEventListener( 'resize', (_UIEvent)=>{lay(marginalis);} );
-                }
-                else if( pollCount <= 3 )
-                {
-                    ++pollCount;
-                    requestAnimationFrame( layIf ); // Wait for the tag to get laid
-                }
-                else console.error( "Cannot lay marginalis, start tag is not being laid" );
-            }
-        };
-
-
-
-       // - - -
-
-        return that;
+        return expo;
 
     }() );
 
@@ -2621,8 +2679,25 @@
     const TargetControl = ( function()
     {
 
-        const that = {}; // The public interface of TargetControl
+        const expo = {}; // The public interface of TargetControl
 
+
+
+        /** Adds controls for a target node.
+          *
+          *     @param eSTag (Element) The start tag of the target node.
+          */
+        expo.addControls = function( eSTag )
+        {
+            eSTag.addEventListener( 'click', hearClick );
+            const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
+            icon.addEventListener( 'mouseenter', hearMouseEnter );
+            icon.addEventListener( 'mouseleave', hearMouseLeave );
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** @param click (MouseEvent) A click event from within the start tag.
@@ -2732,27 +2807,7 @@
 
 
 
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Adds controls for a target node.
-          *
-          *     @param eSTag (Element) The start tag of the target node.
-          */
-        that.addControls = function( eSTag )
-        {
-            eSTag.addEventListener( 'click', hearClick );
-            const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
-            icon.addEventListener( 'mouseenter', hearMouseEnter );
-            icon.addEventListener( 'mouseleave', hearMouseLeave );
-        };
-
-
-
-       // - - -
-
-        return that;
-
+        return expo;
 
     }() );
 
@@ -2820,15 +2875,7 @@
     const TargetImageCache = ( function() // [TIC]
     {
 
-        const that = {}; // The public interface of TargetImageCache
-
-
-
-        const KEY_PREFIX = NS_READ + '.TargetImageCache.';
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
+        const expo = {}; // The public interface of TargetImageCache
 
 
 
@@ -2839,7 +2886,7 @@
           *
           *     @see URIs#normalized
           */
-        that.read = function( targetLoc )
+        expo.read = function( targetLoc )
         {
             const s = sessionStorage.getItem( KEY_PREFIX + targetLoc );
             if( s !== null )
@@ -2847,8 +2894,12 @@
                 const p = JSON.parse( s );
                 try { return new TargetImage( p._leader, p._localName, p._namespaceURI ); }
 
-                catch( x ) { if( isUserNonProgrammer || x !== MALFORMED_PARAMETER ) throw x; }
-                  // Expecting malformed parameters while recoding
+                catch( x )
+                {
+                    if( isUserNonProgrammer || x !== MALFORMED_PARAMETER ) throw x;
+
+                    console.warn( 'Suppressing an exception expected while programming: ' + x );
+                }
             }
 
             return null;
@@ -2863,7 +2914,7 @@
           *
           *     @see URIs#normalized
           */
-        that.write = function( targetLoc, image )
+        expo.write = function( targetLoc, image )
         {
             if( URIs.isDetectedAbnormal( targetLoc )) throw URIs.message_abnormal( targetLoc );
 
@@ -2875,9 +2926,14 @@
 
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-        return that;
+
+        const KEY_PREFIX = NS_READ + '.TargetImageCache.';
+
+
+
+        return expo;
 
     }() );
 
@@ -2902,48 +2958,24 @@
     const TargetLining = ( function()
     {
 
-        const that = {}; // The public interface of TargetLining
+        const expo = {}; // The public interface of TargetLining
 
         // Dimensions and coordinates are here given in pixels, except where marked otherwise.
 
 
 
-        /** The gap between the edge mark and the line to its right.
+        /** The smallest width in which a liner can correctly draw itself.
           */
-        const GAP = 2/*rem*/ * REM;
-
-
-
-        const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
-        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
-
-
-
-        const LINE_MIN_LENGTH = GAP;
-
-
-
-        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** The minimum width that a liner requires in order to draw itself.
-          */
-        that.MIN_WIDTH = MIN_CLICK_WIDTH_REM * REM;
-
-            { console.assert( EDGE_MARK_WIDTH - that.MIN_WIDTH <= GRAPHICAL_ERROR_MARGIN, A ); }
+        expo.minimumWidth = function() { return MIN_WIDTH; };
 
 
 
         /** Constructs a target liner.
           */
-        that.newLiner = function()
+        expo.newLiner = function()
         {
             const liner = document.createElementNS( NS_SVG, 'svg' );
-         // liner.addEventListener( 'resize', (_UIEvent)=>{that.redraw(liner);} );
+         // liner.addEventListener( 'resize', (_UIEvent)=>{expo.redraw(liner);} );
               // Ensuring it draws when first laid, then redraws as needed.
               //
               // Except it's not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
@@ -2962,7 +2994,7 @@
           *
           *     @param liner (SVGSVGElement)
           */
-        that.redraw = function( liner, width, height )
+        expo.redraw = function( liner, width, height )
         {
          // const bounds = liner.getBBox(); /* The actual bounds within the larger document.
          //   These define the coordinate system of the drawing because the liner (*svg* element)
@@ -3002,9 +3034,35 @@
 
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-        return that;
+
+        /** The gap between the edge mark and the line to its right.
+          */
+        const GAP = 2/*rem*/ * REM;
+
+
+
+        const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
+        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
+
+
+
+        const LINE_MIN_LENGTH = GAP;
+
+
+
+        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
+
+
+
+        const MIN_WIDTH = MIN_CLICK_WIDTH_REM * REM;
+
+            { console.assert( EDGE_MARK_WIDTH - MIN_WIDTH <= GRAPHICAL_ERROR_MARGIN, A ); }
+
+
+
+        return expo;
 
     }() );
 
@@ -3103,22 +3161,15 @@
     const Viewporting = ( function()
     {
 
-        const that = {}; // The public interface of Viewporting
+        const expo = {}; // The public interface of Viewporting
 
-
-
-        const targetPositioningOptions = { behavior:'instant', block:'start', inline:'nearest' }
-
-
-
-       // - P u b l i c --------------------------------------------------------------------------------
 
 
         /** Ensures that the hyperlink-targeted element, if any, will be visible within the viewport.
           *
           *     @see Hyperlinkage#elementTargeted
           */
-        that.ensureTargetWillShow = function() // [HTP]
+        expo.ensureTargetWillShow = function() // [HTP]
         {
             const e = Hyperlinkage.elementTargeted();
             if( e === null ) return;
@@ -3140,9 +3191,14 @@
 
 
 
-       // - - -
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-        return that;
+
+        const targetPositioningOptions = { behavior:'instant', block:'start', inline:'nearest' }
+
+
+
+        return expo;
 
     }() );
 
@@ -3162,8 +3218,33 @@
     const WayTracer = ( function()
     {
 
-        const that = {}; // The public interface of WayTracer
+        const expo = {}; // The public interface of WayTracer
 
+
+
+        /** Starts this tracer.
+          */
+        expo.start = function()
+        {
+         // console.debug( 'Trace run starting' ); // TEST
+            const id = ROOT_LEG_ID;
+            console.assert( !wasOpened(id), A );
+            openLeg( id );
+            Documents.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
+            {
+                close( docReg ) { shutLeg( id ); }
+                read( docReg, doc )
+                {
+                    const target = doc.getElementById( 'root', doc );
+                    if( target !== null ) traceLeg( id, target, docReg );
+                    else tsk( 'Unable to trace: Missing root waybit: ' + id );
+                }
+            });
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** Answers whether the specified leg is already traced.
@@ -3390,42 +3471,15 @@
 
 
 
-       // - P u b l i c --------------------------------------------------------------------------------
-
-
-        /** Starts this tracer.
-          */
-        that.start = function()
-        {
-         // console.debug( 'Trace run starting' ); // TEST
-            const id = ROOT_LEG_ID;
-            console.assert( !wasOpened(id), A );
-            openLeg( id );
-            Documents.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
-            {
-                close( docReg ) { shutLeg( id ); }
-                read( docReg, doc )
-                {
-                    const target = doc.getElementById( 'root', doc );
-                    if( target !== null ) traceLeg( id, target, docReg );
-                    else tsk( 'Unable to trace: Missing root waybit: ' + id );
-                }
-            });
-        };
-
-
-
-       // - - -
-
-        return that;
+        return expo;
 
     }() );
 
 
 
-////////////////////
+   // ==============
 
-    run();
+    return expo;
 
 }() );
 
@@ -3455,7 +3509,7 @@
   *         peculiar things with focus which are hard to work around.
   *         http://w3c.github.io/html/editing.html#focus
   *
-  *  [FSS]  Use of the session store by documents loaded on ‘file’ scheme URLs.  On moving from document
+  *  [FSS]  Session storage for a document requested from a ‘file’ scheme URL.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
   *         by D2 may, after travelling back, be unreadable by D1, as though it had not been stored.
   *         Affects Firefox 52.6.  Does not affect Chrome running with --allow-file-access-from-files.
@@ -3478,9 +3532,8 @@
   *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [NNR]  Not NS_READ.  Here avoiding transformer-specific elements in favour of standard HTML.
-  *         This is for sake of properties such as the *style* attribute which are unsupported
-  *         for NS_READ elements.
+  *  [NNR]  Not NS_READ.  Here avoiding special markup in favour of standard HTML.  This is for sake
+  *         of properties such as the *style* attribute which are unsupported for NS_READ elements.
   *
   *  [ODO]  Out of display order.  This element which is not always present (variant) is declared out of
   *         display order so not to interfere with the *declaration* order of its invariant siblings.
