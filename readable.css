@@ -25,7 +25,7 @@
  *
  *   In your personal configuration script, way.js
  *   - - - - - - - - - - - - - - - - - - -
- *   Insert this:
+ *   Insert this, for example:
  *
  *       const s = document.body.appendChild(
  *         document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
@@ -35,35 +35,20 @@
  *          wayic.read.readable.start();
  *       });
  *
- *   Optionally configure the transformer before starting it.  For example:
  *
+ * CONFIGURATION
+ * -------------
+ *   Optionally configure the transformer before starting it.
+ *   For example: (extending the example above)
+ *
+ *       ⋮
+ *       s.addEventListener( 'load', ( _Event ) =>
  *       {
  *          wayic.read.readable.setEnforceConstraints( true );
  *          wayic.read.readable.start();
  *       });
  *
  *   The available configuration options are detailed in readable.js § Public interface.
- *
- *
- * CONFIGURATION
- * -------------
- *   In your personal style sheet, way.css
- *   - - - - - - - - - - - - - - -
- *   For a working example, see  http://reluk.ca/project/waycast/way.css
- *   Insert this atop your way.css:
- *
- *       @import 'http://reluk.ca/project/wayic/read/readable.css';
- *
- *   Optionally add this:
- *
- *       @import 'http://reluk.ca/project/wayic/read/pre_note.css';
- *
- *   In your personal configuration script, way.js
- *   - - - - - - - - - - - - - - - - - - -
- *   For a working example, see  http://reluk.ca/project/waycast/way.js
- *   Insert the equivalent of this in your way.js:
- *
- *       appendScript( 'http://reluk.ca/project/wayic/read/readable.js' );
  *
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
