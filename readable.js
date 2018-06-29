@@ -2898,7 +2898,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 {
                     if( isUserNonProgrammer || x !== MALFORMED_PARAMETER ) throw x;
 
-                    console.warn( 'Suppressing an exception expected while programming: ' + x );
+                    console.warn( 'Suppressing an exception expected only while programming: ' + x );
                 }
             }
 
@@ -3228,7 +3228,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         {
          // console.debug( 'Trace run starting' ); // TEST
             const id = ROOT_LEG_ID;
-            console.assert( !wasOpened(id), A );
+            console.assert( !(toEnforceConstraints && wasOpened(id)), A );
             openLeg( id );
             Documents.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
             {
