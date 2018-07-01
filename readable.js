@@ -562,7 +562,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
         let loc = location.toString(); // [WDL]
         if( location.hash ) loc = URIs.defragmented( loc );
-        return URIs.normalized( loc ); // To be sure
+        return URIs.normalized( loc ); // To be certain
     })();
 
 
@@ -861,7 +861,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           // =================
             hyperform: if( isHTML && tN === 'a' )
             {
-                const href = t.getAttribute( 'href' );
+                let href = t.getAttribute( 'href' );
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
                 let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentLocationN
                 if( href !== null ) // Then t is a generic hyperlink
@@ -871,7 +871,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         tsk( 'An *a* element with both *href* and *link* attributes: '
                           + a2s('href',href) + ', ' + a2s('link',link) );
                     }
-                    if( href.startsWith( '/' )) t.setAttribute( 'href', CAST_BASE_REF + href );
+                    if( href.startsWith( '/' )) t.setAttribute( 'href', href = CAST_BASE_REF + href );
                       // Translating waycast space → universal space
                     const docLocN = URIs.defragmented( URIs.normalized( href ));
                     targetExtradocLocN = docLocN === DOCUMENT_LOCATION? '': docLocN;
@@ -1048,7 +1048,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 const marginalis = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
                 marginalis.appendChild( TargetLining.newLiner() );
                 marginalis.appendChild( document.createElementNS( NS_READ, 'icon' ))
-                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // To be sure
+                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // To be certain
                     // See readable.css for the *visible* content
                 Marginalia.layWhen( marginalis, eSTag );
 
@@ -2791,7 +2791,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             function hearMouseEnter/* event handler */( event )
             {
                 if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
-                  // Preclude duplication, to be sure
+                  // Preclude duplication, to be on the safe side
                 const eQName = hearMouse_eQName( event );
                 eQName.setAttribute( 'id', NS_READ + '.TargetControl.iconHover' ); // [readable.css GSC]
                 hearMouse_eQNameIdentified = eQName;
