@@ -77,26 +77,37 @@
  *
  * TROUBLESHOOTING
  * ---------------
- *   This transformer reports problems it detects to the browser’s debugging console. [CON]
  *   See also readable.js § toEnforceConstraints.
  *
- *   Direct viewing from the local file system
- *   -----------------------------------------
- *     When a way declaration document is requested from a ‘file’ scheme URL, the transformer
- *     assumes that you are its author.  Then it will open an *alert* window for any problem such as
- *     malformed content, or anything else that an author might be able to remedy.
+ *   Console reporting
+ *   -----------------
+ *     This transformer reports problems it detects to the browser’s debugging console.
+ *     https://console.spec.whatwg.org/
  *
- *     When a way declaration document is requested from a ‘file’ scheme URL,
- *     interdocument waylinks may fail to resolve, instead being marked ‘⋯?⋯’.
- *     This affects the quality of presentation, making the way definition harder to view.
- *     (Instructions on dealing with this are given further below.)  What causes this:
- *     when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
- *     only a limited ability to resolve interdocument links, to trace the way across multiple files,
- *     or generally to read other local files. [FSI]
+ *   Requests by ‘file’ scheme
+ *   -------------------------
+ *     When the user requests a way declaration document from a ‘file’ scheme URL.
  *
- *     There is a workaround.  Among the browsers supported, this works only for Firefox.
- *     The workaround is to first request the root way declaration document, or any other document
- *     from the base directory of the waycast.  Then follow the links from there. [WFS]
+ *     Alert reporting
+ *     ---------------
+ *       When the user requests a way declaration document from a ‘file’ scheme URL,
+ *       this transformer assumes that the user is the author of that document.  Then,
+ *       in addition to console reporting, it opens an *alert* window to report malformed content
+ *       or any other problem that an author might be able to remedy.
+ *
+ *     Limitations
+ *     -----------
+ *       When the user requests a way declaration document from a ‘file’ scheme URL,
+ *       interdocument waylinks may fail to resolve, instead being marked ‘⋯?⋯’.
+ *       This affects the quality of presentation, making the way definition harder to view.
+ *       (Instructions on dealing with this are given further below.)  What causes this:
+ *       when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
+ *       only a limited ability to resolve interdocument links, to trace the way across multiple files,
+ *       or generally to read other local files. [FSI]
+ *
+ *       There is a workaround.  Among the browsers supported, this works only for Firefox.
+ *       The workaround is to first request the root way declaration document, or any other document
+ *       from the base directory of the waycast.  Then follow the links from there. [WFS]
  *
  *
  * NOTES  (continued at bottom)
@@ -988,8 +999,6 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
  *
  *  [DCE]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
- *
- *  [CON]  Console.  https://console.spec.whatwg.org/
  *
  *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
  *         wrongly resolves the relative URL against the document rather than the style sheet.
