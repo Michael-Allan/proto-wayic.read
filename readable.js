@@ -31,9 +31,8 @@
   *         [:attrib]    · Attribute in no namespace
   *         [foo:attrib] · Attribute in namespace NS_FOO
   *         foo:baz      · Child element ‘baz’
+  *                                                                  † The namespace defaults to NS_READ
   *
-  *                                                † Unless otherwise marked herein, the namespace
-  *                                                  of an element or attribute defaults to NS_READ
   *   *
   *   -----
   *     [isOnWayBranch] · Whether this element, with all its descendants, is on way  [BA]
