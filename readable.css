@@ -12,28 +12,28 @@
  *       * http://reluk.ca/project/waycast/way.js
  *
  *
- *   In your personal style sheet, way.css
- *   - - - - - - - - - - - - - - -
- *   Insert this at the top:
+ *   Personal style sheet, way.css
+ *   --------------------
+ *     Atop the style sheet, insert this:
  *
- *       @import 'http://reluk.ca/project/wayic/read/readable.css';
+ *         @import 'http://reluk.ca/project/wayic/read/readable.css';
  *
- *   Optionally add this:
+ *     Optionally add this:
  *
- *       @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+ *         @import 'http://reluk.ca/project/wayic/read/pre_note.css';
  *
  *
- *   In your personal configuration script, way.js
- *   - - - - - - - - - - - - - - - - - - -
- *   Insert this, for example:
+ *   Personal configuration program, way.js
+ *   ------------------------------
+ *     There insert the equivalent of this:
  *
- *       const s = document.body.appendChild(
- *         document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
- *       s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
- *       s.addEventListener( 'load', ( _Event ) =>
- *       {
- *          wayic.read.readable.start();
- *       });
+ *         const s = document.body.appendChild(
+ *           document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
+ *         s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
+ *         s.addEventListener( 'load', ( _Event ) =>
+ *         {
+ *            wayic.read.readable.start();
+ *         });
  *
  *
  * CONFIGURATION
@@ -81,21 +81,22 @@
  *   See also readable.js § toEnforceConstraints.
  *
  *   Direct viewing from the local file system
- *   - - - - - - - - - - - - - - - - - - - - -
- *   When a way declaration document is requested from a ‘file’ scheme URL, the transformer
- *   assumes that you are its author.  Then it will open an *alert* window for any problem such as
- *   malformed content, or anything else that an author might be able to remedy.
+ *   -----------------------------------------
+ *     When a way declaration document is requested from a ‘file’ scheme URL, the transformer
+ *     assumes that you are its author.  Then it will open an *alert* window for any problem such as
+ *     malformed content, or anything else that an author might be able to remedy.
  *
- *   Interdocument waylinks may fail to resolve for a document so requested, instead being marked ‘⋯?⋯’.
- *   This affects the quality of presentation, making the way definition harder to view.
- *   (Instructions on dealing with this are given further below.)  What causes this:
- *   when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
- *   only a limited ability to resolve interdocument links, to trace the way across multiple files,
- *   or generally to read other local files. [FSI]
+ *     When a way declaration document is requested from a ‘file’ scheme URL,
+ *     interdocument waylinks may fail to resolve, instead being marked ‘⋯?⋯’.
+ *     This affects the quality of presentation, making the way definition harder to view.
+ *     (Instructions on dealing with this are given further below.)  What causes this:
+ *     when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
+ *     only a limited ability to resolve interdocument links, to trace the way across multiple files,
+ *     or generally to read other local files. [FSI]
  *
- *   There is a workaround.  Among the browsers supported, this works only for Firefox.
- *   The workaround is to first request the root way declaration document, or any other document
- *   from the base directory of the waycast.  Then follow the links from there. [WFS]
+ *     There is a workaround.  Among the browsers supported, this works only for Firefox.
+ *     The workaround is to first request the root way declaration document, or any other document
+ *     from the base directory of the waycast.  Then follow the links from there. [WFS]
  *
  *
  * NOTES  (continued at bottom)
@@ -193,7 +194,7 @@ html|a:active
 {
     outline: none; /* Defeat any browser default (Firefox).  It looks confusing in composite hyperlinks
       (e.g. a > verticalTruncator).  Also the need of styling for the active state is questionable;
-      Chrome has none, and the script activated links have none. */
+      Chrome has none, and the programmatically activated links have none. */
 }
 
 

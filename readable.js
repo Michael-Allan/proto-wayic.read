@@ -10,112 +10,115 @@
   *
   * HTML DOM EXTENSION
   * ------------------
-  *   This program adds one property to the HTML DOM.  It does this for internal purposes only.
+  *   This program adds one property to the Element interface, for internal purposes only.
   *
   *   Element
-  *   - - - -
-  *   * interlinkScene (boolean) Answers whether this element has an interlink scene.
-  *       Set on waylink target node.
-  *       That is only its temporary use; later this property will instead point to the *scene* element
-  *       that encodes the target node’s interlink scene.
+  *   -------
+  *       interlinkScene (boolean) Set on a waylink target node, answers whether this target node has
+  *                      an interlink scene.  That is only its temporary use; later this property will
+  *             instead point to the *scene* element that encodes the target node’s interlink scene.
   *
   *
   * SPECIAL MARKUP
   * --------------
-  *   This program introduces its own markup to the document as outlined in this section.
-  *   Key to the outline:
+  *   This program introduces its own markup to the document as outlined in the subsections below.
+  *   Key to these outlines:
   *
-  *          * blah          · Element ‘blah’ in namespace NS_READ, the default in this notation †
-  *          * foo:bar        · Element ‘bar’ in namespace NS_*FOO*
-  *              * [attrib]    · Attribute of the element in namespace NS_READ †
-  *              * [:attrib]    · Attribute of the element in no namespace
-  *              * [foo:attrib] · Attribute of the element in namespace NS_*FOO*
-  *              * foo:baz      · Child element ‘baz’
+  *     *            · Any element in any namespace
+  *     bar           · Element ‘bar’ in namespace NS_READ †
+  *     foo:bar        · Element ‘bar’ in namespace NS_FOO
+  *         [attrib]    · Attribute of the element in namespace NS_READ †
+  *         [:attrib]    · Attribute in no namespace
+  *         [foo:attrib] · Attribute in namespace NS_FOO
+  *         foo:baz      · Child element ‘baz’
   *
-  *                                            † Unless otherwise marked, the namespace
-  *                                              of an element or attribute is NS_READ
-  *   Element, any
-  *   - - - -
-  *      * [isOnWayBranch] · Whether this element is (with all of its descendants) on way  [BA]
+  *                                                † Unless otherwise marked herein, the namespace
+  *                                                  of an element or attribute defaults to NS_READ
+  *   *
+  *   -----
+  *     [isOnWayBranch] · Whether this element, with all its descendants, is on way  [BA]
+  *
   *
   *   html:html
-  *   - - - - -
-  *      * [lighting]     · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
-  *      * [animatedShow] · Style rules that must animate or re-animate on each load or reload
-  *                         of the document, and on each revisit to it, must depend on this attribute.
-  *      * [travel]       · Extent of travel in session history to reach the present entry: -N, 0, or N
-  *                         (backward by N entries, reload, or forward by N entries).  In other words,
-  *                         the relative position of this entry vs. the last (of ours) that was shown.
+  *   ---------
+  *     [lighting]     · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *     [animatedShow] · Style rules that must animate or re-animate on each load or reload
+  *                      of the document, and on each revisit to it, must depend on this attribute.
+  *     [travel] · Extent of travel in session history to reach the present entry: -N, 0, or N
+  *                (backward by N entries, reload, or forward by N entries).  In other words,
+  *                the relative position of this entry vs. the last (of ours) that was shown.
+  *
   *
   *   html:body
-  *   - - - - -
-  *      * scene      · Document scene
-  *          * [:id]   · ‘wayic.read.document_scene’
-  *      * scene        · Interlink scene(s), if any
-  *          * [:class] · ‘interlink’
-  *        scene
-  *          ⋮
+  *   ---------
+  *     scene      · Document scene
+  *         [:id]   · ‘wayic.read.document_scene’
+  *     scene        · Interlink scene(s), if any.  There may be any number of these.
+  *         [:class] · ‘interlink’
+  *     offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
   *
-  *      * offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
+  *
+  *   * (as a) wayscript element
+  *   --------------------------
+  *     [hasLeader]      · Has leading, non-whitespace text?  [BA]
+  *     [hasShortName]    · Has a visible name no longer than three characters?
+  *     [isComposer]        · Is a composer element?  [BA]
+  *     [isOrphan]           · Is waylink targetable, yet targeted by no source node?
+  *     [isWaybit]            · Is a waybit?
+  *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
+  *                             is either ‘targeted’ or ‘untargeted’.  [readable.css TPC]
+  *     [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
+  *
+  *     eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
+  *                   except in the wayscript source.
+  *         eQName            · Qualified name [XN] of the element.
+  *             [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
+  *             ePrefix           · Namespace prefix, if any.
+  *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
+  *             eName             · Local part of the name.
+  *         html:div             · Marginalis (if element is a waylink target node)  [NNR, ODO]
+  *             svg:svg        · Target liner
+  *                svg:path   · Line
+  *                svg:circle · Edge mark
+  *             icon          ·
+  *
+  *     textAligner · (if element is a step)
+  *
+  *
+  *   * (as a) bitform waylink source node
+  *   ------------------------------------
+  *     [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
+  *     [image]            · Indicates a form that might yet change.  Meantime it is either based on
+  *                          a cached image of the target node (value ‘present’) or not (‘absent’).
+  *     [isBroken] · Has a broken target reference?  [BA]
+  *     [cog:link] ·
+  *
+  *     eSTag                  · (q.v. under § Wayscript element)
+  *     textAligner             · (if element is a step)
+  *     forelinker               · Hyperlink effector
+  *         html:a                · (§ q.v.)
+  *             [targetDirection] · (q.v. under § a § html:a)
+  *             preview           · Preview of the target text
+  *             html:br           ·
+  *             verticalTruncator · Indicating the source node as such (half a link)
+  *                 html:span     · Containing the visible indicator, exclusive of padding
+  *
+  *
+  *   a (=) hyperform waylink source node
+  *   -----------------------------------
+  *     html:a               · (§ q.v.)
+  *         [cog:link]        ·
+  *         [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
+  *                             is an intradocument waylink and its target node exists.
+  *     html:sup · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *
   *
   *   html:a
-  *   - - - -
-  *      * [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
-  *                            history?  Set after travelling back in history onto this source node,
-  *                            it reorients the user by highlighting his original point of departure.
-  *                            Appears at most on one element  [BA, FIB, SBU]
-  *
-  *   a  (read:a - waylink source node, hyperform)
-  *   -
-  *      * html:a               · (§ q.v.)
-  *          * [cog:link]        ·
-  *          * [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
-  *                                is an intradocument waylink and its target node exists.
-  *      * html:sup   · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’.
-  *
-  *   Wayscript element, any
-  *   - - - - - - - - -
-  *      * [hasLeader]      · Has leading, non-whitespace text?  [BA]
-  *      * [hasShortName]    · Has a visible name no longer than three characters?
-  *      * [isComposer]        · Is a composer element?  [BA]
-  *      * [isOrphan]           · Is waylink targetable, yet targeted by no source node?
-  *      * [isWaybit]            · Is a waybit?
-  *      * [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
-  *                                is either ‘targeted’ or ‘untargeted’.  [readable.css TPC]
-  *      * [isWayscript]        · Is under a ‘data:,wayscript.’ namespace?
-  *
-  *      * eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
-  *                      except in the wayscript source.
-  *          * eQName            · Qualified name [XN] of the element.
-  *              * [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
-  *              * ePrefix           · Namespace prefix, if any.
-  *                  * [isAnonymous] · Has a prefix that is declared to be anonymous?
-  *              * eName             · Local part of the name.
-  *          * html:div             · Marginalis (if element is a waylink target node).  [NNR, ODO]
-  *              * svg:svg        · Target liner
-  *                 * svg:path   · Line
-  *                 * svg:circle · Edge mark
-  *              * icon          ·
-  *
-  *      * textAligner · (if element is a step)
-  *
-  *   Waylink source node, bitform
-  *   - - - - - - - - - -
-  *      * [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
-  *      * [image]            · Indicates a form that might yet change.  Meantime it is either based on
-  *                             a cached image of the target node (value ‘present’) or not (‘absent’).
-  *      * [isBroken]     · Has a broken target reference?  [BA]
-  *      * [cog:link]    ·
-  *
-  *      * eSTag                  · (q.v. under § Wayscript element)
-  *      * textAligner             · (if element is a step)
-  *      * forelinker               · Hyperlink effector
-  *          * html:a                · (§ q.v.)
-  *              * [targetDirection] · (q.v. under § a § html:a)
-  *              * preview           · Preview of the target text
-  *              * html:br           ·
-  *              * verticalTruncator · Indicating the source node as such (half a link)
-  *                  * html:span     · Containing the visible indicator, exclusive of padding
+  *   ------
+  *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
+  *                         history?  Set after travelling back in history onto this source node,
+  *                         it reorients the user by highlighting his original point of departure.
+  *                         Appears at most on one element.  [BA, FIB, SBU]
   *
   *
   * NOTES  (continued at bottom)
@@ -1187,11 +1190,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose,
       * Breadcrumbs gives to each entry (of ours) in the session history the following state properties:
-      * <ul><li>
+      *
       *     breadcrumbPath (string in XPath form) Identifier of the last HTML *a* element
-      *                    that was activated within this entry, or null if none was activated </li><li>
+      *                    that was activated within this entry, or null if none was activated
       *     position (number) Ordinal of the entry itself within the session history,
-      *              a number from zero (inclusive) to the history length (exclusive) </li></ul>
+      *              a number from zero (inclusive) to the history length (exclusive)
       */
     const Breadcrumbs = ( function()
     {
@@ -1483,9 +1486,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           * the present document, then immediately the reader is given the present document as is,
           * followed by a call to reader.close.
           *
-          * <p>Otherwise this method starts a retrieval process.  It may return early and leave
+          * Otherwise this method starts a retrieval process.  It may return early and leave
           * the process to finish later.  If the process succeeds, then it calls reader.read.
-          * Regardless it always finishes by calling reader.close.</p>
+          * Regardless it always finishes by calling reader.close.
           *
           *     @param docLoc (string) The document location in normal URL form.
           *     @param reader (DocumentReader)
@@ -2128,8 +2131,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
     /** A reader of element leaders.  An element leader is the whitespace collapsed, text content
       * of the element prior to any contained element of wayscript or non-inline layout.
       *
-      * <p>To learn merely whether an element has a leader of non-zero length, give a maxLength
-      * of zero to the *read* function then inspect *hasLeader* for the answer.</p>
+      * To learn merely whether an element has a leader of non-zero length, give a maxLength
+      * of zero to the *read* function then inspect *hasLeader* for the answer.
       */
     const LeaderReader = ( function()
     {
@@ -2358,7 +2361,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
     /** Dealing with marginalia, singular 'marginalis'.  The marginalis is a logical component of
       * the start tag (*eSTag*) in waylink target nodes.  Nonetheless it lies to the left of the tag,
-      * where it spans the distance from the page edge to the tag.<pre>
+      * where it spans the distance from the page edge to the tag.
       *
       *        ┌—————————— marginalis —————————————┐
       *                                       icon         tag name
@@ -2375,8 +2378,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       *   mark       target
       *               line
       *
-      * </pre><p>On the pointer (↖) crossing any DOM-formal part of the start tag,
-      * which includes the target liner, the target icon reveals itself in full:</p><pre>
+      * On the pointer (↖) crossing any DOM-formal part of the start tag,
+      * which includes the target liner, the target icon reveals itself in full:
       *
       *                                         1waybit
       *
@@ -2386,7 +2389,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       *                                             3waybit content
       *         ∙ ·  ·   ·    ·             ·   4target
       *                                             4target content
-      * </pre>
       */
     const Marginalia = ( function()
     {
@@ -2943,7 +2945,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
     /** Dealing with target liners.  A target liner is a marginalis component that draws vector graphics
-      * for a waylink target node, and controls the scene switching for it.<pre>
+      * for a waylink target node, and controls the scene switching for it.
       *
       *              target line
       *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2951,9 +2953,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       *      edge
       *      mark
       *
-      * </pre>
-      *
-      *     @see Marginalia
+      * @see Marginalia
       */
     const TargetLining = ( function()
     {
