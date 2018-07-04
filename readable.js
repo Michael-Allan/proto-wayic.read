@@ -65,7 +65,7 @@
   *     [isOrphan]           · Is waylink targetable, yet targeted by no source node?
   *     [isWaybit]            · Is a waybit?
   *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
-  *                             is either ‘targeted’ or ‘untargeted’.  [readable.css TPC]
+  *                             is either ‘targeted’ or ‘untargeted’.  [TPC in readable.css]
   *     [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
   *
   *     eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
@@ -1545,7 +1545,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 {
                     // If this listener is registered instead by req.addEventListener,
                     // then the file scheme workaround fails for Firefox (52),
-                    // even for in-branch requests. [readable.css WFS]
+                    // even for intra-directory requests. [SPF in readable.css]
                     const doc = event.target.response;
                     docReg.document = doc;
 
@@ -2475,7 +2475,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
               // Allowing it to expand up to MAX_GAP, if that much is available
             const lineWidth = iconX - gap;
-            s.setProperty( 'width', lineWidth + 'px' ); // [readable.css HSP]
+            s.setProperty( 'width', lineWidth + 'px' ); // [HSP in readable.css]
             s.setProperty( 'height',   height + 'px' );
          // liner.setAttribute( 'width', lineWidth );
          // liner.setAttribute( 'height',   height );
@@ -2794,7 +2794,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
                   // Preclude duplication, to be on the safe side
                 const eQName = hearMouse_eQName( event );
-                eQName.setAttribute( 'id', NS_READ + '.TargetControl.iconHover' ); // [readable.css GSC]
+                eQName.setAttribute( 'id', NS_READ + '.TargetControl.iconHover' );
+                  // [GSC in readable.css]
                 hearMouse_eQNameIdentified = eQName;
             }
 
@@ -3511,7 +3512,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *  [FSS]  Session storage for a document requested from a ‘file’ scheme URL.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
   *         by D2 may, after travelling back, be unreadable by D1, as though it had not been stored.
-  *         Affects Firefox 52.6.  Does not affect Chrome running with --allow-file-access-from-files.
+  *         Affects Firefox 52.6.  Does not affect Chrome under option ‘--allow-file-access-from-files’.
   *
   *  [HTP]  Hyperlink target positioning.  Normally the browser itself does this, vertically scrolling
   *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.

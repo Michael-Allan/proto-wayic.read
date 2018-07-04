@@ -98,16 +98,15 @@
  *     Limitations
  *     -----------
  *       When the user requests a way declaration document from a ‘file’ scheme URL,
- *       interdocument waylinks may fail to resolve, instead being marked ‘⋯?⋯’.
- *       This affects the quality of presentation, making the way definition harder to view.
- *       (Instructions on dealing with this are given further below.)  What causes this:
- *       when a document is requested from a ‘file’ scheme URL, the browser may grant to JavaScript
- *       only a limited ability to resolve interdocument links, to trace the way across multiple files,
- *       or generally to read other local files. [FSI]
+ *       intracast, interdocument waylinks may fail to resolve their targets. [SFL]
+ *       In that case, any bitform waylinks that fail to resolve will be marked ‘⋯?⋯’,
+ *       and generally the transformation will be incomplete and the way definition harder to view.
+ *       Security constraints enforced by the browser are the underlying cause of this.
  *
- *       There is a workaround.  Among the browsers supported, this works only for Firefox.
- *       The workaround is to first request the root way declaration document, or any other document
- *       from the base directory of the waycast.  Then follow the links from there. [WFS]
+ *       A workaround for Chrome is its ‘--allow-file-access-from-files’ option. [AFA]
+ *
+ *       A workaround for Firefox is to first request the root way declaration document
+ *       from the base directory of the waycast.  Then follow the links from there. [SPF]
  *
  *
  * NOTES  (continued at bottom)
@@ -995,6 +994,19 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
 
 /* NOTES
  * -----
+ *  [AFA]  Chrome option ‘--allow-file-access-from-files’.
+ *         https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
+ *         https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
+ *
+ *         Caveats: https://stackoverflow.com/questions/29371600
+ *
+ *         Without this option, when such file access is disallowed,
+ *         Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
+ *         for protocol schemes: http, data, chrome, chrome-extension, https.’
+ *
+ *         Discussion of the underlying problem:
+ *         https://bugs.chromium.org/p/chromium/issues/detail?id=47416
+ *
  *  [C]  · Class selectors.  These fail for NS_READ elements under Chrome (59).  Instead select
  *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
  *
@@ -1002,14 +1014,6 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *
  *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
  *         wrongly resolves the relative URL against the document rather than the style sheet.
- *
- *  [FSI]  File scheme and intercast waylinks.  Regardless of the  document request scheme,
- *         the browser is unlikely to block the resolution of intercast links (once that kind
- *         is supported by this transformer, viz. a full URI with a proper web scheme such as ‘http’).
- *         The target would be served with a response header of ‘Access-Control-Allow-Origin: *’
- *         in that case, which would then be the standard for all waycast service
- *         (cf. http://reluk.ca/project/wayic/lex/#web_serving).
- *         Of course, that will not help for any intracast links that remain.
  *
  *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
  *         “general sibling combinator” is really rather particular in its application, in that it
@@ -1031,17 +1035,20 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         its negative test to a positive one.  This prevents premature firing of the rule
  *         immediately after back travel while the *travel* attribute is yet unset.
  *
+ *  [SFL]  Scope of file-scheme limitations.  The scope is unlikely to extend to intercast waylinks.
+ *         Regardless of whether the source document is requested from a ‘file’ scheme URL,
+ *         still its intercast targets are likely to resolve given that they are served
+ *         with a response header of ‘Access-Control-Allow-Origin: *’.
+ *         http://reluk.ca/project/wayic/intercast § design constraints § waycast publication
+ *
+ *  [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
+ *         if the parent directory of the originating file is an ancestor directory of the target file.”
+ *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+ *
  *  [TPC]  Target pseudo-class failure.  Here adding selector [read|isWaylinkTargetable='targeted']
  *         only because [read|isWaylinkTargetable]:target was seen to fail on Chrome 65.0.
  *         It failed during relatively fast (∼1 s interval) back-and-forth travel.
- *         Otherwise attribute *isWaylinkTargetable* would have only a boolean value [readable.js BA].
- *
- *  [WFS]  Workaround for file scheme requests.  It fails for Chrome.  Chrome (59) rejects all local
- *         read requests, logging the reason in the console as “Cross origin requests are
- *         only supported for protocol schemes: http, data, chrome, chrome-extension, https.”
- *         Firefox (52) is more lenient.  It at least forwards the in-branch requests, viz. where
- *         “the parent directory of the originating file is an ancestor directory of the target file.”
- *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+ *         Otherwise attribute *isWaylinkTargetable* would have only a boolean value [BA in readable.js].
  */
 
 
