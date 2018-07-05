@@ -743,6 +743,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
+    /** Delay in milliseconds before the first delayed procedure of Marginalia.
+      */
+    const MS_DELAY_MARGINALIA = 49;
+
+    /** Delay in milliseconds before the first delayed procedure of InterdocWaylinkTransformer.
+      */
+    const MS_DELAY_IWT = MS_DELAY_MARGINALIA + 142;
+
+
+
     const NO_BREAK_SPACE = ' '; // Unicode a0
 
 
@@ -1894,7 +1904,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         expo.start = function()
         {
             start1_presentDocument( linkRegistry );
-            setTimeout( start2_targetDocuments, 191/*ms, browser rest*/, linkRegistry );
+            setTimeout( start2_targetDocuments, MS_DELAY_IWT/*browser rest*/, linkRegistry );
             linkRegistry = null; /* Freeing it for eventual garbage collection,
               and blocking henceforth any further attempt to register */
         };
@@ -2403,8 +2413,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         expo.layWhen = function( marginalis, eSTag )
         {
-         // requestAnimationFrame( layIf ); // Delaying the first poll of tagVpBounds, no hurry
-            setTimeout( layIf, 49/*ms, browser rest*/ );
+            setTimeout( layIf, layWhen_msRest ); // Giving the browser a rest
+            layWhen_msRest += 13; // Staggering the overall lay of marginalia at intervals
             let pollCount = 0;
             function layIf( _msTime/*ignored*/ )
             {
@@ -2428,6 +2438,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 else console.error( "Cannot lay marginalis, start tag is not being laid" );
             }
         };
+
+
+            let layWhen_msRest = MS_DELAY_MARGINALIA; // Delay before 1st lay attempt of next marginalis
 
 
 
