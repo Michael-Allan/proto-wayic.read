@@ -756,10 +756,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
     {
         if( loadTimeHistoryState === null ) return true;
 
-        const sP = programStatelet( loadTimeHistoryState );
+        const sP = loadTimeHistoryState[NS_READ];
         if( sP === undefined ) return true;
 
-        return Breadcrumbs.statelet(sP) === undefined;
+        return sP.Breadcrumbs === undefined;
     })();
 
 
@@ -807,27 +807,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
     const NULL_PARAMETER = 'Null parameter';
-
-
-
-    /** Returns the state object reserved for this program within the hierarchy of object properties,
-      * or the *undefined* value if none is yet initialized there.
-      *
-      *     @param parent (Object) The superior object in the hierarchy of object properties.
-      *     @param return (Object)
-      *
-      *     @see § FORMATION of SESSION HISTORY STATE
-      */
-    function programStatelet( parent ) { return parent[NS_READ]; }
-
-
-        /** Constructs an empty state object for this program and sets it in the hierarchy
-          * of object properties.
-          *
-          *     @param parent (Object) The superior object in the hierarchy of object properties.
-          *     @param return (Object) The newly constructed state object.
-          */
-        function initProgramStatelet( parent ) { return parent[NS_READ] = {}; }
 
 
 
@@ -1244,39 +1223,20 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose,
-      * the following properties of Breadcrumbs.statelet are maintained:
+      * in subprogram statelet 'Breadcrumbs', are maintained the following properties:
       *
       *     breadcrumbPath (string in XPath form) Identifier of the last HTML *a* element
       *                    that was activated within the present entry of the session history,
       *                    or null if none was activated.
       *     position (number) Ordinal of the present entry within the session history,
       *              a number from zero (inclusive) to the history length (exclusive).
+      *
+      * @see § FORMATION of SESSION HISTORY STATE
       */
     const Breadcrumbs = ( function()
     {
 
         const expo = {}; // The public interface of Breadcrumbs
-
-
-
-        /** Returns the state object reserved for Breadcrumbs within the hierarchy of object properties,
-          * or the *undefined* value if none is yet initialized there.
-          *
-          *     @param parent (Object) The superior object in the hierarchy of object properties.
-          *     @param return (Object)
-          *
-          *     @see § FORMATION of SESSION HISTORY STATE
-          */
-        expo.statelet = function( parent ) { return parent.Breadcrumbs; };
-
-
-            /** Constructs an empty state object for Breadcrumbs and sets it in the hierarchy
-              * of object properties.
-              *
-              *     @param parent (Object) The superior object in the hierarchy of object properties.
-              *     @param return (Object) The newly constructed state object.
-              */
-            function initStatelet( parent ) { return parent.Breadcrumbs = {}; }
 
 
 
@@ -1356,7 +1316,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
               // ------------
                 const state = history.state;
                 console.assert( state !== null, A ); // Already initialized by Breadcrumbs.reorient
-                expo.statelet(programStatelet(state)).breadcrumbPath = definitePath( a );
+                state[NS_READ].Breadcrumbs.breadcrumbPath = definitePath( a );
                 history.replaceState( state, /*no title*/'' );
                 break;
             }
@@ -1386,16 +1346,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         {
             // Copied in part to https://stackoverflow.com/a/49329267/2402790
 
-            const statelet = ( ()=>
+            const statelet = ( ()=> // state[NS_READ].Breadcrumbs
             {
-                if( state === null ) return initStatelet( initProgramStatelet( state = {} ));
+                if( state === null ) return (( state = {} )[NS_READ] = {} ).Breadcrumbs = {};
 
                 let s;
-                s = programStatelet( state );
-                if( s === undefined ) return initStatelet( initProgramStatelet( state ))
+                s = state[NS_READ];
+                if( s === undefined ) return ( state[NS_READ] = {} ).Breadcrumbs = {};
 
-                s = expo.statelet( s );
-                if( s === undefined ) return initStatelet( s );
+                s = s.Breadcrumbs;
+                if( s === undefined ) return s.Breadcrumbs = {};
 
                 return s;
             })();
