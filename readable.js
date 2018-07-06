@@ -8,8 +8,8 @@
   *   See README.html#browser_support
   *
   *
-  * HTML DOM EXTENSION
-  * ------------------
+  * EXTENSION of HTML DOM
+  * ---------------------
   *   This program adds one property to the Element interface, for internal purposes only.
   *
   *   Element
@@ -19,19 +19,36 @@
   *             instead point to the *scene* element that encodes the target node’s interlink scene.
   *
   *
-  * SPECIAL MARKUP
-  * --------------
+  * FORMATION of SESSION HISTORY STATE
+  * ----------------------------------
+  *   This program alters the value of History.state.  There it maintains a hierarchy
+  *   of Object properties which it calls ‘statelets’:
+  *
+  *       Formal name            Informal name
+  *       --------------------   --------------------
+  *       History
+  *         state                Statelet root
+  *           data:,wayic.read   Program statelet
+  *             *                Subprogram statelets
+  *             *
+  *             ⋮                         * Formal names and sub-hierarchies omitted
+  *
+  *
+  * INTRODUCTION of SPECIAL MARKUP
+  * ------------------------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
   *   Key to these outlines:
   *
-  *     *            · Any element in any namespace
-  *     bar           · Element ‘bar’ in namespace NS_READ †
-  *     foo:bar        · Element ‘bar’ in namespace NS_FOO
-  *         [attrib]    · Attribute of the element in namespace NS_READ †
-  *         [:attrib]    · Attribute in no namespace
-  *         [foo:attrib] · Attribute in namespace NS_FOO
-  *         foo:baz      · Child element ‘baz’
-  *                                                                  † The namespace defaults to NS_READ
+  *       *          · Any element in any namespace
+  *       foo         · Element ‘foo’ in namespace ‘data:,wayic.read’ *
+  *       ns:foo       · Element ‘foo’ in a given namespace †
+  *           [attrib]   · Attribute of the element in namespace ‘data:,wayic.read’ *
+  *           [:attrib]   · Attribute in no namespace
+  *           [ns:attrib] · Attribute in a given namespace †
+  *           ns:bar      · Child element ‘bar’ †
+  *
+  *                                       * The namespace defaults to NS_READ
+  *                                       † Where *ns* is declared by an @namespace rule of readable.css
   *
   *   *
   *   -----
@@ -54,6 +71,8 @@
   *         [:id]   · ‘wayic.read.document_scene’
   *     scene        · Interlink scene(s), if any.  There may be any number of these.
   *         [:class] · ‘interlink’
+  *       ⋮
+  *
   *     offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
   *
   *
@@ -66,7 +85,7 @@
   *     [isWaybit]            · Is a waybit?
   *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
   *                             is either ‘targeted’ or ‘untargeted’.  [TPC in readable.css]
-  *     [isWayscript] · Is under a ‘data:,wayscript.’ namespace?
+  *     [isWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
   *
   *     eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
   *                   except in the wayscript source.
@@ -237,9 +256,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** The session history entry state for the present load of the document, as captured at load time;
-      * prior to any modification of the entry itself, and prior to any extension of the session history
-      * owing to the addition of a new entry by intradocument travel.
+    /** A copy of the statelet root for the present load of the document as captured at load time,
+      * prior to any initialization or modification of it.  Its value may be null.
       */
     const loadTimeHistoryState = history.state;
 
@@ -365,7 +383,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             // Apparently this cannot be adapted for use with other documents, to normalize their own,
             // internally encoded references.  At least it fails when an equivalent function is
             // constructed (with parser element, etc.) against another document obtained through the
-            // Documents reading facility.  Then the *href* always yields *undefined*.
+            // Documents reading facility.  Then the *href* always yields the *undefined* value.
             //
             // FIX by moving to the more robust method of wayics.lex.
             // http://reluk.ca/project/wayic/lex/_/reader.js
@@ -730,12 +748,19 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Answers whether this load of the document has extended the session history, breaking new ground
-      * there by adding at least one new entry.  (Multiple entries may be added by a single load
-      * owing to intradocument travel.)  A reload never breaks new ground.
+    /** Answers whether the present load of the document has extended the session history,
+      * breaking new ground there by adding at least one new entry.  (Multiple entries may be added
+      * by a single load owing to intradocument travel.)  A reload never breaks new ground.
       */
-    const LOAD_BREAKS_GROUND = loadTimeHistoryState === null
-      || loadTimeHistoryState.breadcrumbPath === undefined;
+    const LOAD_BREAKS_GROUND = ( ()=>
+    {
+        if( loadTimeHistoryState === null ) return true;
+
+        const sP = programStatelet( loadTimeHistoryState );
+        if( sP === undefined ) return true;
+
+        return Breadcrumbs.statelet(sP) === undefined;
+    })();
 
 
 
@@ -782,6 +807,27 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
     const NULL_PARAMETER = 'Null parameter';
+
+
+
+    /** Returns the state object reserved for this program within the hierarchy of object properties,
+      * or the *undefined* value if none is yet initialized there.
+      *
+      *     @param parent (Object) The superior object in the hierarchy of object properties.
+      *     @param return (Object)
+      *
+      *     @see § FORMATION of SESSION HISTORY STATE
+      */
+    function programStatelet( parent ) { return parent[NS_READ]; }
+
+
+        /** Constructs an empty state object for this program and sets it in the hierarchy
+          * of object properties.
+          *
+          *     @param parent (Object) The superior object in the hierarchy of object properties.
+          *     @param return (Object) The newly constructed state object.
+          */
+        function initProgramStatelet( parent ) { return parent[NS_READ] = {}; }
 
 
 
@@ -1198,17 +1244,39 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose,
-      * Breadcrumbs gives to each entry (of ours) in the session history the following state properties:
+      * the following properties of Breadcrumbs.statelet are maintained:
       *
       *     breadcrumbPath (string in XPath form) Identifier of the last HTML *a* element
-      *                    that was activated within this entry, or null if none was activated
-      *     position (number) Ordinal of the entry itself within the session history,
-      *              a number from zero (inclusive) to the history length (exclusive)
+      *                    that was activated within the present entry of the session history,
+      *                    or null if none was activated.
+      *     position (number) Ordinal of the present entry within the session history,
+      *              a number from zero (inclusive) to the history length (exclusive).
       */
     const Breadcrumbs = ( function()
     {
 
         const expo = {}; // The public interface of Breadcrumbs
+
+
+
+        /** Returns the state object reserved for Breadcrumbs within the hierarchy of object properties,
+          * or the *undefined* value if none is yet initialized there.
+          *
+          *     @param parent (Object) The superior object in the hierarchy of object properties.
+          *     @param return (Object)
+          *
+          *     @see § FORMATION of SESSION HISTORY STATE
+          */
+        expo.statelet = function( parent ) { return parent.Breadcrumbs; };
+
+
+            /** Constructs an empty state object for Breadcrumbs and sets it in the hierarchy
+              * of object properties.
+              *
+              *     @param parent (Object) The superior object in the hierarchy of object properties.
+              *     @param return (Object) The newly constructed state object.
+              */
+            function initStatelet( parent ) { return parent.Breadcrumbs = {}; }
 
 
 
@@ -1288,7 +1356,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
               // ------------
                 const state = history.state;
                 console.assert( state !== null, A ); // Already initialized by Breadcrumbs.reorient
-                state.breadcrumbPath = definitePath( a );
+                expo.statelet(programStatelet(state)).breadcrumbPath = definitePath( a );
                 history.replaceState( state, /*no title*/'' );
                 break;
             }
@@ -1318,9 +1386,20 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         {
             // Copied in part to https://stackoverflow.com/a/49329267/2402790
 
-            if( state === null ) state = {}; /* Forcing to the worst case wherein the state
-              is already set by a foreign agent, such as another program */
-            let position = state.position;
+            const statelet = ( ()=>
+            {
+                if( state === null ) return initStatelet( initProgramStatelet( state = {} ));
+
+                let s;
+                s = programStatelet( state );
+                if( s === undefined ) return initStatelet( initProgramStatelet( state ))
+
+                s = expo.statelet( s );
+                if( s === undefined ) return initStatelet( s );
+
+                return s;
+            })();
+            let position = statelet.position;
             let travel; /* (-N, 0, N) = (backward by N entries, reload, forward by N entries)
               Relative position of this entry versus the last entry (of ours) that was shown */
             if( position === undefined ) // Then this entry is new to the session history
@@ -1328,15 +1407,15 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 position = history.length - 1; // Last entry of session history
                 travel = 1;
 
-              // Initialize state properties
-              // ---------------------------
-                state.breadcrumbPath = null; // Initializing the state in proper form
-                state.position = position;
+              // Initialize statelet properties
+              // ------------------------------
+                statelet.breadcrumbPath = null; // Properly formed, as per Breadcrumbs contract
+                statelet.position = position;
                 history.replaceState( state, /*no title*/'' );
             }
             else // This entry was pre-existing
             {
-                position = state.position;
+                position = statelet.position;
                 const s = sessionStorage.getItem( KEY_positionLastShown ); // [FSS]
                 if( s !== null )
                 {
@@ -1356,7 +1435,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           // -----------------------
             if( travel < 0 )
             {
-                const p = state.breadcrumbPath;
+                const p = statelet.breadcrumbPath;
                 if( p !== null )
                 {
                     const pR = document.evaluate( p, document, /*namespace resolver*/null,
@@ -1388,11 +1467,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         });
         addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Intradocument travel
         {
-         // console.assert( (pop.state === null && history.state === null) // TEST
-         //     || pop.state.position === history.state.position, A );
-              // I thought a failure of this assumption might be behind a bug with Firefox [FHS].
-              // But in fact, it seems never to fail; which suggests the two event types
-              // need not determine the value of *state* differently, after all.
             reorient( pop.state );
         });
         return expo;
@@ -3580,9 +3654,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *         Image caching and pre-caching are able to prevent this and stabilize the view in all
   *         but a few edge cases.
   *
-  *  [UN] · Either undefined or null in value.
+  *  [UN] · Either *undefined* or null in value.
   *
-  *  [UZ] · Either undefined or zero in value.
+  *  [UZ] · Either *undefined* or zero in value.
   *
   *  [WDL]  ‘window.location’ or ‘document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
