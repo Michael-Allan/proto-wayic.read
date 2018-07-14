@@ -39,9 +39,9 @@
   *   This program introduces its own markup to the document as outlined in the subsections below.
   *   Key to these outlines:
   *
-  *       *          · Any element in any namespace
-  *       foo         · Element ‘foo’ in namespace ‘data:,wayic.read’ *
-  *       ns:foo       · Element ‘foo’ in a given namespace †
+  *       *          ∙ Any element in any namespace
+  *       foo         ∙ Element ‘foo’ in namespace ‘data:,wayic.read’ *
+  *       ns:foo       ∙ Element ‘foo’ in a given namespace †
   *           [attrib]   · Attribute of the element in namespace ‘data:,wayic.read’ *
   *           [:attrib]   · Attribute in no namespace
   *           [ns:attrib] · Attribute in a given namespace †
@@ -50,12 +50,7 @@
   *                                       * The namespace defaults to NS_READ
   *                                       † Where *ns* is declared by an @namespace rule of readable.css
   *
-  *   *
-  *   -----
-  *     [isOnWayBranch] · Whether this element, with all its descendants, is on way  [BA]
-  *
-  *
-  *   html:html
+  *   html:html ∙ Document element
   *   ---------
   *     [lighting]     · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
   *     [animatedShow] · Style rules that must animate or re-animate on each load or reload
@@ -67,43 +62,40 @@
   *
   *   html:body
   *   ---------
-  *     scene      · Document scene
+  *     scene      ∙ Document scene
   *         [:id]   · ‘wayic.read.document_scene’
-  *     scene        · Interlink scene(s), if any.  There may be any number of these.
-  *         [:class] · ‘interlink’
+  *     scene        ∙ Interlink scene(s), if any.  There may be any number of these.
+  *         [:class]  · ‘interlink’
   *       ⋮
   *
   *     offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
   *
   *
-  *   * (as a) wayscript element
+  *   *
+  *   -----
+  *     [isOnWayBranch] · Whether this element, with all its descendants, is on way  [BA]
+  *
+  *
+  *   * (as a) Wayscript element
   *   --------------------------
-  *     [hasLeader]      · Has leading, non-whitespace text?  [BA]
-  *     [hasShortName]    · Has a visible name no longer than three characters?
-  *     [isComposer]        · Is a composer element?  [BA]
-  *     [isOrphan]           · Is waylink targetable, yet targeted by no source node?
-  *     [isWaybit]            · Is a waybit?
-  *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
-  *                             is either ‘targeted’ or ‘untargeted’.  [TPC in readable.css]
+  *     [hasLeader]    · Has leading, non-whitespace text?  [BA]
+  *     [hasShortName] · Has a visible name no longer than three characters?
+  *     [isComposer]   · Is a composer element?  [BA]
+  *     [isWaybit]    · Is a waybit?
   *     [isWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
   *
-  *     eSTag       · Start tag of an element, reproducing content that would otherwise be invisible
+  *     eSTag       ∙ Start tag of an element, reproducing content that would otherwise be invisible
   *                   except in the wayscript source.
-  *         eQName            · Qualified name [XN] of the element.
+  *         eQName              ∙ Qualified name [XN] of the element.
   *             [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
-  *             ePrefix           · Namespace prefix, if any.
-  *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
-  *             eName             · Local part of the name.
-  *         html:div             · Marginalis (if element is a waylink target node)  [NNR, ODO]
-  *             svg:svg        · Target liner
-  *                svg:path   · Line
-  *                svg:circle · Edge mark
-  *             icon          ·
+  *             ePrefix           ∙ Namespace prefix, if any.
+  *                 [isAnonymous]  · Has a prefix that is declared to be anonymous?
+  *             eName             ∙ Local part of the name.
   *
-  *     textAligner · (if element is a step)
+  *     textAligner ∙ (only if element is a step)
   *
   *
-  *   * (as a) bitform waylink source node
+  *   * (as a) Bitform waylink source node
   *   ------------------------------------
   *     [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
   *     [image]            · Indicates a form that might yet change.  Meantime it is either based on
@@ -111,24 +103,24 @@
   *     [isBroken] · Has a broken target reference?  [BA]
   *     [cog:link] ·
   *
-  *     eSTag                  · (q.v. under § Wayscript element)
-  *     textAligner             · (if element is a step)
-  *     forelinker               · Hyperlink effector
-  *         html:a                · (§ q.v.)
-  *             [targetDirection] · (q.v. under § a § html:a)
-  *             preview           · Preview of the target text
-  *             html:br           ·
-  *             verticalTruncator · Indicating the source node as such (half a link)
-  *                 html:span     · Containing the visible indicator, exclusive of padding
+  *     eSTag                  ∙ (q.v. under § Wayscript element)
+  *     textAligner             ∙ (only if element is a step)
+  *     forelinker               ∙ Hyperlink effector
+  *         html:a                ∙ (§ q.v.)
+  *             [targetDirection]  · (q.v. under § a § html:a)
+  *             preview           ∙ Preview of the target text
+  *             html:br           ∙
+  *             verticalTruncator ∙ Indicating the source node as such (half a link)
+  *                 html:span     ∙ Containing the visible indicator, exclusive of padding
   *
   *
-  *   a (=) hyperform waylink source node
-  *   -----------------------------------
-  *     html:a               · (§ q.v.)
+  *   a (is a) Hyperform waylink source node
+  *   --------------------------------------
+  *     html:a               ∙ (§ q.v.)
   *         [cog:link]        ·
   *         [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
   *                             is an intradocument waylink and its target node exists.
-  *     html:sup · Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *     html:sup ∙ Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
   *
   *
   *   html:a
@@ -137,6 +129,28 @@
   *                         history?  Set after travelling back in history onto this source node,
   *                         it reorients the user by highlighting his original point of departure.
   *                         Appears at most on one element.  [BA, FIB, SBU]
+  *
+  *
+  *   * (as a) Waylink target node
+  *   ----------------------------
+  *     [:id]               ·
+  *     [isOrphan]           · Is waylink targetable, yet targeted by no waylink source node?
+  *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
+  *                             is either ‘on target’ or ‘off target’.  [FT in readable.css]
+  *     [showsBreadcrumb]   · (q.v. under § html:a)
+  *
+  *     eSTag               ∙ (q.v. under § Wayscript element)
+  *         html:div         ∙ Inway  [SH, ODO]
+  *             [:class]      · ‘inway’
+  *             svg:svg        ∙ Approach
+  *                 [:class]    · ‘approach’
+  *                 svg:circle   ∙ Edging
+  *                     [:class]  · ‘edging’
+  *                 svg:path     ∙ Path
+  *             hall             ∙
+  *                 icon          ∙ Target icon
+  *                     html:span ∙ Holder of main content
+  *                     bullseye  ∙ Dimensionless point centered on icon
   *
   *
   * NOTES  (continued at bottom)
@@ -256,16 +270,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** A copy of the statelet root for the present load of the document as captured at load time,
-      * prior to any initialization or modification of it.  Its value may be null.
-      */
-    const loadTimeHistoryState = history.state;
-
-
-
     /** The XML namespace of markup specific to this project.
       */
     const NS_READ = 'data:,wayic.read';
+
+
+
+    /** A copy of the statelet root for the present load of the document as captured at load time,
+      * just prior to any initialization or modification of it.  Its value may be null.
+      */
+    const loadTimeHistoryState = history./*copy of*/state;
 
 
 
@@ -573,6 +587,44 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
+    /** Constructs an XPath locator of the given element that is unambiguous within the context
+      * of the present document.
+      *
+      *     @param element (Element)
+      *     @return (string)
+      */
+    function definitePath( element )
+    {
+        // Modified from Mozilla contributors' *XPath snippets*, licence CC-BY-SA 2.5.
+        // https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets#getXPathForElement
+        const html = document.documentElement;
+        let path = '';
+        path: for( let e = element;; e = e.parentNode )
+        {
+            const eLocalName = e.localName;
+            let seg = "/*[local-name()='" + eLocalName + "']"; // Segment of path
+            if( e === html )
+            {
+                path = seg + path;
+                break path;
+            }
+
+            let ordinal = 1; // Ordinals count from 1 in XPath
+            for( let sibling = e;; )
+            {
+                sibling = sibling.previousElementSibling;
+                if( sibling === null ) break;
+
+                if( sibling.localName === eLocalName ) ++ordinal;
+            }
+            seg +=  '[' + ordinal + ']';
+            path = seg + path;
+        }
+        return path;
+    }
+
+
+
     /** The location of present document (string) in normal URL form.
       *
       *     @see URIs#normalized
@@ -644,7 +696,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             let lighting;
             let defaultTextColour = getComputedStyle(body).getPropertyValue( 'color' );
               // Using 'color' here because somehow 'background-color' fails;
-              // it reads as transparent (Firefox) or black (Chrome), when really it's white.
+              // it reads as transparent (Firefox) or black (Chrome), when really it is white.
             const cc = defaultTextColour.match( /^\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/ );
             if( cc !== null )
             {
@@ -653,7 +705,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                   // formula: https://en.wikipedia.org/wiki/YIQ
                 lighting = luma < 127500? 'paper':'neon';
             }
-            else lighting = 'paper'; // Defaulting to what's most popular
+            else lighting = 'paper'; // Defaulting to what is most popular
 
           // Set lighting switch
           // -------------------
@@ -696,7 +748,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
     /** The symbol to indicate a hyperlink.  It is styled as superscript.
       */
-    const HYPERLINK_SYMBOL = '*'; // '*' is Unicode 2a (asterisk)
+    const HYPERLINK_SYMBOL = '*'; // Unicode 2a (asterisk)
 
     const HYPERLINK_SYMBOLS = [HYPERLINK_SYMBOL, '†', '‡']; /* '†' is Unicode 2020 (dagger);
       '‡' 2021 (double dagger).  Avoiding '⁑' 2051 (two asterisks) as fonts render it poorly. */
@@ -768,17 +820,33 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Delay in milliseconds before the first delayed procedure of Marginalia.
+    /** Delay in milliseconds before the first delayed procedure of Inways.
       */
-    const MS_DELAY_MARGINALIA = 49;
+    const MS_DELAY_INWAYS = 49;
 
     /** Delay in milliseconds before the first delayed procedure of InterdocWaylinkTransformer.
       */
-    const MS_DELAY_IWT = MS_DELAY_MARGINALIA + 142;
+    const MS_DELAY_IWT = MS_DELAY_INWAYS + 142;
 
 
 
     const NO_BREAK_SPACE = ' '; // Unicode a0
+
+
+
+    /** Notes the fact of an unbroken waylink that targets a node of the present document.
+      *
+      *     @param target (Element) A waylink target node in the present document.
+      */
+    function noteWaylink( target )
+    {
+        target.interlinkScene = true;
+        target.removeAttributeNS( NS_READ, 'isOrphan' );
+        const span = asElementNamed( 'span', target.firstChild/*eSTag*/
+          .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
+        const iconicText = span.firstChild;
+        iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
+    }
 
 
 
@@ -1032,7 +1100,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         if( image === null )
                         {
                             partTransform.image = 'absent';
-                            targetPreviewString = '⌚'; // '⌚' is Unicode 231a (watch) = pending symbol
+                            targetPreviewString = '⌚'; // Unicode 231a (watch) = pending symbol
                         }
                         else
                         {
@@ -1077,17 +1145,21 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             if( lidV !== null ) // Then t is waylink targetable
             {
                 t.setAttributeNS( NS_READ, 'isWaylinkTargetable',
-                  lidV === Hyperlinkage.idTargeted()? 'targeted':'untargeted' );
+                  lidV === Hyperlinkage.idOnTarget()? 'on target':'off target' );
                 t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
 
-              // Marginalis
-              // ----------
-                const marginalis = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
-                marginalis.appendChild( TargetLining.newLiner() );
-                marginalis.appendChild( document.createElementNS( NS_READ, 'icon' ))
-                  .appendChild( document.createTextNode( NO_BREAK_SPACE )); // To be certain
-                    // See readable.css for the *visible* content
-                Marginalia.layWhen( marginalis, eSTag );
+              // Inway
+              // -----
+                const inway = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
+                inway.setAttribute( 'class', 'inway' );
+                inway.appendChild( Approaches.newApproach() );
+                const icon = inway.appendChild( document.createElementNS( NS_READ, 'hall' ))
+                                  .appendChild( document.createElementNS( NS_READ, 'icon' ));
+                icon.appendChild( document.createElementNS( NS_HTML, 'span' ))
+                    .appendChild( document.createTextNode( '│' ));
+                      // Unicode 2502 (box drawings light vertical)
+                icon.appendChild( document.createElementNS( NS_READ, 'bullseye' ));
+                Inways.layWhen( inway, eSTag );
 
               // -----
                 TargetControl.addControls( eSTag );
@@ -1222,10 +1294,138 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose,
-      * in subprogram statelet 'Breadcrumbs', are maintained the following properties:
+    /** Dealing with *approaches*.  The *approach* is an inway component that draws vector graphics
+      * for a waylink target node and controls the scene switching for it.
       *
-      *     breadcrumbPath (string in XPath form) Identifier of the last HTML *a* element
+      *             approach path
+      *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      *      ╲
+      *      edging
+      *
+      * @see Inways
+      */
+    const Approaches = ( function()
+    {
+
+        const expo = {}; // The public interface of Approaches
+
+        // Dimensions and coordinates are here given in pixels, except where marked otherwise.
+
+
+
+        /** The smallest width in which an *approach* can correctly draw itself.
+          */
+        expo.minimumWidth = function() { return MIN_WIDTH; };
+
+
+
+        /** Constructs an inway *approach*.
+          */
+        expo.newApproach = function()
+        {
+            const approach = document.createElementNS( NS_SVG, 'svg' );
+            approach.setAttribute( 'class', 'approach' );
+         // approach.addEventListener( 'resize', (_UIEvent)=>{expo.redraw(approach);} );
+              // Ensuring it draws when first laid, then redraws as needed.
+              //
+              // Except it is not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
+              // Maybe embedded svg elements such as this are not considered "outermost svg elements"?
+              // https://www.w3.org/TR/SVG11/interact.html#SVGEvents
+              //
+              // As a workaround, Inways calls *redraw* directly.
+            const edging = approach.appendChild( document.createElementNS( NS_SVG, 'circle' ));
+            edging.setAttribute( 'class', 'edging' );
+            approach.appendChild( document.createElementNS( NS_SVG, 'path' )); // Approach path
+            return approach;
+        };
+
+
+
+        /** Draws or redraws the given *approach*.
+          *
+          *     @param approach (SVGSVGElement)
+          */
+        expo.redraw = function( approach, width, height )
+        {
+         // const bounds = approach.getBBox(); /* The actual bounds within the larger document.
+         //   These define the coordinate system of the drawing because the *approach* (*svg* element)
+         //   declares no *viewBox*.  Therefore the default unit (SVG 'user unit') is pixels. */
+         // const width = bounds.width;
+         // const height = bounds.height;
+         /// That failed, now they're given as parameters instead
+
+          // Draw the approach path
+          // ----------------------
+            const midY = height / 2; // Vertically centered
+            {
+                const path = asElementNamed( 'path', approach.lastChild );
+                const endX = width - width / 4;
+                let display;
+                if( endX - GAP >= PATH_MIN_LENGTH )
+                {
+                    path.setAttribute( 'd',
+                      // [PD]     X             Y
+                      //        ------         ----
+                         'M ' + GAP + ' ' + midY
+                      + ' H ' + endX
+                      );
+                    display = UNSET_STYLE; // To whatever it was
+                }
+                else display = 'none'; // Too short
+                path.style.setProperty( 'display', display );
+            }
+
+          // Draw the edging
+          // ---------------
+            const mark = asElementNamed( 'circle', approach.firstChild );
+            mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
+            mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // Abutting the document edge
+            mark.setAttribute( 'cy', midY + 'px' );
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        /** The gap between the edging and the path to its right.
+          */
+        const GAP = 2/*rem*/ * REM;
+
+
+
+        const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
+        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
+
+
+
+        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
+
+
+
+        const MIN_WIDTH = MIN_CLICK_WIDTH_REM * REM;
+
+            { console.assert( EDGE_MARK_WIDTH - MIN_WIDTH <= GRAPHICAL_ERROR_MARGIN, A ); }
+
+
+
+        const PATH_MIN_LENGTH = GAP;
+
+
+
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
+    /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose
+      * are maintained, in subprogram statelet 'Breadcrumbs', the following properties:
+      *
+      *     breadcrumbPath (string in XPath form) Identifier of the last hyperlink source element
       *                    that was activated within the present entry of the session history,
       *                    or null if none was activated.
       *     position (number) Ordinal of the present entry within the session history,
@@ -1246,41 +1446,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         /** The element (Element) on which attribute *showsBreadcrumb* is set, or null if there is none.
           */
         let crumbHolder = null;
-
-
-
-        /** @param element (HTMLAnchorElement)
-          * @return (string) An unambiguous identifier of the given element in XPath form.
-          */
-        function definitePath( element )
-        {
-            // Modified from Mozilla contributors' *XPath snippets*, licence CC-BY-SA 2.5.
-            // https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets#getXPathForElement
-            const html = document.documentElement;
-            let path = '';
-            path: for( let e = element;; e = e.parentNode )
-            {
-                const eLocalName = e.localName;
-                let seg = "/*[local-name()='" + eLocalName + "']"; // Segment of path
-                if( e === html )
-                {
-                    path = seg + path;
-                    break path;
-                }
-
-                let ordinal = 1; // Ordinals count from 1 in XPath
-                for( let sibling = e;; )
-                {
-                    sibling = sibling.previousElementSibling;
-                    if( sibling === null ) break;
-
-                    if( sibling.localName === eLocalName ) ++ordinal;
-                }
-                seg +=  '[' + ordinal + ']';
-                path = seg + path;
-            }
-            return path;
-        }
 
 
 
@@ -1314,9 +1479,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
               // Drop a crumb before traversing the link
               // ------------
-                const state = history.state;
-                console.assert( state !== null, A ); // Already initialized by Breadcrumbs.reorient
-                state[NS_READ].Breadcrumbs.breadcrumbPath = definitePath( a );
+                const state = history./*copy of*/state;
+                console.assert( state !== null, A ); // Assured by Breadcrumbs.reorient
+                const statelet = state[NS_READ].Breadcrumbs;
+                console.assert( statelet !== undefined, A ); // Assured by Breadcrumbs.reorient
+                statelet.breadcrumbPath = definitePath( a );
                 history.replaceState( state, /*no title*/'' );
                 break;
             }
@@ -1348,6 +1515,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
             const statelet = ( ()=> // state[NS_READ].Breadcrumbs
             {
+              // Create this subprogram statelet, if necessary
+              // -------------------------------
                 if( state === null ) return (( state = {} )[NS_READ] = {} ).Breadcrumbs = {};
 
                 let s;
@@ -1367,8 +1536,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 position = history.length - 1; // Last entry of session history
                 travel = 1;
 
-              // Initialize statelet properties
-              // ------------------------------
+              // Initialize the subprogram statelet
+              // ----------------------------------
                 statelet.breadcrumbPath = null; // Properly formed, as per Breadcrumbs contract
                 statelet.position = position;
                 history.replaceState( state, /*no title*/'' );
@@ -1400,16 +1569,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 {
                     const pR = document.evaluate( p, document, /*namespace resolver*/null,
                       ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
-                    const a = pR.iterateNext(); // Resolved hyperlink source node, an HTML *a* element
+                    const s = pR.iterateNext(); // Resolved hyperlink source node
                     console.assert( pR.iterateNext() === null, A ); /* At most there is the one
-                      if *definitePath* is 'unambiguous' as required */
-                    if( crumbHolder !== a )
+                      if *definitePath* is 'unambiguous' as claimed and required */
+                    if( crumbHolder !== s )
                     {
                       // Show crumb
                       // ----------
                         ensureNoCrumbShowing();
-                        a.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
-                        crumbHolder = a;
+                        s.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
+                        crumbHolder = s;
                     }
                     return;
                 }
@@ -1423,7 +1592,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         document.documentElement.addEventListener( 'click', hearClick );
         addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Document load, reload or revisit
         {
-            reorient( history.state ); // Firefox can have the wrong value here [FHS]
+            reorient( history./*copy of*/state ); // Firefox can have the wrong value here [FHS]
         });
         addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Intradocument travel
         {
@@ -1725,58 +1894,58 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** The element that is hyperlink-targeted by the browser, or null if there is none.
+        /** The element that is actively hyperlink-targeted by the browser, or null if there is none.
           *
           *     @return (Element)
-          *     @see #idTargeted
+          *     @see #idOnTarget
           */
-        expo.elementTargeted = function() { return elementTargeted; };
+        expo.elementOnTarget = function() { return elementOnTarget; };
 
 
-            let elementTargeted = null;
+            let elementOnTarget = null;
 
 
-            function clearElementTargeted()
+            function clearElementOnTarget()
             {
-                if( elementTargeted === null ) return;
+                if( elementOnTarget === null ) return;
 
-                if( elementTargeted.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
+                if( elementOnTarget.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    elementTargeted.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'untargeted' );
+                    elementOnTarget.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'off target' );
                 }
-                elementTargeted = null;
+                elementOnTarget = null;
             }
 
 
-            function setElementTargeted( e )
+            function setElementOnTarget( e )
             {
-                if( elementTargeted === e ) return;
+                if( elementOnTarget === e ) return;
 
-                if( elementTargeted !== null
-                 && elementTargeted.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
+                if( elementOnTarget !== null
+                 && elementOnTarget.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    elementTargeted.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'untargeted' );
+                    elementOnTarget.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'off target' );
                 }
                 if( e.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
                 {
-                    e.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'targeted' );
+                    e.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'on target' );
                 }
-                elementTargeted = e;
+                elementOnTarget = e;
             }
 
 
 
-        /** The element identifier that is hyperlink-targeted by the browser, as obtained from
+        /** The element identifier that is actively hyperlink-targeted by the browser, as obtained from
           * the fragment part of window.location without the preceding delimiter character '#'.
           * If the fragment part is missing, then the return value is null.
           *
           *     @return (string)
-          *     @see #elementTargeted
+          *     @see #elementOnTarget
           */
-        expo.idTargeted = function() { return idTargeted; };
+        expo.idOnTarget = function() { return idOnTarget; };
 
 
-            let idTargeted = null;
+            let idOnTarget = null;
 
 
        // - P r i v a t e ------------------------------------------------------------------------------
@@ -1785,18 +1954,18 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         function hearHashChange/* event handler */( _HashChangeEvent )
         {
             const hash = location.hash; // [WDL]
-            const id = idTargeted = hash.length === 0? null: hash.slice(1);
+            const id = idOnTarget = hash.length === 0? null: hash.slice(1);
             if( id !== null )
             {
                 const e = document.getElementById( id );
                 if( e !== null )
                 {
-                    setElementTargeted( e );
+                    setElementOnTarget( e );
                     return;
                 }
             }
 
-            clearElementTargeted();
+            clearElementOnTarget();
         }
 
 
@@ -1874,8 +2043,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
                 if( target.interlinkScene ) continue; // The work is already done
 
-                target.interlinkScene = true;
-                target.removeAttributeNS( NS_READ, 'isOrphan' );
+                noteWaylink( target );
             }
         }
 
@@ -2171,6 +2339,169 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
    // ==================================================================================================
 
 
+    /** Dealing with inways.  Formally the inway is a component of the start tag (eSTag).
+      * Apparently however it lies outside of the tag to the left, where it spans the distance
+      * from the page edge to the tag.
+      *
+      *          ┌·················· eSTag ···················┐
+      *                                                       ⋮
+      *          ┌————————————— inway ———————————————┐        ⋮
+      *                                         hall         tag name
+      *          ┌———————— approach ————————┐  ┌—————┐       ╱⋮
+      *          ⋮                          ⋮  ⋮     ⋮      ╱ ⋮
+      *          ⋮                          ⋮  ⋮  waybit1  ╱  ⋮
+      *          ⋮                          ⋮  ⋮     ⋮    ╱   ⋮
+      *           ∙ ·  ·   ·    ·     ·         ·     target11
+      *          ╱       │                                Content of target11
+      *         ╱        │                        waybit2
+      *        ╱         │                            Content of waybit2, which is not a target
+      *       ╱   ∙ ·  · │ ·    ·             ·   target3
+      *   edging         │                            Content of target3
+      *                 path
+      *
+      *
+      * On the pointer (↖) crossing any part of the eSTag (including the inway approach),
+      * the target icon reveals itself in full:
+      *
+      *          ┌············································┐
+      *          ┌———————————————————————————————————┐        ⋮
+      *          ┌——————————————————————————┐  ┌—————┐        ⋮
+      *          ⋮                          ⋮  ⋮     ⋮        ⋮
+      *          ⋮                          ⋮  ⋮  waybit1     ⋮
+      *          ⋮                          ⋮  ⋮     ⋮        ⋮
+      *           ∙ ·  ·   ·    ·     ·         ◉     target11
+      *                        ↖               ╱          Content of target11
+      *                                       ╱   waybit2
+      *                                      ╱        Content of waybit2, which is not a target
+      *           ∙ ·  ·   ·    ·           ╱ ·   target3
+      *                                    ╱          Content of target3
+      *                                target
+      *                                 icon
+      */
+    const Inways = ( function()
+    {
+
+        const expo = {}; // The public interface of Inways
+
+
+
+        /** Ensures the given inway will be laid and shown.
+          *
+          *     @param inway (HTMLElement)
+          *     @param eSTag (Element) The start tag beside which to lay it.
+          */
+        expo.layWhen = function( inway, eSTag )
+        {
+            setTimeout( layIf, layWhen_msRest ); // Giving the browser a rest
+            layWhen_msRest += 13; // Staggering the overall lay of inways at intervals
+            let pollCount = 0;
+            function layIf( _msTime/*ignored*/ )
+            {
+                const tagVpBounds = eSTag.getBoundingClientRect();
+                if( tagVpBounds.width ) // Then the tag is laid
+                {
+                  // Lay the inway and show it
+                  // -------------------------
+                    lay( inway, tagVpBounds );
+                    inway.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
+
+                  // Ensure it re-lays itself as needed
+                  // ------------------------
+                    addEventListener( 'resize', (_UIEvent)=>{lay(inway);} );
+                }
+                else if( pollCount <= 3 )
+                {
+                    ++pollCount;
+                    requestAnimationFrame( layIf ); // Wait for the tag to get laid
+                }
+                else console.error( "Cannot lay inway, start tag is not being laid" );
+            }
+        };
+
+
+            let layWhen_msRest = MS_DELAY_INWAYS; // Delay before 1st lay attempt of next inway
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        /** Lays or re-lays the given inway.
+          *
+          *     @param inway (Element)
+          *     @param tagVpBounds (DOMRectReadOnly) The bounds within the scroller's viewport
+          *       of the parent start tag.  If undefined, then this parameter is determined anew.
+          */
+        function lay( inway, tagVpBounds = inway.parentNode.getBoundingClientRect() )
+        {
+            let s; // Style
+
+          // Span the left margin from page edge to tag
+          // --------------------
+            const width = tagVpBounds.left + scrollX;
+            s = inway.style;
+            s.setProperty( 'left', -width + 'px' );
+            s.setProperty( 'width', width + 'px' );
+
+          // Clamp down on the *hall* (child)
+          // ------------------------
+            const hallVpBounds = inway.lastChild/*hall*/.getBoundingClientRect();
+            const height = hallVpBounds.height;
+            if( !height/*UZ*/ ) throw 'Inway hall is unlaid';
+
+            s.setProperty( 'height', height + 'px' );
+
+          // Lay the *approach* (child)
+          // ------------------
+            const approach = inway.firstChild;
+            s = approach.style;
+            const hallX = width - hallVpBounds.width;
+            const availableGap/*approach ↔ hall*/ = hallX - Approaches.minimumWidth();
+            if( MIN_GAP - availableGap > GRAPHICAL_ERROR_MARGIN )
+            {
+                console.error( 'Inway availableGap ' + availableGap + ' < MIN_GAP ' + MIN_GAP );
+                s.setProperty( 'display', 'none' );
+                return;
+            }
+
+            const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
+              // Allowing it to expand up to MAX_GAP, if that much is available
+            const lineWidth = hallX - gap;
+            s.setProperty( 'width', lineWidth + 'px' ); // [HSP in readable.css]
+            s.setProperty( 'height',   height + 'px' );
+         // approach.setAttribute( 'width', lineWidth );
+         // approach.setAttribute( 'height',   height );
+         /// A failed attempt to fix the approach.getBBox failure in Approaches, q.v.
+            s.setProperty( 'display', UNSET_STYLE ); // To whatever it was
+            Approaches.redraw( approach, lineWidth, height );
+        }
+
+
+
+        /** The maximum, formal gap between the *approach* child and the *hall* sibling to its right.
+          * The *visual* gap may be wider depending on how the *approach* draws its content.
+          */
+        const MAX_GAP = 1.5/*rem*/ * REM; // Within which the pointer style defaults, so indicating
+                                         // that the two components have distinct control functions.
+
+
+        /** The minimum, formal gap between the *approach* child and the *hall* sibling to its right.
+          */
+        const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
+
+        const MIN_GAP = MIN_GAP_REM * REM;
+
+
+
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
+
+
     /** A reader of element leaders.  An element leader is the whitespace collapsed, text content
       * of the element prior to any contained element of wayscript or non-inline layout.
       *
@@ -2285,7 +2616,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         const displayStyle = styleDeclarations.getPropertyValue( 'display' );
                         if( displayStyle === 'inline' ) continue dive;
 
-                        if( styleDeclarations.length === 0 ) // Then something's wrong
+                        if( styleDeclarations.length === 0 ) // Then something is wrong
                         {
                             // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
                             // ties that are supported CSS properties" must be reported, ∴ length should
@@ -2396,161 +2727,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
     }
 
-
-
-
-   // ==================================================================================================
-
-
-    /** Dealing with marginalia, singular 'marginalis'.  The marginalis is a logical component of
-      * the start tag (*eSTag*) in waylink target nodes.  Nonetheless it lies to the left of the tag,
-      * where it spans the distance from the page edge to the tag.
-      *
-      *        ┌—————————— marginalis —————————————┐
-      *                                       icon         tag name
-      *        ┌—————— target liner ——————┐  ┌—————┐       ╱
-      *                                                   ╱
-      *                                         1waybit  ╱
-      *                                                 ╱
-      *     [   ∙ ·  ·   ·    ·     ·         ·     2target             ]
-      *        ╱       │                                2target content
-      *       ╱        │                        3waybit
-      *      ╱         │                            3waybit content
-      *     ╱   ∙ ·  · │ ·    ·             ·   4target
-      *   edge         │                            4target content
-      *   mark       target
-      *               line
-      *
-      * On the pointer (↖) crossing any DOM-formal part of the start tag,
-      * which includes the target liner, the target icon reveals itself in full:
-      *
-      *                                         1waybit
-      *
-      *         ∙ ·  ·   ·    ·     ·         ◉     2target
-      *                      ↖                          2target content
-      *                                         3waybit
-      *                                             3waybit content
-      *         ∙ ·  ·   ·    ·             ·   4target
-      *                                             4target content
-      */
-    const Marginalia = ( function()
-    {
-
-        const expo = {}; // The public interface of Marginalia
-
-
-
-        /** Ensures the given marginalis will be laid and shown.
-          *
-          *     @param marginalis (HTMLElement)
-          *     @param eSTag (Element) The start tag beside which to lay it.
-          */
-        expo.layWhen = function( marginalis, eSTag )
-        {
-            setTimeout( layIf, layWhen_msRest ); // Giving the browser a rest
-            layWhen_msRest += 13; // Staggering the overall lay of marginalia at intervals
-            let pollCount = 0;
-            function layIf( _msTime/*ignored*/ )
-            {
-                const tagVpBounds = eSTag.getBoundingClientRect();
-                if( tagVpBounds.width ) // Then the tag is laid
-                {
-                  // Lay the marginalis and show it
-                  // ------------------------------
-                    lay( marginalis, tagVpBounds );
-                    marginalis.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
-
-                  // Ensure it re-lays itself as needed
-                  // ------------------------
-                    addEventListener( 'resize', (_UIEvent)=>{lay(marginalis);} );
-                }
-                else if( pollCount <= 3 )
-                {
-                    ++pollCount;
-                    requestAnimationFrame( layIf ); // Wait for the tag to get laid
-                }
-                else console.error( "Cannot lay marginalis, start tag is not being laid" );
-            }
-        };
-
-
-            let layWhen_msRest = MS_DELAY_MARGINALIA; // Delay before 1st lay attempt of next marginalis
-
-
-
-       // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        /** Lays or re-lays the given marginalis.
-          *
-          *     @param marginalis (Element)
-          *     @param tagVpBounds (DOMRectReadOnly) The bounds within the scroller's viewport
-          *       of the parent start tag.  If undefined, then this parameter is determined anew.
-          */
-        function lay( marginalis, tagVpBounds = marginalis.parentNode.getBoundingClientRect() )
-        {
-            let s; // Style
-
-          // Span the left margin from page edge to tag
-          // --------------------
-            const width = tagVpBounds.left + scrollX;
-            s = marginalis.style;
-            s.setProperty( 'left', -width + 'px' );
-            s.setProperty( 'width', width + 'px' );
-
-          // Clamp down on the icon (child)
-          // ----------------------
-            const iconVpBounds = marginalis.lastChild/*icon*/.getBoundingClientRect();
-            const height = iconVpBounds.height;
-            if( !height/*UZ*/ ) throw 'Target icon is unlaid';
-
-            s.setProperty( 'height', height + 'px' );
-
-          // Lay the liner (child)
-          // -------------
-            const liner = marginalis.firstChild;
-            s = liner.style;
-            const iconX = width - iconVpBounds.width;
-            const availableGap/*liner ↔ icon*/ = iconX - TargetLining.minimumWidth();
-            if( MIN_GAP - availableGap > GRAPHICAL_ERROR_MARGIN )
-            {
-                console.error( 'Marginalis availableGap ' + availableGap + ' < MIN_GAP ' + MIN_GAP );
-                s.setProperty( 'display', 'none' );
-                return;
-            }
-
-            const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
-              // Allowing it to expand up to MAX_GAP, if that much is available
-            const lineWidth = iconX - gap;
-            s.setProperty( 'width', lineWidth + 'px' ); // [HSP in readable.css]
-            s.setProperty( 'height',   height + 'px' );
-         // liner.setAttribute( 'width', lineWidth );
-         // liner.setAttribute( 'height',   height );
-         /// A failed attempt to fix the liner.getBBox failure in TargetLining, q.v.
-            s.setProperty( 'display', UNSET_STYLE ); // To whatever it was
-            TargetLining.redraw( liner, lineWidth, height );
-        }
-
-
-
-        /** The maximum, formal gap between the liner child and the icon to its right.
-          * The *visual* gap may be wider depending on how the liner draws its content.
-          */
-        const MAX_GAP = 1.5/*rem*/ * REM; // Within which the pointer style defaults, so indicating
-                                         // that the two components have distinct control functions.
-
-
-        /** The minimum, formal gap between the liner child and the icon to its right.
-          */
-        const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
-
-        const MIN_GAP = MIN_GAP_REM * REM;
-
-
-
-        return expo;
-
-    }() );
 
 
 
@@ -2722,7 +2898,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
    // ==================================================================================================
 
 
-    /** The control of self hyperlinking and scene switching for waylink target nodes.
+    /** Self activation and scene switching for waylink target nodes.
       */
     const TargetControl = ( function()
     {
@@ -2735,13 +2911,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           *
           *     @param eSTag (Element) The start tag of the target node.
           */
-        expo.addControls = function( eSTag )
-        {
-            eSTag.addEventListener( 'click', hearClick );
-            const icon = asElementNamed( 'icon', eSTag.lastChild/*marginalis*/.lastChild );
-            icon.addEventListener( 'mouseenter', hearMouseEnter );
-            icon.addEventListener( 'mouseleave', hearMouseLeave );
-        };
+        expo.addControls = function( eSTag ) { eSTag.addEventListener( 'click', hearClick ); };
 
 
 
@@ -2755,104 +2925,68 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             const eSTag = click.currentTarget; // Where listening
             const eClicked = click.target;    // What got clicked
 
+          // =====================
           // Empty container space clicked?  No function
-          // ---------------------
+          // =====================
+            if( eClicked === eSTag ) return; // Start tag element itself, as opposed to a descendant
+
             const eClickedNS = eClicked.namespaceURI;
-            if( eClickedNS === NS_HTML ) // Marginalis
-            {
-                console.assert( eClicked.parentNode === eSTag && eClicked.localName === 'div', A );
-                return;
-            }
+            if( eClicked.parentNode === eSTag && eClicked.localName === 'div'
+             && eClickedNS === NS_HTML ) return; // Inway element itself, as opposed to a descendant
 
-            if( eClicked === eSTag ) return;
-
-          // Target liner clicked?  Function is scene switching
-          // ------------
+          // ================
+          // Inway *approach* clicked?  Function is scene switching
+          // ================
             const targetNode = eSTag.parentNode; // *Waylink* target node
-            const elementTargeted = Hyperlinkage.elementTargeted();
-            if( eClickedNS === NS_SVG ) // Target liner
+            const elementOnTarget = Hyperlinkage.elementOnTarget();
+            if( eClickedNS === NS_SVG ) // inway approach
             {
-                if( targetNode !== elementTargeted ) return; // Switch is disabled
+                if( targetNode !== elementOnTarget ) return; // Switch is disabled
 
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
                 const pp = u.searchParams;
                 pp.set( 'sc', 'inter' );
                 pp.set( 'link', targetNode.getAttribute('id') );
-             // history.replaceState( /*same*/history.state, /*no title*/'', u.href ); // TEST
+             // history.replaceState( history./*duplicate of*/state, /*no title*/'', u.href ); // TEST
                 return;
             }
 
-          // Icon or tag name clicked:  Function is self hyperlinking
-          // ----------------
+          // ==============================
+          // Inway *hall* or start tag name clicked:  Function is self activation
+          // ==============================
             const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
             const scrollLeftWas = view.scrollLeft;
 
-          // toggle the browser location, targeted ⇄ untargeted
-          // - - - - - - - - - - - - - -
-            if( targetNode === elementTargeted ) // Then transit targeted → untargeted
+          // Drop a breadcrumb before changing location
+          // -----------------
+            const state = history./*copy of*/state;
+            console.assert( state !== null, A ); // Assured by Breadcrumbs.reorient
+            const statelet = state[NS_READ].Breadcrumbs;
+            console.assert( statelet !== undefined, A ); // Assured by Breadcrumbs.reorient
+            statelet.breadcrumbPath = definitePath( targetNode );
+            history.replaceState( state, /*no title*/'' );
+
+          // Toggle the browser location, on target ⇄ off target
+          // ---------------------------
+            if( targetNode === elementOnTarget ) // Δ: on target → off target
             {
-                location.hash = ''; // Moving to the untargeted location, no URI fragment in address bar
+                location.hash = ''; // Moving off target, no URI fragment in address bar
                 const loc = location.toString(); // [WDL]
                 if( loc.endsWith( '#' )) // Then it left the fragment delimiter hanging there, visible,
                 {                 // like the grin of the Cheshire Cat (Firefox, Chrome).  Remove it:
-                    history.replaceState( /*same*/history.state, /*no title*/'', loc.slice(0,-1) );
+                    history.replaceState( history./*duplicate of*/state, /*no title*/'',
+                      loc.slice(0,-1) );
                 }
             }
-            else location.hash = targetNode.getAttribute( 'id' ); // Untargeted → targeted
+            else location.hash = targetNode.getAttribute( 'id' ); // Δ: off target → on target
 
-          // stabilize the view within the viewport
-          // - - - - - - - - - -
+          // Stabilize the view within the viewport
+          // ------------------
             view.scrollTop = scrollTopWas;
             view.scrollLeft = scrollLeftWas;
         }
-
-
-
-        /** The *eQName* element that was assigned a special *id* attribute for styling purposes,
-          * or null if there is none.
-          */
-        let hearMouse_eQNameIdentified = null; /* This approach to styling is a workaround for the
-          problem that *style* attributes are unsupported for NS_READ elements, such as *eQName*. */
-
-
-            /** @param event (MouseEvent) A mouse event from the target icon.
-              * @return The corresponding *eQName* element.
-              */
-            function hearMouse_eQName( event )
-            {
-                const icon = event.currentTarget; // Where listening
-                return asElementNamed( 'eQName', icon.parentNode/*marginalis*/.previousSibling );
-            }
-
-
-            function hearMouse_unidentify( eQName )
-            {
-                eQName.removeAttribute( 'id' );
-                hearMouse_eQNameIdentified = null;
-            }
-
-
-            /** @param event (MouseEvent) A 'mouseenter' event from the target icon.
-              */
-            function hearMouseEnter/* event handler */( event )
-            {
-                if( hearMouse_eQNameIdentified ) hearMouse_unidentify( hearMouse_eQNameIdentified );
-                  // Preclude duplication, to be on the safe side
-                const eQName = hearMouse_eQName( event );
-                eQName.setAttribute( 'id', NS_READ + '.TargetControl.iconHover' );
-                  // [GSC in readable.css]
-                hearMouse_eQNameIdentified = eQName;
-            }
-
-
-            /** @param event (MouseEvent) A 'mouseleave' event from the target icon.
-              */
-            function hearMouseLeave/* event handler */( event )
-            {
-                hearMouse_unidentify( hearMouse_eQName( event ));
-            }
 
 
 
@@ -2991,133 +3125,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
    // ==================================================================================================
 
 
-    /** Dealing with target liners.  A target liner is a marginalis component that draws vector graphics
-      * for a waylink target node, and controls the scene switching for it.
-      *
-      *              target line
-      *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      *      ╲
-      *      edge
-      *      mark
-      *
-      * @see Marginalia
-      */
-    const TargetLining = ( function()
-    {
-
-        const expo = {}; // The public interface of TargetLining
-
-        // Dimensions and coordinates are here given in pixels, except where marked otherwise.
-
-
-
-        /** The smallest width in which a liner can correctly draw itself.
-          */
-        expo.minimumWidth = function() { return MIN_WIDTH; };
-
-
-
-        /** Constructs a target liner.
-          */
-        expo.newLiner = function()
-        {
-            const liner = document.createElementNS( NS_SVG, 'svg' );
-         // liner.addEventListener( 'resize', (_UIEvent)=>{expo.redraw(liner);} );
-              // Ensuring it draws when first laid, then redraws as needed.
-              //
-              // Except it's not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
-              // Maybe embedded svg elements such as this are not considered "outermost svg elements"?
-              // https://www.w3.org/TR/SVG11/interact.html#SVGEvents
-              //
-              // As a workaround, the Marginalis layout calls *redraw* directly.
-            liner.appendChild( document.createElementNS( NS_SVG, 'circle' )); // Edge mark
-            liner.appendChild( document.createElementNS( NS_SVG, 'path' ));  // Line
-            return liner;
-        };
-
-
-
-        /** Draws or redraws the given liner.
-          *
-          *     @param liner (SVGSVGElement)
-          */
-        expo.redraw = function( liner, width, height )
-        {
-         // const bounds = liner.getBBox(); /* The actual bounds within the larger document.
-         //   These define the coordinate system of the drawing because the liner (*svg* element)
-         //   declares no *viewBox*.  Therefore the default unit (SVG 'user unit') is pixels. */
-         // const width = bounds.width;
-         // const height = bounds.height;
-         /// That failed, now they're given as parameters instead
-
-          // Draw the line
-          // -------------
-            const midY = height / 2; // Vertically centered
-            {
-                const line = asElementNamed( 'path', liner.lastChild );
-                const endX = width - width / 4;
-                let display;
-                if( endX - GAP >= LINE_MIN_LENGTH )
-                {
-                    line.setAttribute( 'd',
-                      // [PD]     X             Y
-                      //        ------         ----
-                         'M ' + GAP + ' ' + midY
-                      + ' H ' + endX
-                      );
-                    display = UNSET_STYLE; // To whatever it was
-                }
-                else display = 'none'; // Too short
-                line.style.setProperty( 'display', display );
-            }
-
-          // Draw the edge mark
-          // ------------------
-            const mark = asElementNamed( 'circle', liner.firstChild );
-            mark.setAttribute(  'r', EDGE_MARK_RADIUS + 'px' );
-            mark.setAttribute( 'cx', EDGE_MARK_RADIUS + 'px' ); // Abutting the document edge
-            mark.setAttribute( 'cy', midY + 'px' );
-        };
-
-
-
-       // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        /** The gap between the edge mark and the line to its right.
-          */
-        const GAP = 2/*rem*/ * REM;
-
-
-
-        const EDGE_MARK_WIDTH = 0.3/*rem*/ * REM;
-        const EDGE_MARK_RADIUS = EDGE_MARK_WIDTH / 2;
-
-
-
-        const LINE_MIN_LENGTH = GAP;
-
-
-
-        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
-
-
-
-        const MIN_WIDTH = MIN_CLICK_WIDTH_REM * REM;
-
-            { console.assert( EDGE_MARK_WIDTH - MIN_WIDTH <= GRAPHICAL_ERROR_MARGIN, A ); }
-
-
-
-        return expo;
-
-    }() );
-
-
-
-   // ==================================================================================================
-
-
     const TARGET_UP   = 'up';
     const TARGET_DOWN = 'down';
 
@@ -3212,13 +3219,14 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** Ensures that the hyperlink-targeted element, if any, will be visible within the viewport.
+        /** Ensures that the actively hyperlink-targeted element, if any,
+          * will be visible within the viewport.
           *
-          *     @see Hyperlinkage#elementTargeted
+          *     @see Hyperlinkage#elementOnTarget
           */
         expo.ensureTargetWillShow = function() // [HTP]
         {
-            const e = Hyperlinkage.elementTargeted();
+            const e = Hyperlinkage.elementOnTarget();
             if( e === null ) return;
 
             const eBounds = e.getBoundingClientRect();
@@ -3579,11 +3587,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
-  *  [NNR]  Not NS_READ.  Here avoiding special markup in favour of standard HTML.  This is for sake
-  *         of properties such as the *style* attribute which are unsupported for NS_READ elements.
-  *
-  *  [ODO]  Out of display order.  This element which is not always present (variant) is declared out of
-  *         display order so not to interfere with the *declaration* order of its invariant siblings.
+  *  [ODO]  Out of display order.  This sometime present element is declared out of
+  *         display order so not to interfere with the ordering of its ever present siblings.
   *         Normally it would be declared earlier, but that would complicate the lookup of its siblings,
   *         making them harder to find.
   *
@@ -3603,6 +3608,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *             The bug might be repaired by removing any breadcrumb after first showing it.
   *         But this would partly defeat its purpose in the more typical case of a linked E2:
   *         the crumb would no longer show during back-and-forth motion between E1 and E2.
+  *
+  *  [SH] · Standard HTML.  Here avoiding special markup in favour of standard HTML,
+  *         thus gaining access to HTML-particular features such as the *style* attribute.
   *
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
