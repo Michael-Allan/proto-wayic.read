@@ -135,6 +135,9 @@ html|body
 {
     display: none; /* Pending layout completion by readable.js */
     margin: 0; padding: 0; /* See § scene */
+
+               color: hsl( 0, 0%, var(--textLight) );
+    background-color: hsl( 0, 0%, var(--backLight) );
 }
 
 
@@ -168,10 +171,10 @@ html|body > read|offWayScreen
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[read|lighting='neon'] > html|body
+html[read|lighting='neon']
 {
-               color: hsl( 0, 0%, 80% ); /* BRIGHT_TEXT, yet allowing brighter effects elsewhere */
-    background-color: hsl( 0, 0%, 20% ); /* On dark */
+    --textLight: 80%; /* Bright text, yet allowing brighter effects elsewhere */
+    --backLight: 20%; /* On dark */
 }
 
 
@@ -183,10 +186,10 @@ html[read|lighting='neon'] > html|body > read|offWayScreen
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[read|lighting='paper'] > html|body
+html[read|lighting='paper']
 {
-               color: hsl( 0, 0%, 7% ); /* DARK_TEXT, yet allowing darker effects elsewhere */
-    background-color: hsl( 0, 0%, 93% ); /* On bright white, yet allowing brighter touches elsewhere */
+    --textLight: 7%; /* Dark text, yet allowing darker effects elsewhere */
+    --backLight: 93%; /* On bright white, yet allowing brighter touches elsewhere */
 }
 
 
@@ -861,67 +864,97 @@ html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > 
 }
 
 
-[read|isWaylinkTargetable='on target']/*[FT]*/ >      eSTag > .inway > hall > icon
-{
-    --inflightDuration: 0.9s;
-}
-
-
 [read|isWaylinkTargetable='on target']/*[FT]*/ >      eSTag > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-html[read|animatedShow][read|travel]:not([read|travel^='-'])/*[NBT]*/
+html[read|animatedShow][read|travelDelta='0'] /* Reload */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > span,
+html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 [read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > span
 {
-    animation-name: targetInflight_main; /* As a travel target locator */
+    animation-name: inflightTarget; /* As a travel target locator */
 }
 [read|isWaylinkTargetable]                     >      eSTag > .inway > hall > icon > span
 {
-    animation-duration: calc( var(--inflightDuration) - 0.1s );
-    animation-timing-function: linear;
+    animation-delay: var(--inflightFlyby);
+    animation-duration: calc( var(--inflightDuration)
+      + /*delayed effect of impact*/0.1s/*for sake of emphasis*/ );
+    animation-timing-function: step-start;
 }
 
 
-@keyframes targetInflight_main
+@keyframes inflightTarget /* Target symbol, the main content (span) of the target icon */
 {
      0% { opacity: var(--iconicOpacity); z-index: unset }
-       /* Holding constant, delaying the *on target* styling till 'impact' */
+       /* Holding these constant, thus delaying the *on target* styling till the moment of impact */
    100% { opacity: var(--iconicOpacity); z-index: unset }
 }
 
 
-html[read|animatedShow][read|travel]:not([read|travel^='-'])/*[NBT]*/
+html[read|animatedShow][read|travelDelta='0'] /* Reload */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > bullseye,
+html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 [read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > bullseye
 {
-    animation-name: /*a*/targetInflight_bullseye_a, /* As travel target locators */
-                    /*b*/targetInflight_bullseye_b;
+    animation-name: inflightMissile_constants, /* As travel target locators */
+                    inflightMissile_perspective;
 }
 [read|isWaylinkTargetable]                     >      eSTag > .inway > hall > icon > bullseye
 {
+    animation-delay: var(--inflightFlyby);
     animation-duration: var(--inflightDuration);
-    animation-timing-function: /*a*/linear,
-      /*b*/cubic-bezier( /*x1*/0, /*y1*/1,    /* Extremely fast entry */
-                         /*x2*/0, /*y2*/1 ); /*       and slow exit. */
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    animation-timing-function: /*constants*/step-start,
+                             /*perspective*/linear; /* A linear function of distance */
+    opacity: 0.2; /* Dimming the missile while retaining its basic colour, e.g. in the case of orphan.
+      The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
 }
 
 
-@keyframes targetInflight_bullseye_a
+@keyframes inflightMissile_constants /* Held constant for the duration of the flight */
 {
-     0% { opacity: 0 }
-   100% { opacity: 1 }
+     0% { z-index: 1 } /* Raised clear of the *offWayScreen* */
+   100% { z-index: 1 }
 }
 
 
-@keyframes targetInflight_bullseye_b
+@keyframes inflightMissile_perspective /* Apparent size and position of missile */
+{      /*             X offset        Y offset        Blur Spread                */
+     0% { box-shadow: var(--sourceX)  var(--sourceY)  0    var(--inflightSpread) }
+   100% { box-shadow: 0              -0.5px/*[VCT]*/  0    0                     }
+}
+
+
+html
 {
-     0% { box-shadow: /*X offset*/0 /*Y offset*/-0.5px /*blur*/0 /*spread*/50rem }
-   100% { box-shadow:             0             -0.5px         0            0 }
-    /* Here deflecting the Y offset by -BBW for a better vertical centering.
-       Unicode 1f78b round target.  Droid Sans/Chrome, Georgia/Firefox. */
+    --inflightDuration: 0.4s; /* Duration of missile flight from flyby till impact */
+    --inflightFlyby: calc( var(--inflightDuration) * 0.2 ); /* Time till it passes the user
+        and becomes visible.  Rest time for browser, avoiding a balky start to the animation. */
+    --inflightSpread: 5rem; /* Apparent size of missile at flight start */
+    --sourceX: 0; /* Apparent position of source node relative to on-target node */
+    --sourceY: -0.5px; /* [VCT] */
+}
+html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='up']
+{
+    --sourceX: 0;
+    --sourceY: calc(  1.3 * var(--inflightSpread) - 0.5px/*[VCT]*/ );
+}
+html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='down']
+{
+    --sourceX: 0;
+    --sourceY: calc( -1.3 * var(--inflightSpread) - 0.5px/*[VCT]*/ );
+}
+html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='out'] /* ∴ right */
+{
+    --sourceX: calc( -1.3 * var(--inflightSpread) );
+    --sourceY: -0.5px; /* [VCT] */
+}
+html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='self'] /* ∴ left */
+{
+    --sourceX: calc(  0.6 * var(--inflightSpread) );
+    --sourceY: -0.5px; /* [VCT] */
 }
 
 
@@ -1085,7 +1118,7 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *
  *             [read|isWaylinkTargetable='on target']
  *
- *         This is instead of the proper form:
+ *         Instead of the proper form:
  *
  *             [read|isWaylinkTargetable]:target
  *
@@ -1108,10 +1141,9 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
  *
- *  [NBT]  Not on back travel, as then user orientation is better served by the breadcrumb alone.
- *         Here the selector [read|travel] combines with :not([read|travel^='-']) to transform
- *         its negative test to a positive one.  This prevents premature firing of the rule
- *         immediately after back travel while the *travel* attribute is yet unset.
+ *  [NMP]  Not on multi-position travel.  Travel direction cues appear for unit travel and reload alone,
+ *         because it happens these alone determine the calculated direction.  Showing that direction
+ *         in other cases is unlikely to help reorient the user, rather likely to mislead him.
  *
  *  [SFL]  Scope of file-scheme limitations.  The scope is unlikely to extend to intercast waylinks.
  *         Regardless of whether the source document is requested from a ‘file’ scheme URL,
@@ -1122,6 +1154,9 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *  [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
  *         if the parent directory of the originating file is an ancestor directory of the target file.”
  *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+ *
+ *  [VCT]  Vertical centering on target.  Here deflecting Y offset by -BBW for a better centering.
+ *         Unicode 1f78b round target.  Droid Sans/Chrome, Georgia/Firefox.
  */
 
 

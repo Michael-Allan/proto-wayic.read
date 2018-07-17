@@ -14,9 +14,9 @@
   *
   *   Element
   *   -------
-  *       interlinkScene (boolean) Set on a waylink target node, answers whether this target node has
-  *                      an interlink scene.  That is only its temporary use; later this property will
-  *             instead point to the *scene* element that encodes the target node’s interlink scene.
+  *       interlinkScene · (boolean) Set on a waylink target node, answers whether this target node has
+  *                        an interlink scene.  That is only its temporary use; later this property will
+  *           instead point to the *scene* element that encodes the target node’s interlink scene.
   *
   *
   * FORMATION of SESSION HISTORY STATE
@@ -52,12 +52,21 @@
   *
   *   html:html ∙ Document element
   *   ---------
-  *     [lighting]     · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
   *     [animatedShow] · Style rules that must animate or re-animate on each load or reload
   *                      of the document, and on each revisit to it, must depend on this attribute.
-  *     [travel] · Extent of travel in session history to reach the present entry: -N, 0, or N
-  *                (backward by N entries, reload, or forward by N entries).  In other words,
-  *                the relative position of this entry vs. the last (of ours) that was shown.
+  *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *     [travelDelta]    · Travel distance in session history to reach the present entry
+  *                        from the last entry of ours that was shown: -N, 0 or N
+  *                        (backward by N entries, reload, or forward by N entries).  [OUR]
+  *     [targetDirection] · (only if a node is on target, that is indicated by window.location.hash)
+  *                         Direction to the on-target node from the source.
+  *         Value  Meaning
+  *         ·····  ·······································································
+  *         self   Target and source node are identical
+  *         up     Target is above the source node in document order
+  *         down   Target is below the source node
+  *         in     Intradocument travel by non-nodal source (e.g. bookmark or address bar)
+  *         out    Extradocument travel (i.e. interdocument or from a non-document source)
   *
   *
   *   html:body
@@ -95,8 +104,25 @@
   *     textAligner ∙ (only if element is a step)
   *
   *
-  *   * (as a) Bitform waylink source node
-  *   ------------------------------------
+  *   html:a, Hyperlink source node
+  *   ------
+  *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
+  *                         history?  Set after travelling back in history onto this source node,
+  *                         it reorients the user by highlighting his original point of departure.
+  *                         Appears at most on one element.  [BA, FIB]
+  *     [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the link is
+  *                         an intradocument link and unbroken (its target node exists).
+  *
+  *
+  *   a, Waylink source node, Hyperform
+  *   ----------------------
+  *     html:a         ∙ (§ q.v.)
+  *         [cog:link]  ·
+  *     html:sup       ∙ Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *
+  *
+  *   * (as a) Waylink source node, Bitform
+  *   ----------------------------
   *     [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
   *     [image]            · Indicates a form that might yet change.  Meantime it is either based on
   *                          a cached image of the target node (value ‘present’) or not (‘absent’).
@@ -112,23 +138,6 @@
   *             html:br           ∙
   *             verticalTruncator ∙ Indicating the source node as such (half a link)
   *                 html:span     ∙ Containing the visible indicator, exclusive of padding
-  *
-  *
-  *   a (is a) Hyperform waylink source node
-  *   --------------------------------------
-  *     html:a               ∙ (§ q.v.)
-  *         [cog:link]        ·
-  *         [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the waylink
-  *                             is an intradocument waylink and its target node exists.
-  *     html:sup ∙ Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
-  *
-  *
-  *   html:a
-  *   ------
-  *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
-  *                         history?  Set after travelling back in history onto this source node,
-  *                         it reorients the user by highlighting his original point of departure.
-  *                         Appears at most on one element.  [BA, FIB, SBU]
   *
   *
   *   * (as a) Waylink target node
@@ -587,44 +596,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Constructs an XPath locator of the given element that is unambiguous within the context
-      * of the present document.
-      *
-      *     @param element (Element)
-      *     @return (string)
-      */
-    function definitePath( element )
-    {
-        // Modified from Mozilla contributors' *XPath snippets*, licence CC-BY-SA 2.5.
-        // https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets#getXPathForElement
-        const html = document.documentElement;
-        let path = '';
-        path: for( let e = element;; e = e.parentNode )
-        {
-            const eLocalName = e.localName;
-            let seg = "/*[local-name()='" + eLocalName + "']"; // Segment of path
-            if( e === html )
-            {
-                path = seg + path;
-                break path;
-            }
-
-            let ordinal = 1; // Ordinals count from 1 in XPath
-            for( let sibling = e;; )
-            {
-                sibling = sibling.previousElementSibling;
-                if( sibling === null ) break;
-
-                if( sibling.localName === eLocalName ) ++ordinal;
-            }
-            seg +=  '[' + ordinal + ']';
-            path = seg + path;
-        }
-        return path;
-    }
-
-
-
     /** The location of present document (string) in normal URL form.
       *
       *     @see URIs#normalized
@@ -961,10 +932,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             }
 
 
-          // =================
-          // Hyperform linkage by element t
-          // =================
-            hyperform: if( isHTML && tN === 'a' )
+          // ============
+          // Hyperlinkage by element t
+          // ============
+            hyperlinkage: if( isHTML && tN === 'a' )
             {
                 let href = t.getAttribute( 'href' );
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
@@ -988,11 +959,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     catch( unparseable )
                     {
                         tsk( unparseable );
-                        break hyperform;
+                        break hyperlinkage;
                     }
 
                     link.hrefTo( t );
-                    const targetWhereabouts = new TargetWhereabouts( t, link );
+                    const targetWhereabouts = TargetWhereabouts.fromSource( t, link );
                     targetExtradocLocN = targetWhereabouts.documentLocationN;
                     const direction = targetWhereabouts.direction;
                     if( direction !== null ) t.setAttributeNS( NS_READ, 'targetDirection', direction );
@@ -1087,7 +1058,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 const forelinker = t.appendChild( document.createElementNS( NS_READ, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
-                const targetWhereabouts = new TargetWhereabouts( t, link );
+                const targetWhereabouts = TargetWhereabouts.fromSource( t, link );
                 let targetPreviewString;
                 targeting:
                 {
@@ -1425,11 +1396,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose
       * are maintained, in subprogram statelet 'Breadcrumbs', the following properties:
       *
-      *     breadcrumbPath (string in XPath form) Identifier of the last hyperlink source element
-      *                    that was activated within the present entry of the session history,
-      *                    or null if none was activated.
-      *     position (number) Ordinal of the present entry within the session history,
-      *              a number from zero (inclusive) to the history length (exclusive).
+      *     sourcePath · Identifier (string in XPath form) of the hyperlink source node
+      *                  whose activation caused the last exit from the present entry
+      *                  of the session history; or null if the present entry was never exited,
+      *                       or its last exit had some other cause.
+      *     targetDirection · Q.v. under § INTRODUCTION of SPECIAL MARKUP § html:html
+      *     travel          · Ordinal (number) of the present entry within the session history,
+      *                       a number from zero (inclusive) to the history length (exclusive).
       *
       * @see § FORMATION of SESSION HISTORY STATE
       */
@@ -1440,21 +1413,76 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
+        /** @param s (Element) The element that determines the position of the dropped crumb,
+          *   typically a hyperlink source node.
+          */
+        expo.dropCrumb = function( s )
+        {
+            travelStop.sourceNode = s;
+            dropCrumb_store( definitePath(s) );
+            if( crumbShower === s ) return; // None is showing, or none other than *s*
+
+            hideCrumb(); // Removed above and dropped on *s*, it is no longer where it appears to be
+        };
+
+
+            function dropCrumb_store( p ) // p → statelet property Breadcrumbs.sourcePath
+            {
+                const state = history./*copy of*/state;
+                console.assert( state !== null, A ); // Assured by *reorient*
+                const statelet = state[NS_READ].Breadcrumbs;
+                console.assert( statelet !== undefined, A ); // Assured by *reorient*
+                if( statelet.sourcePath === p ) return; // Already stored
+
+                statelet.sourcePath = p;
+                history.replaceState( state, /*no title*/'' );
+            }
+
+
+
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
         /** The element (Element) on which attribute *showsBreadcrumb* is set, or null if there is none.
           */
-        let crumbHolder = null;
+        let crumbShower = null;
 
 
 
-        function ensureNoCrumbShowing()
+        /** Constructs an XPath locator of the given element that is unambiguous within the context
+          * of the present document.
+          *
+          *     @param element (Element)
+          *     @return (string)
+          */
+        function definitePath( element )
         {
-            if( crumbHolder === null ) return;
+            // Modified from Mozilla contributors' *XPath snippets*, licence CC-BY-SA 2.5.
+            // https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets#getXPathForElement
+            const html = document.documentElement;
+            let path = '';
+            path: for( let e = element;; e = e.parentNode )
+            {
+                const eLocalName = e.localName;
+                let seg = "/*[local-name()='" + eLocalName + "']"; // Segment of path
+                if( e === html )
+                {
+                    path = seg + path;
+                    break path;
+                }
 
-            crumbHolder.removeAttributeNS( NS_READ, 'showsBreadcrumb' );
-            crumbHolder = null;
+                let ordinal = 1; // Ordinals count from 1 in XPath
+                for( let sibling = e;; )
+                {
+                    sibling = sibling.previousElementSibling;
+                    if( sibling === null ) break;
+
+                    if( sibling.localName === eLocalName ) ++ordinal;
+                }
+                seg +=  '[' + ordinal + ']';
+                path = seg + path;
+            }
+            return path;
         }
 
 
@@ -1463,7 +1491,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         function hearClick/* event handler */( click )
         {
-            let a = null; // Hyperlink source node (HTML *a* element) about to activate, if any
             for( let t = click.target;; t = t.parentNode )
             {
                 if( t.namespaceURI !== NS_HTML ) continue;
@@ -1471,29 +1498,33 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 const tN = t.localName;
                 if( tN === 'body' || tN === 'html' ) break;
 
-                if( tN !== 'a' ) continue;
+                if( tN !== 'a'/*hyperlink source node*/ ) continue;
 
                 if( !t.hasAttribute( 'href' )) break; // Dud link
 
-                a = t;
-
-              // Drop a crumb before traversing the link
+              // Drop a crumb before traversing the hyperlink
               // ------------
-                const state = history./*copy of*/state;
-                console.assert( state !== null, A ); // Assured by Breadcrumbs.reorient
-                const statelet = state[NS_READ].Breadcrumbs;
-                console.assert( statelet !== undefined, A ); // Assured by Breadcrumbs.reorient
-                statelet.breadcrumbPath = definitePath( a );
-                history.replaceState( state, /*no title*/'' );
-                break;
+                expo.dropCrumb( t );
+                return;
             }
 
-            if( crumbHolder === a ) return; // None is showing, or none other than *a*; no problem
-
-            ensureNoCrumbShowing(); /* Either the crumb is no longer present where it is showing
-              because it was just removed and dropped on *a* instead; or the click indicates that
-              the user no longer wants it to show. */
+            hideCrumb(); /* This click (which is not a hyperlink activation)
+              might be an attempt to hide a previously dropped crumb that is showing. */
         }
+
+
+
+        function hideCrumb() // If any is showing
+        {
+            if( crumbShower === null ) return;
+
+            crumbShower.removeAttributeNS( NS_READ, 'showsBreadcrumb' );
+            crumbShower = null;
+        }
+
+
+
+        const KEY_travelLast = NS_READ + '.Breadcrumbs.travelLast';
 
 
 
@@ -1501,11 +1532,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        const KEY_positionLastShown = NS_READ + '.Breadcrumbs.positionLastShown';
-
-
-
-        /** Reorient after a position change in the session history.
+        /** Reorient after travel.
           *
           *     @param state (Object) The value of History.state subsequent to the change.
           */
@@ -1528,64 +1555,149 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
                 return s;
             })();
-            let position = statelet.position;
-            let travel; /* (-N, 0, N) = (backward by N entries, reload, forward by N entries)
-              Relative position of this entry versus the last entry (of ours) that was shown */
-            if( position === undefined ) // Then this entry is new to the session history
+            travel = statelet.travel;
+            if( travel === undefined ) // Then this entry is new to the session history
             {
-                position = history.length - 1; // Last entry of session history
-                travel = 1;
+                const historyLength = history.length;
+                travel = historyLength - 1; // Last entry of session history
+
+              // Sync → travelStops
+              // ------------------
+                travelStops.length = historyLength;
+                travelStops[travel] = travelStop = new TravelStop();
 
               // Initialize the subprogram statelet
               // ----------------------------------
-                statelet.breadcrumbPath = null; // Properly formed, as per Breadcrumbs contract
-                statelet.position = position;
+                statelet.sourcePath = null; // Properly formed, as per Breadcrumbs contract
+                statelet.travel = travel;
+                statelet.targetDirection = ( ()=>
+                {
+                    Hyperlinkage.refresh();
+                    const elementOnTarget = Hyperlinkage.elementOnTarget();
+                    if( elementOnTarget === null ) return null;
+
+                    const previousStop = travelStops[travel-1];
+                    if( previousStop === undefined ) return 'out';
+
+                    const sourceNode = previousStop.sourceNode;
+                    if( sourceNode === null )  return 'in';
+
+                    if( sourceNode === elementOnTarget ) return 'self';
+
+                    const dP = sourceNode.compareDocumentPosition( elementOnTarget );
+                    if( dP & DOCUMENT_POSITION_PRECEDING ) return 'up';
+
+                    console.assert( dP & DOCUMENT_POSITION_FOLLOWING, A );
+                    return 'down';
+                })();
                 history.replaceState( state, /*no title*/'' );
             }
             else // This entry was pre-existing
             {
-                position = statelet.position;
-                const s = sessionStorage.getItem( KEY_positionLastShown ); // [FSS]
-                if( s !== null )
-                {
-                    const positionLastShown = Number( s );
-                    travel = position - positionLastShown;
-                }
-                else travel = 0; // Can happen (e.g.) on forward travel from an entry not "of ours"
+              // Sync → travelStops
+              // ------------------
+                travelStop = travelStops[travel];
+                if( travelStop === undefined ) travelStops[travel] = travelStop = new TravelStop();
             }
-         // console.log( 'Travel direction was ' + direction ); // TEST
-            document.documentElement.setAttributeNS( NS_READ, 'travel', travel );
 
-          // Stamp the session with the position last shown, which is now this position
-          // -----------------
-            sessionStorage.setItem( KEY_positionLastShown, String(position) );
-
-          // Ensure crumb is showing or not, as appropriate
-          // -----------------------
-            if( travel < 0 )
+          // Mark the travel delta
+          // ---------------------
+            const html = document.documentElement;
+            const delta = ( ()=>
             {
-                const p = statelet.breadcrumbPath;
-                if( p !== null )
-                {
-                    const pR = document.evaluate( p, document, /*namespace resolver*/null,
-                      ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
-                    const s = pR.iterateNext(); // Resolved hyperlink source node
-                    console.assert( pR.iterateNext() === null, A ); /* At most there is the one
-                      if *definitePath* is 'unambiguous' as claimed and required */
-                    if( crumbHolder !== s )
-                    {
-                      // Show crumb
-                      // ----------
-                        ensureNoCrumbShowing();
-                        s.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
-                        crumbHolder = s;
-                    }
-                    return;
-                }
+                const s = sessionStorage.getItem( KEY_travelLast ); // [FSS]
+             // console.assert( s !== null, A ); /* This entry in the session history is revisited
+             //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
+             //   But each entry (of ours) stores *s*.  How then could *s* be null?  [OUR] */
+             /// Yet it is null on return from HTTP document to file-scheme document (Firefox 60)
+                const travelLast = Number( s );
+                return travel - travelLast;
+            })();
+            html.setAttributeNS( NS_READ, 'travelDelta', delta );
+
+          // Stamp the session with the ordinal of the last entry shown, which is now this entry
+          // -----------------
+            sessionStorage.setItem( KEY_travelLast, String(travel) );
+
+          // Mark the target direction
+          // -------------------------
+            {
+                const d = statelet.targetDirection;
+                if( d === null ) html.removeAttributeNS( NS_READ, 'targetDirection' );
+                else html.setAttributeNS( NS_READ, 'targetDirection', d );
             }
 
-            ensureNoCrumbShowing();
+          // Ensure a crumb is showing or not, as appropriate
+          // -------------------------
+            sC:
+            {
+                if( delta >= 0 )
+                {
+                    hideCrumb();
+                    break sC;
+                }
+
+                const p = statelet.sourcePath;
+                if( p === null )
+                {
+                    hideCrumb();
+                    break sC;
+                }
+
+                const pR = document.evaluate( p, document, /*namespace resolver*/null,
+                  ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
+                const s = pR.iterateNext(); // Resolved hyperlink source node
+                console.assert( pR.iterateNext() === null, A ); /* At most there is the one
+                  if *definitePath* is unambiguous, as claimed and required. */
+                if( crumbShower === s ) break sC;
+
+              // Show crumb
+              // ----------
+                hideCrumb(); // Removing it from present *crumbShower*, if any
+                s.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
+                crumbShower = s;
+            }
         }
+
+
+
+        /** Ordinal (number) of the present entry within the session history,
+          *
+          *     @see Statelet property Breadcrumbs.travel
+          */
+        let travel;
+
+
+
+        /** The present stop in session history.
+          */
+        let travelStop;
+
+
+
+        class TravelStop
+        {
+
+            constructor() { this._sourceNode = null; }
+
+
+            /** The hyperlink source node whose activation caused the last exit from this stop.
+              * This is null if the stop was never exited during the present load of the document,
+              * or its last exit had some other cause.
+              *
+              *     @see Statelet property Breadcrumbs.sourcePath
+              */
+            get sourceNode() { return this._sourceNode; }
+            set sourceNode( n ) { this._sourceNode = n; }
+
+        }
+
+
+
+        /** Sparse array of stops in session history.  Stored at index *travel* are the present stop
+          * and, contiguous with it, all other stops accessible to the present load of the document.
+          */
+        const travelStops = [];
 
 
 
@@ -1597,6 +1709,15 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         addEventListener( 'popstate', ( /*PopStateEvent*/pop ) => // Intradocument travel
         {
             reorient( pop.state );
+        });
+        addEventListener( 'pagehide', ( /*PageTransitionEvent*/e ) =>
+        {
+            if( travelStop.sourceNode === null )
+            {
+                dropCrumb_store( null ); /* Clear any *sourcePath* from the statelet
+                  because this exit is not caused by a hyperlink activation. */
+                if( /*might later revisit*/e.persisted ) hideCrumb();
+            }
         });
         return expo;
 
@@ -1948,13 +2069,24 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             let idOnTarget = null;
 
 
+
+        /** Immediately updates the Hyperlinkage state, rather than wait for an event
+          * that might yet be pending.
+          */
+        expo.refresh = function() { hearHashChange.call( /*this*/window ); };
+
+
+
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
         function hearHashChange/* event handler */( _HashChangeEvent )
         {
             const hash = location.hash; // [WDL]
-            const id = idOnTarget = hash.length === 0? null: hash.slice(1);
+            const id = hash.length === 0? null: hash.slice(1);
+            if( idOnTarget === id ) return; // Redundant call owing to use of *refresh*
+
+            idOnTarget = id;
             if( id !== null )
             {
                 const e = document.getElementById( id );
@@ -1971,7 +2103,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
         window.addEventListener( 'hashchange', hearHashChange );
-        hearHashChange.call( /*this*/window ); // initializing
+        expo.refresh(); // Initializing
         return expo;
 
     }() );
@@ -2478,14 +2610,14 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** The maximum, formal gap between the *approach* child and the *hall* sibling to its right.
+        /** The maximum, formal gap between the inway *approach* and the *hall* sibling to its right.
           * The *visual* gap may be wider depending on how the *approach* draws its content.
           */
         const MAX_GAP = 1.5/*rem*/ * REM; // Within which the pointer style defaults, so indicating
                                          // that the two components have distinct control functions.
 
 
-        /** The minimum, formal gap between the *approach* child and the *hall* sibling to its right.
+        /** The minimum, formal gap between the inway *approach* and the *hall* sibling to its right.
           */
         const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
 
@@ -2697,9 +2829,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-       // ----------------------------------------------------------------------------------------------
-
-
         /** Sets an *href* attribute on the given element in reference to the target node.
           */
         hrefTo( el ) { el.setAttribute( 'href', this._targetDocumentLocation + '#' + this._targetID ); }
@@ -2724,6 +2853,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         /** The unparsed string value of the attribute, as declared.
           */
         get value() { return this._stringValue; }
+
 
     }
 
@@ -2775,9 +2905,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
         }
 
-
-
-       // ----------------------------------------------------------------------------------------------
 
 
         /** Does the partial transformation of the element.  Specifically this method:
@@ -2859,6 +2986,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 e.setAttributeNS( NS_READ, 'hasShortName', 'hasShortName' );
             }
         }
+
 
     }
 
@@ -2961,12 +3089,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
           // Drop a breadcrumb before changing location
           // -----------------
-            const state = history./*copy of*/state;
-            console.assert( state !== null, A ); // Assured by Breadcrumbs.reorient
-            const statelet = state[NS_READ].Breadcrumbs;
-            console.assert( statelet !== undefined, A ); // Assured by Breadcrumbs.reorient
-            statelet.breadcrumbPath = definitePath( targetNode );
-            history.replaceState( state, /*no title*/'' );
+            Breadcrumbs.dropCrumb( targetNode );
 
           // Toggle the browser location, on target ⇄ off target
           // ---------------------------
@@ -3003,6 +3126,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       */
     class TargetImage
     {
+
 
         constructor( leader, localName, namespaceURI )
         {
@@ -3130,7 +3254,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Where approximately a waylink target node is in relation to its source.
+    /** The approximate location of a hyperlink target node relative to its source node.
       */
     class TargetWhereabouts
     {
@@ -3138,48 +3262,17 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
         /** Constructs a TargetWhereabouts.
           *
-          *     @param source (Element) The waylink source node.
-          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
+          *     @see #direction
+          *     @see #documentLocationN
+          *     @see #target
           */
-        constructor( source, link )
+        constructor( direction, documentLocationN, target )
         {
-            const docLoc = link.targetDocumentLocation;
-            if( docLoc.length > 0 )
-            {
-                const docLocN = URIs.normalized( docLoc );
-                if( docLocN !== DOCUMENT_LOCATION ) // Then the target is outside the present document
-                {
-                    this._direction = null;
-                    this._documentLocationN = URIs.normalized( docLoc );
-                    this._target = null;
-                    return;
-                }
-            }
-
-            // The target is nominally within the present document
-            this._documentLocationN = '';
-            const target = document.getElementById( link.targetID );
+            this._direction = direction;
+            this._documentLocationN = documentLocationN;
             this._target = target;
-            if( target !== null )
-            {
-                const targetPosition = source.compareDocumentPosition( target );
-                if( targetPosition & DOCUMENT_POSITION_PRECEDING ) this._direction = TARGET_UP;
-                else
-                {
-                    console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
-                    this._direction = TARGET_DOWN;
-                }
-            }
-            else
-            {
-                tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
-                this._direction = null;
-            }
         }
 
-
-
-       // ----------------------------------------------------------------------------------------------
 
 
         /** The relative direction to the target node if it exists in the present document.
@@ -3198,10 +3291,62 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** The waylink target node within the present document, or null if there is none.
-          * This property is null in the case of an interdocument or broken waylink.
+
+        /** Constructs a TargetWhereabouts from a waylink source node.
+          *
+          *     @param source (Element) The waylink source node.
+          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
+          */
+        static fromSource( source, link )
+        {
+            const docLoc = link.targetDocumentLocation;
+            if( docLoc.length > 0 )
+            {
+                const docLocN = URIs.normalized( docLoc );
+                if( docLocN !== DOCUMENT_LOCATION ) // Then the target is outside the present document
+                {
+                    return new TargetWhereabouts( /*direction*/null, URIs.normalized(docLoc),
+                      /*target*/null );
+                }
+            }
+
+            // The target is nominally within the present document
+            const target = document.getElementById( link.targetID );
+            if( target !== null )
+            {
+                return fromLink( source, target );
+
+                /** Constructs a TargetWhereabouts from a source and target node,
+                  * both located in the present document.
+                  *
+                  *     @param source (Element) The source node.
+                  *     @param target (Element) The target node.
+                  */
+                function fromLink( source, target )
+                {
+                    const direction = ( ()=>
+                    {
+                        const targetPosition = source.compareDocumentPosition( target );
+                        if( targetPosition & DOCUMENT_POSITION_PRECEDING ) return TARGET_UP;
+
+                        console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
+                        return TARGET_DOWN;
+                    })();
+                    return new TargetWhereabouts( direction, /*documentLocationN*/'', target );
+                }
+            }
+
+            tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
+            return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', target );
+        }
+
+
+
+        /** The target node within the present document, or null if there is none.
+          * This property is null in the case of an interdocument or broken hyperlink.
           */
         get target() { return this._target; }
+
 
     }
 
@@ -3426,7 +3571,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     catch( unparseable ) { break source; }
 
                     // No need here to fend against other types of malformed waylink declaration.
-                    // Rather take it as the wayscribe intended, and so extend the trace.
+                    // Rather take it as the wayscribe intended, so extend the trace.
                     let tDocLoc = link.targetDocumentLocation;
                     tDocLoc = tDocLoc.length > 0? URIs.normalized(tDocLoc): docLoc;
                     const targetID = link.targetID;
@@ -3574,7 +3719,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *         It failed when this program was loaded by a *script* element injected at runtime.
   *         Probably because then the program was late in running and late in styling the elements
   *         - especially in giving the crucial display style of ‘block’ to the specialized elements,
-  *         which are XML, and therefore ‘inline’ by default - and this confused the browser.
+  *         which are XML, therefore ‘inline’ by default - this confused the browser.
   *
   *         A remedy might be to make this program load immediately.  The only reliable way, however,
   *         is to have the wayscribe write the *script* element into every way declaration document,
@@ -3592,22 +3737,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *         Normally it would be declared earlier, but that would complicate the lookup of its siblings,
   *         making them harder to find.
   *
+  *  [OUR]  Here the entry reference is restricted to *our* entries in the session history.
+  *         An entry's document might not run this program, or its session store might be inaccessible
+  *         to this program.  Such an entry would not be *ours* in the present sense of the term.
+  *
   *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother
   *         of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
   *
   *  [PSA]  Page-show animation.  On revisiting a loaded page in session history (forward or backward),
   *         sometimes Firefox (60) fails to start or restart an animation commanded by a style rule.
-  *
-  *  [SBU]  Spurious breadcrumb with unlinked travel.  This is a BUG.  On moving forward from session
-  *         history entry E1 to a new entry E2 by typing in the address bar (not activating a link),
-  *         any breadcrumb in E1 will remain where it lies on some hyperlink source node.
-  *         This is incorrect.  It is incorrect because the unlinked move to E2 had no point
-  *         of departure.  The crumb that records such a point should have been removed.
-  *         Not being removed, it shows itself on moving back to E1.  This is misleading.
-  *             The bug might be repaired by removing any breadcrumb after first showing it.
-  *         But this would partly defeat its purpose in the more typical case of a linked E2:
-  *         the crumb would no longer show during back-and-forth motion between E1 and E2.
   *
   *  [SH] · Standard HTML.  Here avoiding special markup in favour of standard HTML,
   *         thus gaining access to HTML-particular features such as the *style* attribute.
