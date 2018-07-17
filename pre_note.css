@@ -22,7 +22,7 @@ html|pre::first-line /* Where the start tag is declared, and no note is expected
 }
 html|pre
 {
-    margin-top: -1em; /* The content by the font height, which is likely near to the line height,
+    margin-top: -1em; /* Lift the content by the font height, which is likely near to the line height,
       and so force the first line out the top of the *pre* box */
 
     /* Have it slide *beneath* preceding element, not to interfere with element's cursoring */
