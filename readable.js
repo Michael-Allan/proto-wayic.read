@@ -124,7 +124,7 @@
   *   * (as a) Waylink source node, Bitform
   *   ----------------------------
   *     [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
-  *     [image]            · Indicates a form that might yet change.  Meantime it is either based on
+  *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on
   *                          a cached image of the target node (value ‘present’) or not (‘absent’).
   *     [isBroken] · Has a broken target reference?  [BA]
   *     [cog:link] ·
@@ -805,22 +805,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Notes the fact of an unbroken waylink that targets a node of the present document.
-      *
-      *     @param target (Element) A waylink target node in the present document.
-      */
-    function noteWaylink( target )
-    {
-        target.interlinkScene = true;
-        target.removeAttributeNS( NS_READ, 'isOrphan' );
-        const span = asElementNamed( 'span', target.firstChild/*eSTag*/
-          .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
-        const iconicText = span.firstChild;
-        iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
-    }
-
-
-
     /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
       */
     const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
@@ -1070,12 +1054,12 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         const image = registration.targetImage;
                         if( image === null )
                         {
-                            partTransform.image = 'absent';
+                            partTransform.imaging = 'absent';
                             targetPreviewString = '⌚'; // Unicode 231a (watch) = pending symbol
                         }
                         else
                         {
-                            partTransform.image = 'present';
+                            partTransform.imaging = 'present';
                             targetPreviewString = image.leader;
                             configureForTarget( tNS, tN, linkV, isBit, image, partTransform );
                         }
@@ -1688,7 +1672,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
               *     @see Statelet property Breadcrumbs.sourcePath
               */
             get sourceNode() { return this._sourceNode; }
-            set sourceNode( n ) { this._sourceNode = n; }
+            set sourceNode( _ ) { this._sourceNode = _; }
 
         }
 
@@ -1759,22 +1743,42 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
     class DocumentRegistration // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
     {
 
-        constructor( location, doc = null )
+
+        constructor( document, location, readers )
         {
+            this._document = document;
             this._location = location;
-            this._document = doc;
+            this._readers = readers;
         }
 
 
-        /** The registered document, or null if the document could not be retrieved.
+
+        /** The document, or null if the document request is pending or failed.
+          *
+          *     @return (Document)
           */
         get document() { return this._document; }
-        set document( d ) { this._document = d; }
+        set document( _ ) { this._document = _; }
 
 
-        /** The location of the document in normal form.
+
+        /** The location of the document in normal URL form.
+          *
+          *     @return (string)
+          *     @see URIs#normalized
           */
         get location() { return this._location; }
+
+
+
+        /** The readers that await notification of the document response or failure,
+          * or null if notification has commenced.
+          *
+          *     @return (Array of DocumentReader)
+          */
+        get readers() { return this._readers; }
+        set readers( _ ) { this._readers = _; }
+
 
     }
 
@@ -1801,15 +1805,12 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         expo.addOmnireader = function( reader )
         {
-            if( omnireader !== null ) throw 'Cannot add reader, one was already added';
+            if( omnireader !== null ) throw 'Cannot add omnireader, one was already added';
 
             omnireader = reader;
-            for( const mapping of registry )
+            for( const docReg of registry.values() )
             {
-                const entry = mapping[1];
-                if( !( entry instanceof DocumentRegistration )) continue; // Registration is pending
-
-                notifyReader( reader, entry, entry.document );
+                if( docReg.readers === null ) notifyReader( reader, docReg );
             }
         };
 
@@ -1832,24 +1833,23 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         {
             if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
 
-            const entry = registry.get( docLoc );
-            if( entry !== undefined )
+            let docReg = registry.get( docLoc );
+            if( docReg !== undefined ) // Then the document was already requested
             {
-                if( entry instanceof DocumentRegistration ) notifyReader( reader, entry, entry.document );
-                else // Registration is pending
-                {
-                    console.assert( entry instanceof Array, A );
-                    entry/*readers*/.push( reader ); // Await the registration
-                }
+                const readers = docReg.readers;
+                if( readers !== null ) readers.push( reader );
+                else notifyReader( reader, docReg );
                 return;
             }
 
             const readers = [];
-            registry.set( docLoc, readers );
+            docReg = new DocumentRegistration( /*document*/null, docLoc, readers );
             readers.push( reader );
+            registry.set( docLoc, docReg );
 
-          // Configure a document request
-          // ----------------------------
+          // ===================
+          // Configure a request for the document
+          // ===================
             const req = new XMLHttpRequest();
             req.open( 'GET', docLoc, /*async*/true ); // Misnomer; opens nothing, only sets config
          // req.overrideMimeType( 'application/xhtml+xml' );
@@ -1857,77 +1857,62 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             req.responseType = 'document';
             req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
 
-          // Stand by for the response
-          // -------------------------
+          // ===========
+          // Stand ready to catch the response
+          // ===========
+            req.onabort = ( _event/*ignored*/ ) =>
             {
-                const docReg = new DocumentRegistration( docLoc );
+                console.warn( 'Document request aborted: ' + docLoc );
+            };
+            req.onerror = ( _event/*ignored*/ ) =>
+            {
+                // Parameter *_event* is a ProgressEvent, at least on Firefox,
+                // which contains no useful information on the specific cause of the error.
 
-              // abort
-              // - - -
-                req.onabort = function( e ) { console.warn( 'Document request aborted: ' + docLoc ); };
+                console.warn( 'Document request failed: ' + docLoc );
+            };
+            req.onload = ( event ) =>
+            {
+                // If this listener is registered instead by req.addEventListener,
+                // then the file scheme workaround fails for Firefox (52),
+                // even for intra-directory requests. [SPF in readable.css]
 
-              // error
-              // - - -
-                /** @param e (Event) Unfortunately this is a mere ProgressEvent, at least on Firefox,
-                  *   which contains no useful information on the specific cause of the error.
-                  */
-                req.onerror = function( e ) { console.warn( 'Document request failed: ' + docLoc ); };
+                const doc = event.target.response;
+                docReg.document = doc;
 
-              // load
-              // - - -
-                req.onload = function( event )
+              // Test *id* declarations
+              // ----------------------
+                const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
+                for( traversal.nextNode()/*onto the document node itself*/;; )
                 {
-                    // If this listener is registered instead by req.addEventListener,
-                    // then the file scheme workaround fails for Firefox (52),
-                    // even for intra-directory requests. [SPF in readable.css]
-                    const doc = event.target.response;
-                    docReg.document = doc;
+                    const t = traversal.nextNode();
+                    if( t === null ) break;
 
-                  // Test *id* declarations
-                  // ----------------------
-                    const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
-                    for( traversal.nextNode()/*onto the document node itself*/;; )
-                    {
-                        const t = traversal.nextNode();
-                        if( t === null ) break;
+                    const id = t.getAttribute( 'id' );
+                    if( id !== null ) expo.testIdForm( t, id );
+                }
+            };
+            req.onloadend = ( _event/*ignored*/ ) =>
+            {
+                // Parameter *_event* is a ProgressEvent, at least on Firefox, which contains
+                // no useful information.  If more information is ever needed, then it might
+                // be obtained from req.status, or the fact of a call to req.onerror, above.
 
-                        const id = t.getAttribute( 'id' );
-                        if( id !== null ) expo.testIdForm( t, id );
-                    }
-                };
+              // Notify the waiting readers
+              // --------------------------
+                const readers = docReg.readers;
+                docReg.readers = null;
+                for( const r of readers ) notifyReader( r, docReg );
+                if( omnireader !== null ) notifyReader( omnireader, docReg )
+            };
+            req.ontimeout = ( e ) =>
+            {
+                console.warn( 'Document request timed out: ' + docLoc );
+            };
 
-              // load end
-              // - - - - -
-                /** @param _event (Event) This is a mere ProgressEvent, at least on Firefox,
-                  *   which itself contains no useful information.
-                  */
-                req.onloadend = function( _event/*ignored*/ )
-                {
-                    // Parameter *_event* is a ProgressEvent, which contains no useful information.
-                    // If more information is ever needed, then it might be obtained from req.status,
-                    // or the mere fact of a call to req.error (see listener req.onerror, above).
-
-                  // Register the document
-                  // ---------------------
-                    registry.set( docLoc, docReg );
-
-                  // Notify the waiting readers
-                  // --------------------------
-                    const doc = docReg.document;
-                    for( const r of readers ) notifyReader( r, docReg, doc );
-                    if( omnireader !== null ) notifyReader( omnireader, docReg, doc )
-                };
-
-              // time out
-              // - - - - -
-                req.ontimeout = function( e )
-                {
-                    console.warn( 'Document request timed out: ' + docLoc );
-                };
-            }
-
+          // ================
           // Send the request
-          // ----------------
+          // ================
             req.send();
         };
 
@@ -1963,6 +1948,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
+        const DOCUMENT_REGISTRATION = new DocumentRegistration( document, DOCUMENT_LOCATION,
+          /*readers*/null );
+
+
+
         function d_tsk( doc, message )
         {
             if( doc === null ) throw NULL_PARAMETER;
@@ -1972,8 +1962,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        function notifyReader( r, docReg, doc )
+        function notifyReader( r, docReg )
         {
+            const doc = docReg.document;
             if( doc !== null ) r.read( docReg, doc );
             r.close( docReg );
         }
@@ -1985,15 +1976,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        const PRESENT_DOCUMENT_REGISTRATION = new DocumentRegistration( DOCUMENT_LOCATION, document );
-
-
-
-        /** Map of pending and complete document registrations, including that of the present document.
-          * The entry key is DocumentRegistration#location.  The value is either the registration itself
-          * (DocumentRegistration) or the readers (Array of DocumentReader) that await it.
+        /** Map of document registrations (DocumentRegistration) keyed by DocumentRegistration#location.
           */
-        const registry = new Map().set( DOCUMENT_LOCATION, PRESENT_DOCUMENT_REGISTRATION );
+        const registry = new Map();
+
+            { registry.set( DOCUMENT_LOCATION, DOCUMENT_REGISTRATION ); } // Present document
 
 
 
@@ -2146,6 +2133,24 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
+        /** Notes the fact of an unbroken waylink that targets a node of the present document.
+          *
+          *     @param target (Element) A waylink target node in the present document.
+          */
+        function noteWaylink( target )
+        {
+            if( target.interlinkScene ) return; // Already noted
+
+            target.interlinkScene = true;
+            const span = asElementNamed( 'span', target.firstChild/*eSTag*/
+              .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
+            const iconicText = span.firstChild;
+            iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
+            target.removeAttributeNS( NS_READ, 'isOrphan' );
+        }
+
+
+
         /** @param doc (Document) The document to scan.
           * @param docLoc (string) The location of the document in normal form.
           */
@@ -2171,11 +2176,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 if( targDocLoc !== DOCUMENT_LOCATION ) continue;
 
                 const target = document.getElementById( link.targetID );
-                if( target === null) continue;
-
-                if( target.interlinkScene ) continue; // The work is already done
-
-                noteWaylink( target );
+                if( target !== null) noteWaylink( target );
             }
         }
 
@@ -2344,11 +2345,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                             const sN = source.localName;
                             const sNS = source.namespaceURI;
                             const image = new TargetImage( sL, sN, sNS );
-                            if( image.equals( /*imageWas*/linkReg.image ))
+                            if( image.equals( /*imageWas*/linkReg.targetImage ))
                             {
                               // Affirm the source node as is
                               // ----------------------
-                                source.removeAttributeNS( NS_READ, 'image' );
+                                source.removeAttributeNS( NS_READ, 'imaging' );
                                 continue;
                             }
 
@@ -2888,7 +2889,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
               * Meantime the form is either based on a cached image of the target node
               * (value ‘present’) or not (‘absent’).
               */
-            this.image = null;
+            this.imaging = null;
 
 
             /** The altered string to show for the local part of the element's qualified name,
@@ -2916,8 +2917,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         run()
         {
             const e = this.element;
-            const image = this.image;
-  /*[C2]*/  if( image !== null ) e.setAttributeNS( NS_READ, 'image', image );
+            const imaging = this.imaging;
+  /*[C2]*/  if( imaging !== null ) e.setAttributeNS( NS_READ, 'imaging', imaging );
 
           // Leader
           // ------
@@ -3015,7 +3016,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             // Remove any attributes that might have been set:
             element.removeAttributeNS( NS_READ, 'hasLeader' );
             element.removeAttributeNS( NS_READ, 'hasShortName' );
-            element.removeAttributeNS( NS_READ, 'image' );
+            element.removeAttributeNS( NS_READ, 'imaging' );
         }
 
     }
@@ -3146,11 +3147,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         equals( other )
         {
-            if( other == null ) return false;
+            if( other === null ) return false;
 
-            return _leader === other.leader
-              && _localName === other.localName
-              && _namespaceURI === other.namespaceURI;
+            return this._leader === other.leader
+              && this._localName === other.localName
+              && this._namespaceURI === other.namespaceURI;
         }
 
 

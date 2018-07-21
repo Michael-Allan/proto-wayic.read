@@ -434,14 +434,14 @@ read|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 }
 
 
-*:not([read|hasPreviewString]):not([read|image='absent']):not([read|hasShortName]) >
+*:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|hasShortName]) >
 read|forelinker > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
       then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
-*:not([read|hasPreviewString]):not([read|image='absent']) >
+*:not([read|hasPreviewString]):not([read|imaging='absent']) >
 read|forelinker > a > verticalTruncator
 {
     margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
@@ -504,8 +504,8 @@ read|a       /*hyperform*/ > a[href^='#']:not([read|targetDirection])[cog|link]
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[read|lighting='neon'] *[read|image]:not(step|*) > eSTag > eQName > eName,
-html[read|lighting='neon'] *[read|image] > read|forelinker > a > preview
+html[read|lighting='neon'] *[read|imaging]:not(step|*) > eSTag > eQName > eName,
+html[read|lighting='neon'] *[read|imaging] > read|forelinker > a > preview
 {
     color: hsl( var(--targetImage-hue), 30%, 50% );
 }
@@ -536,8 +536,8 @@ html[read|lighting='neon'] read|forelinker > a[read|showsBreadcrumb] > verticalT
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[read|lighting='paper'] *[read|image] > eSTag > eQName > eName,
-html[read|lighting='paper'] *[read|image] > read|forelinker > a > preview
+html[read|lighting='paper'] *[read|imaging] > eSTag > eQName > eName,
+html[read|lighting='paper'] *[read|imaging] > read|forelinker > a > preview
 {
     color: hsl( var(--targetImage-hue), 100%, 30% );
 }
@@ -596,14 +596,14 @@ read|eSTag > eQName[read|isAnonymous] > eName /* Transformed to a mere bullet by
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 
-*[read|hasShortName][read|hasLeader]:not([read|image='absent'])[read|isWaybit] > eSTag
+*[read|hasShortName][read|hasLeader]:not([read|imaging='absent'])[read|isWaybit] > eSTag
 {
     float: left; /* Putting the element's start tag in line with its leading text content */
     margin-right: 0.5em;
 }
 
 
-step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
+step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     display: block;
 }
@@ -612,7 +612,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|text
 /* - - -  neon   - - - - - - - - - - - -
  */
 html[read|lighting='neon']
-step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
+step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     padding-top: 0.30em; /* = NEO_ST_MARG_T + ST_PAD_T */
 }
@@ -621,7 +621,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|text
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[read|lighting='paper']
-step|*[read|hasShortName][read|hasLeader]:not([read|image='absent']) > read|textAligner
+step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     padding-top: 0.28em; /* = PAP_ST_MARG_T + ST_PAD_T + ST_BOR */
 }
@@ -675,7 +675,7 @@ html[read|lighting='neon'] step|*             > eSTag > eQName
     background-color: hsla( 0, 0%, 100%, 0.45 );
     margin-left: -0.20em; /* = -ST_PAD_L */
 }
-html[read|lighting='neon'] step|*[read|image] > eSTag > eQName
+html[read|lighting='neon'] step|*[read|imaging] > eSTag > eQName
 {
     background-color: hsla( var(--targetImage-hue), 100%, 60%, 0.45 );;
 }
