@@ -52,8 +52,8 @@
   *
   *   html:html ∙ Document element
   *   ---------
-  *     [animatedShow] · Style rules that must animate or re-animate on each load or reload
-  *                      of the document, and on each revisit to it, must depend on this attribute.
+  *     [animatedShow] · Style rules that must animate or re-animate on each load of the document,
+  *                      and on each revisit to it, must depend on this attribute.
   *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
   *     [travelDelta]    · Travel distance in session history to reach the present entry
   *                        from the last entry of ours that was shown: -N, 0 or N
@@ -255,6 +255,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
       // Processes launched, view may deflect in atypical cases
       // ------------------
+        DocumentCachePersistor.start();
         InterdocScanner.start();
         InterdocWaylinkTransformer.start();
         WayTracer.start();
@@ -337,6 +338,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   U R I s
 
 
     /** Dealing with Uniform Resource Identifiers.
@@ -406,7 +408,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             // Apparently this cannot be adapted for use with other documents, to normalize their own,
             // internally encoded references.  At least it fails when an equivalent function is
             // constructed (with parser element, etc.) against another document obtained through the
-            // Documents reading facility.  Then the *href* always yields the *undefined* value.
+            // DocumentCache reading facility.  Then the *href* always yields the *undefined* value.
             //
             // FIX by moving to the more robust method of wayics.lex.
             // http://reluk.ca/project/wayic/lex/_/reader.js
@@ -522,7 +524,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    const COMMENT = Node.COMMENT_NODE;
+    const COMMENT_NODE = Node.COMMENT_NODE;
 
 
 
@@ -610,6 +612,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
+    const DOCUMENT_NODE = Node.DOCUMENT_NODE;
+
+
+
     const DOCUMENT_POSITION_FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
     const DOCUMENT_POSITION_PRECEDING = Node.DOCUMENT_POSITION_PRECEDING;
 
@@ -619,7 +625,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    const ELEMENT = Node.ELEMENT_NODE;
+    const ELEMENT_NODE = Node.ELEMENT_NODE;
 
 
 
@@ -647,7 +653,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Ensures that the content of the document, which initially is invisible on load or reload,
+    /** Ensures that the content of the document, which initially is invisible on load,
       * will become visible to the user.
       */
     function ensureDocumentWillShow()
@@ -687,13 +693,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       // --------------
         body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
 
-      // Run page-show animations on load and reload
+      // Run page-show animations on load
       // ------------------------
         html.setAttributeNS( NS_READ, 'animatedShow', 'animatedShow' );
 
       // Restart page-show animations on each revisit [PSA]
       // ----------------------------
-        addEventListener( 'pageshow', ( /*PageTransitionEvent*/e ) => // Load, reload or revisit
+        addEventListener( 'pageshow', ( /*PageTransitionEvent*/e ) => // Load or revisit
         {
             if( !/*revisit*/e.persisted ) return;
 
@@ -799,6 +805,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       */
     const MS_DELAY_IWT = MS_DELAY_INWAYS + 142;
 
+    /** Delay in milliseconds before the first delayed procedure of DocumentCachePersistor.
+      */
+    const MS_DELAY_DCP = MS_DELAY_IWT + 1991;
+
 
 
     const NO_BREAK_SPACE = ' '; // Unicode a0
@@ -841,7 +851,40 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    const TEXT = Node.TEXT_NODE;
+    /** @see JSON#stringify
+      */
+    const SESSION_STRINGIFY_SPACING = 1; /* Improving the readability of stored content at little cost,
+      given that the session's storage space is practically unbounded. */
+
+
+
+    /** Tests whether the given *id* attribute declaration is well formed for the purpose of waylinkage.
+      * Returns true if it is well formed, otherwise reports it as malformed and returns false.
+      *
+      *     @param t (Element) A waylink target node.
+      *     @param id (string) The value of t's *id* attribute.
+      */
+    function testWaylinkIdForm( t, id )
+    {
+        if( id === null ) throw NULL_PARAMETER;
+
+        let isWellFormed = true;
+        const doc = t.ownerDocument;
+        console.assert( t.hasAttribute('id'), A );
+        t.removeAttribute( 'id' );
+        const e = doc.getElementById( id );
+        t.setAttribute( 'id', id );
+        if( e !== null )
+        {
+            isWellFormed = false;
+            tsk( 'Malformed *id* declaration, value not unique: ' + a2s('id',id), doc );
+        }
+        return isWellFormed;
+    }
+
+
+
+    const TEXT_NODE = Node.TEXT_NODE;
 
 
 
@@ -1001,7 +1044,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 if( !isBit ) return null;
 
                 const v = t.getAttribute( 'id' );
-                if( v && Documents.testIdForm(t,v) ) return v;
+                if( v && testWaylinkIdForm(t,v) ) return v;
 
                 return null;
             })();
@@ -1050,7 +1093,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     if( targetDocLocN.length > 0 ) // Then *t* links to a separate document
                     {
                         const registration = InterdocWaylinkTransformer.registerBitformLink( t,
-                          targetDocLocN, link.targetID );
+                          link.targetID, targetDocLocN );
                         const image = registration.targetImage;
                         if( image === null )
                         {
@@ -1132,12 +1175,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     let n = eSTag.nextSibling; /* Whether special alignment is needed depends on the
                       node that follows the start tag. */
                     let type = n.nodeType;
-                    function isNonethelessSafeToMove() // Though type ≠ TEXT, an assumption here
+                    function isNonethelessSafeToMove() // Though type ≠ TEXT_NODE, an assumption here
                     {
-                        return type === COMMENT || type === ELEMENT && n.namespaceURI === NS_HTML;
+                        return type === COMMENT_NODE
+                            || type === ELEMENT_NODE && n.namespaceURI === NS_HTML;
                     }
 
-                    if( type === TEXT )
+                    if( type === TEXT_NODE )
                     {
                         const cc = n.data; // Leading characters
                         if( cc.length === 0 )
@@ -1164,9 +1208,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         if( n === null ) break;
 
                         type = n.nodeType;
-                    } while( type === TEXT || isNonethelessSafeToMove() );
+                    } while( type === TEXT_NODE || isNonethelessSafeToMove() );
                     n = lastDescendant( eQName ); // Last node of the leader
-                    if( n.nodeType === TEXT )
+                    if( n.nodeType === TEXT_NODE )
                     {
                         const trailer = n.data;
                         const m = trailer.match( /\s+$/ ); // Trailing whitespace
@@ -1180,15 +1224,27 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Reports a problem that a user with write access to the document might be able to redress,
+    /** Reports a fault that a user with write access to the present document might be able to correct,
       * such as malformed wayscript.
+      *
+      *     @param report (string)
+      *     @param doc (Document) The document at fault.  Typically this parameter is left undefined.
+      *       Otherwise a value that is unequal to the present document will defeat the function call,
+      *       causing no report to be sent.
       */
-    function tsk( message )
+    function tsk( report, doc )
     {
-        if( message === null ) throw NULL_PARAMETER;
+        if( report === null ) throw NULL_PARAMETER;
 
-        console.error( message );
-        if( isUserEditor ) alert( message ); // See readable.css § TROUBLESHOOTING
+        if( doc !== undefined )
+        {
+            if( doc.nodeType !== DOCUMENT_NODE ) throw MALFORMED_PARAMETER;
+
+            if( doc !== document ) return;
+        }
+
+        console.error( report );
+        if( isUserEditor ) alert( report ); // See readable.css § TROUBLESHOOTING
     }
 
 
@@ -1375,6 +1431,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   B r e a d c r u m b s
 
 
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose
@@ -1508,7 +1565,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        const KEY_travelLast = NS_READ + '.Breadcrumbs.travelLast';
+        /** Session storage key (string) for the ordinal (in string form) of the last entry shown.
+          */
+        const SS_KEY_travelLast = NS_READ + '.Breadcrumbs.travelLast';
 
 
 
@@ -1589,7 +1648,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             const html = document.documentElement;
             const delta = ( ()=>
             {
-                const s = sessionStorage.getItem( KEY_travelLast ); // [FSS]
+                const s = sessionStorage.getItem( SS_KEY_travelLast ); // [FSS]
              // console.assert( s !== null, A ); /* This entry in the session history is revisited
              //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
              //   But each entry (of ours) stores *s*.  How then could *s* be null?  [OUR] */
@@ -1601,7 +1660,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
           // Stamp the session with the ordinal of the last entry shown, which is now this entry
           // -----------------
-            sessionStorage.setItem( KEY_travelLast, String(travel) );
+            sessionStorage.setItem( SS_KEY_travelLast, String(travel) );
 
           // Mark the target direction
           // -------------------------
@@ -1686,7 +1745,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
         document.documentElement.addEventListener( 'click', hearClick );
-        addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Document load, reload or revisit
+        addEventListener( 'pageshow', ( _PageTransitionEvent ) => // Document load or revisit
         {
             reorient( history./*copy of*/state ); // Firefox can have the wrong value here [FHS]
         });
@@ -1710,119 +1769,97 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   D o c u m e n t   C a c h e
 
 
-    /** A reader of documents.
-      */
-    class DocumentReader // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-    {
-
-        /** Closes this reader.
-          *
-          *     @param docReg (DocumentRegistration)
-          */
-        close( docReg ) {}
-
-
-        /** Reads the document.
-          *
-          *     @param docReg (DocumentRegistration)
-          *     @param doc (Document)
-          */
-        read( docReg, doc ) {}
-
-    }
-
-
-
-   // ==================================================================================================
-
-
-    /** The generalized record of a way declaration document.
-      */
-    class DocumentRegistration // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-    {
-
-
-        constructor( document, location, readers )
+        class DocumentCacheEntry
         {
-            this._document = document;
-            this._location = location;
-            this._readers = readers;
+
+
+            /** Constructs a DocumentCacheEntry.
+              *
+              *     @see #document
+              *     @see #location
+              *     @see #readers
+              */
+            constructor( document, location, readers )
+            {
+                this._document = document;
+                this._location = location;
+                this._readers = readers;
+            }
+
+
+
+            /** The cached document, or null if document storage is pending or failed.
+              *
+              *     @return (Document)
+              */
+            get document() { return this._document; }
+            set document( _ ) { this._document = _; }
+
+
+
+            /** The location of the document in normal URL form.
+              *
+              *     @return (string)
+              *     @see URIs#normalized
+              */
+            get location() { return this._location; }
+
+
+
+            /** The readers to notify of document storage.
+              * This property is nulled when notification commences.
+              *
+              *     @return (Array of DocumentReader)
+              */
+            get readers() { return this._readers; }
+            set readers( _ ) { this._readers = _; }
+
+
         }
 
 
 
-        /** The document, or null if the document request is pending or failed.
-          *
-          *     @return (Document)
-          */
-        get document() { return this._document; }
-        set document( _ ) { this._document = _; }
-
-
-
-        /** The location of the document in normal URL form.
-          *
-          *     @return (string)
-          *     @see URIs#normalized
-          */
-        get location() { return this._location; }
-
-
-
-        /** The readers that await notification of the document response or failure,
-          * or null if notification has commenced.
-          *
-          *     @return (Array of DocumentReader)
-          */
-        get readers() { return this._readers; }
-        set readers( _ ) { this._readers = _; }
-
-
-    }
-
-
-
-   // ==================================================================================================
-
-
-    /** Dealing with way declaration documents at large, not only the present document.
+    /** Store of way declaration documents, including the present document.
       */
-    const Documents = ( function() // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+    const DocumentCache = ( function()
     {
 
-        const expo = {}; // The public interface of Documents
+        const expo = {}; // The public interface of DocumentCache
+
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
 
 
 
-        /** Registers a reader of all documents.  Immediately the reader is given the present document
-          * and all documents that were retrieved in the past.  Any that are retrieved in future will
-          * be given as they arrive.
+        /** Registers a reader of all cached documents.  Immediately the reader is given all entries
+          * whose processing is complete; then later any newly completed entries, each as it completes.
           *
-          *     @throws (string) Error message if one reader was already registered;
-          *       the support for multiple readers is not yet coded.
+          *     @param r (DocumentReader)
           */
-        expo.addOmnireader = function( reader )
+        expo.addOmnireader = function( r )
         {
-            if( omnireader !== null ) throw 'Cannot add omnireader, one was already added';
-
-            omnireader = reader;
-            for( const docReg of registry.values() )
+            for( const entry of entryMap.values() )
             {
-                if( docReg.readers === null ) notifyReader( reader, docReg );
+                if( entry.readers === null ) notifyReader( r, entry );
             }
+            omnireaders.push( r );
         };
 
 
 
-        /** Tries to retrieve the indicated document for the given reader.  If *docLoc* indicates
-          * the present document, then immediately the reader is given the present document as is,
-          * followed by a call to reader.close.
+        /** @return (Iterator of DocumentCacheEntry)
+          */
+        expo.entries = function() { return entryMap.values(); };
+
+
+
+        /** Gives the indicated document to the reader.  If already the document is stored,
+          * then immediately it calls reader.read, followed by reader.close.
           *
-          * Otherwise this method starts a retrieval process.  It may return early and leave
-          * the process to finish later.  If the process succeeds, then it calls reader.read.
-          * Regardless it always finishes by calling reader.close.
+          * Otherwise this function starts a storage process and returns.  If the process eventually
+          * succeeds, then it calls reader.read.  Regardless it ends by calling reader.close.
           *
           *     @param docLoc (string) The document location in normal URL form.
           *     @param reader (DocumentReader)
@@ -1833,19 +1870,19 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         {
             if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
 
-            let docReg = registry.get( docLoc );
-            if( docReg !== undefined ) // Then the document was already requested
+            let entry = entryMap.get( docLoc );
+            if( entry !== undefined ) // Then the document was already requested
             {
-                const readers = docReg.readers;
+                const readers = entry.readers;
                 if( readers !== null ) readers.push( reader );
-                else notifyReader( reader, docReg );
+                else notifyReader( reader, entry );
                 return;
             }
 
             const readers = [];
-            docReg = new DocumentRegistration( /*document*/null, docLoc, readers );
+            entry = new DocumentCacheEntry( /*document*/null, docLoc, readers );
             readers.push( reader );
-            registry.set( docLoc, docReg );
+            entryMap.set( docLoc, entry );
 
           // ===================
           // Configure a request for the document
@@ -1878,7 +1915,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 // even for intra-directory requests. [SPF in readable.css]
 
                 const doc = event.target.response;
-                docReg.document = doc;
+                entry.document = doc;
 
               // Test *id* declarations
               // ----------------------
@@ -1889,7 +1926,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     if( t === null ) break;
 
                     const id = t.getAttribute( 'id' );
-                    if( id !== null ) expo.testIdForm( t, id );
+                    if( id !== null ) testWaylinkIdForm( t, id );
                 }
             };
             req.onloadend = ( _event/*ignored*/ ) =>
@@ -1900,10 +1937,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
               // Notify the waiting readers
               // --------------------------
-                const readers = docReg.readers;
-                docReg.readers = null;
-                for( const r of readers ) notifyReader( r, docReg );
-                if( omnireader !== null ) notifyReader( omnireader, docReg )
+                const readers = entry.readers;
+                entry.readers = null;
+                for( const r of     readers ) notifyReader( r, entry );
+                for( const r of omnireaders ) notifyReader( r, entry );
+                noteReadersNotified( entry );
             };
             req.ontimeout = ( e ) =>
             {
@@ -1918,29 +1956,102 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** Tests whether the given *id* attribute declaration is well formed
-          * for the purpose of waylinkage.  Returns true if it is well formed,
-          * otherwise reports it as malformed and returns false.
-          *
-          *     @param t (Element) A waylink target node.
-          *     @param id (string) The value of t's *id* attribute.
-          */
-        expo.testIdForm = function( t, id )
-        {
-            if( id === null ) throw NULL_PARAMETER;
+       // - P r i v a t e ------------------------------------------------------------------------------
 
-            let isWellFormed = true;
-            const doc = t.ownerDocument;
-            console.assert( t.hasAttribute('id'), A );
-            t.removeAttribute( 'id' );
-            const e = doc.getElementById( id );
-            t.setAttribute( 'id', id );
-            if( e !== null )
+
+        /** Map of document entries (DocumentCacheEntry) keyed by DocumentCacheEntry#location.
+          */
+        const entryMap = new Map();
+
+
+
+        function noteReadersNotified( entry ) { DocumentCachePersistor.noteReadersNotified( entry ); }
+
+
+
+        function notifyReader( r, entry )
+        {
+            const doc = entry.document;
+            if( doc !== null ) r.read( entry, doc );
+            r.close( entry );
+        }
+
+
+        const omnireaders = [];
+
+
+
+        entryMap.set( DOCUMENT_LOCATION, // Storing the present document
+          new DocumentCacheEntry( document, DOCUMENT_LOCATION, /*readers*/null ));
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
+   //   D o c u m e n t   C a c h e   P e r s i s t o r
+
+
+    /** A device that persists the document cache from load to load throughout the session.
+      *
+      *     @see DocumentCache
+      */
+    const DocumentCachePersistor = ( function()
+    {
+
+        const expo = {}; // The public interface of DocumentCachePersistor
+
+
+
+        /** Registers a reader of all documents that are cached during the session.
+          * A call to this function is the same as a call to DocumentCache.addOmnireader,
+          * except that it documents the caller's need of a session persistent cache.
+          *
+          *     @param r (DocumentReader)
+          *     @see DocumentCache#addOmnireader
+          */
+        expo.addOmnireader = function( r ) { DocumentCache.addOmnireader( r ); };
+
+
+
+        /** @param cacheEntry (DocumentCacheEntry)
+          */
+        expo.noteReadersNotified = function( cacheEntry ) { ensureMemorizationPending(); }; // [RPP]
+
+
+
+        /** Starts this persistor.
+          */
+        expo.start = function()
+        {
+            let isPresentDocumentMemorized = false;
+
+          // Recall any documents from session memory
+          // ------
+            const s = sessionStorage.getItem( SS_KEY_locations );
+            if( s !== null )
             {
-                isWellFormed = false;
-                d_tsk( doc, 'Malformed *id* declaration, value not unique: ' + a2s('id',id) );
+                const locations = JSON.parse( s );
+
+              // Recache the recalled documents
+              // -------
+                for( const loc of locations )
+                {
+                    if( !isPresentDocumentMemorized && loc === DOCUMENT_LOCATION )
+                    {
+                        isPresentDocumentMemorized = true;
+                        continue; // Always the present document is already cached
+                    }
+
+                    DocumentCache.readNowOrLater( loc, DOCUMENT_READER_NULL ); // Recaching it
+                }
             }
-            return isWellFormed;
+
+          // Initiate memorization of the present document, if yet unmemorized
+          // --------
+            if( !isPresentDocumentMemorized ) ensureMemorizationPending();
+              // ∵ No call to *noteReadersNotified* is assured for the present document
         };
 
 
@@ -1948,39 +2059,37 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
-        const DOCUMENT_REGISTRATION = new DocumentRegistration( document, DOCUMENT_LOCATION,
-          /*readers*/null );
-
-
-
-        function d_tsk( doc, message )
+        function ensureMemorizationPending()
         {
-            if( doc === null ) throw NULL_PARAMETER;
+            if( isMemorizationPending ) return;
 
-            if( doc === document ) tsk( message );
+            setTimeout( ()=> // No hurry, go easy here on the machine
+            {
+                isMemorizationPending = false;
+
+              // Memorize the cached documents
+              // --------
+                const locations = [];
+                for( const cacheEntry of DocumentCache.entries() )
+                {
+                    if( cacheEntry.document !== null ) locations.push( cacheEntry.location );
+                }
+                sessionStorage.setItem( SS_KEY_locations,
+                  JSON.stringify( locations, /*replacer*/null, SESSION_STRINGIFY_SPACING ));
+            }, MS_DELAY_DCP );
+            isMemorizationPending = true;
         }
 
 
 
-        function notifyReader( r, docReg )
-        {
-            const doc = docReg.document;
-            if( doc !== null ) r.read( docReg, doc );
-            r.close( docReg );
-        }
+        let isMemorizationPending = false;
 
 
-        /** The reader of all documents as registered by *addOmnireader*, or null if there is none.
+
+        /** Session storage key (string) for memorized document locations
+          * (JSON stringified Array of string).
           */
-        let omnireader = null;
-
-
-
-        /** Map of document registrations (DocumentRegistration) keyed by DocumentRegistration#location.
-          */
-        const registry = new Map();
-
-            { registry.set( DOCUMENT_LOCATION, DOCUMENT_REGISTRATION ); } // Present document
+        const SS_KEY_locations = NS_READ + '.DocumentCachePersistor.locations';
 
 
 
@@ -1991,6 +2100,40 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   D o c u m e n t   R e a d e r
+
+
+    /** A reader of documents.
+      */
+    class DocumentReader
+    {
+
+        /** Closes this reader.
+          *
+          *     @param cacheEntry (DocumentCacheEntry)
+          */
+        close( cacheEntry ) {}
+
+
+        /** Reads the document.
+          *
+          *     @param cacheEntry (DocumentCacheEntry)
+          *     @param doc (Document)
+          */
+        read( cacheEntry, doc ) {}
+
+    }
+
+
+
+    /** A document reader that does nothing.
+      */
+    const DOCUMENT_READER_NULL = new DocumentReader();
+
+
+
+   // ==================================================================================================
+   //   H y p e r l i n k a g e
 
 
     /** Dealing with hyperlinks.
@@ -2098,6 +2241,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   I n t e r d o c   S c a n n e r
 
 
     /** A scanner of related documents.  It discovers related documents, scans them for references
@@ -2114,18 +2258,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         expo.start = function()
         {
-          // Enable passive discovery
-          // ------------------------
-            Documents.addOmnireader( new class extends DocumentReader
+            DocumentCachePersistor.addOmnireader( new class extends DocumentReader
             {
-                read( docReg, doc ) { scan( doc, docReg.location ); }
+                read( cacheEntry, doc ) { scan( doc, cacheEntry.location ); }
             });
-
-          // Start active discovery
-          // ----------------------
-          //// TODO.  Start by traversing the waycast directory indeces.
-            // Though the DOM for these on a 'file' scheme URL is self generated by the browser,
-            // still it seems to be accessible (console tests, Chrome and Firefox).
         };
 
 
@@ -2151,7 +2287,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-        /** @param doc (Document) The document to scan.
+        /** @param doc (Document) The document to scan, which might be the present document.
           * @param docLoc (string) The location of the document in normal form.
           */
         function scan( doc, docLoc )
@@ -2189,6 +2325,43 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   I n t e r d o c   W a y l i n k   T r a n s f o r m e r
+
+
+            class InterdocWaylinkTransformer_Registration
+            {
+
+                /** Constructs an InterdocWaylinkTransformer_Registration.
+                  *
+                  *     @see #sourceNode
+                  *     @see #targetID
+                  *     @param targDocLoc (string) The location of the other document in normal URL form.
+                  */
+                constructor( sourceNode, targetID, targDocLoc )
+                {
+                    this._sourceNode = sourceNode;
+                    this._targetID = targetID;
+                    this._targetImage = TargetImageCache.read( targDocLoc + '#' + targetID );
+                }
+
+
+                /** The waylink source node (Element).
+                  */
+                get sourceNode() { return this._sourceNode; }
+
+
+                /** The identifier of the target (string) within the other document.
+                  */
+                get targetID() { return this._targetID; }
+
+
+                /** The image of the target (TargetImage) as retrieved from the cache,
+                  * or null if none was cached.
+                  */
+                get targetImage() { return this._targetImage; }
+
+            }
+
 
 
     /** A device to complete the formation of interdocument bitform waylinks, those whose target nodes
@@ -2217,16 +2390,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
         /** Registers an unresolved, interdocument bitform waylink and returns the registration.
           *
           *     @param sourceNode (Element) A bitform waylink source node that targets another document.
-          *     @param targDocLoc (string) The location of the other document in normal URL form.
           *     @param id (string) The identifier of the target within the other document.
+          *     @param targDocLoc (string) The location of the other document in normal URL form.
           *
           *     @return (InterdocWaylinkTransformer_Registration)
           *
           *     @see URIs#normalized
           */
-        expo.registerBitformLink = function( sourceNode, targDocLoc, id )
+        expo.registerBitformLink = function( sourceNode, id, targDocLoc )
         {
-            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, targDocLoc, id );
+            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, id, targDocLoc );
             const regList = registerTargetDocument( targDocLoc );
             regList.push( reg );
             return reg;
@@ -2312,16 +2485,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 if( linkRegList.length === 0 ) continue; // No bitform links to this target
 
                 const targDocLoc = entry[0];
-                Documents.readNowOrLater( targDocLoc, new class extends DocumentReader
+                DocumentCache.readNowOrLater( targDocLoc, new class extends DocumentReader
                 {
-                    close( docReg )
+                    close( cacheEntry )
                     {
-                        if( docReg.document !== null ) return;
+                        if( cacheEntry.document !== null ) return;
 
                         for( const r of linkRegList ) setTargetPreview( r.sourceNode, MYSTERY_SYMBOL );
                     }
 
-                    read( docReg, targDoc )
+                    read( cacheEntry, targDoc )
                     {
                         for( const linkReg of linkRegList )
                         {
@@ -2379,9 +2552,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             // Now call each such target a source, and image  *its* targets:
             for( const srcDocLoc of linkRegistry.keys() )
             {
-                Documents.readNowOrLater( srcDocLoc, new class extends DocumentReader
+                DocumentCache.readNowOrLater( srcDocLoc, new class extends DocumentReader
                 {
-                    read( _docReg/*ignored*/, srcDoc )
+                    read( _cacheEntry/*ignored*/, srcDoc )
                     {
                         const traversal = srcDoc.createNodeIterator( srcDoc, SHOW_ELEMENT );
                         for( traversal.nextNode()/*onto the document node itself*/;; )
@@ -2409,9 +2582,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                             if( targDocLoc === srcDocLoc ) continue;
                               // Target image needs no caching, target in same document
 
-                            Documents.readNowOrLater( targDocLoc, new class extends DocumentReader
+                            DocumentCache.readNowOrLater( targDocLoc, new class extends DocumentReader
                             {
-                                read( _docReg/*ignored*/, targDoc )
+                                read( _cacheEntry/*ignored*/, targDoc )
                                 {
                                     const id = link.targetID;
                                     const target = targDoc.getElementById( id );
@@ -2437,39 +2610,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
-
-
-    class InterdocWaylinkTransformer_Registration
-    {
-
-        constructor( sourceNode, targDocLoc, id )
-        {
-            this._sourceNode = sourceNode;
-            this._targetID = id;
-            this._targetImage = TargetImageCache.read( targDocLoc + '#' + id );
-        }
-
-
-        /** The waylink source node (Element).
-          */
-        get sourceNode() { return this._sourceNode; }
-
-
-        /** The identifier of the target (string) within the other document.
-          */
-        get targetID() { return this._targetID; }
-
-
-        /** The image of the target (TargetImage) as retrieved from the cache,
-          * or null if none was cached.
-          */
-        get targetImage() { return this._targetImage; }
-
-    }
-
-
-
-   // ==================================================================================================
+   //   I n w a y s
 
 
     /** Dealing with inways.  Formally the inway is a component of the start tag (eSTag).
@@ -2633,6 +2774,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   L e a d e r   R e a d e r
 
 
     /** A reader of element leaders.  An element leader is the whitespace collapsed, text content
@@ -2709,7 +2851,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
              // if( d.parentNode === element ) child = d;
                 const dType = d.nodeType;
-                if( dType === TEXT )
+                if( dType === TEXT_NODE )
                 {
                     const words = d.data.match( /\S+/g );
                     if( words === null ) continue dive;
@@ -2735,7 +2877,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                      // lastContributingChild = child;
                     }
                 }
-                else if( dType === ELEMENT )
+                else if( dType === ELEMENT_NODE )
                 {
                     const dNS = d.namespaceURI;
                     if( dNS.endsWith(NS_READ) && dNS.length === NS_READ.length ) // Fast failing test
@@ -2784,6 +2926,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   L i n k   A t t r i b u t e
 
 
     /** The parsed value of a waylink source node's *link* attribute.
@@ -2862,6 +3005,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   P a r t   T r a n s f o r m   C
 
 
     /** The part of the transformation of a wayscript element that is generally open to being redone.
@@ -2994,6 +3138,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   P a r t   T r a n s f o r m   C 2
 
 
     /** PartTransformC for an element whose initial transformation needs to be redone.
@@ -3025,6 +3170,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   T a r g e t   C o n t r o l
 
 
     /** Self activation and scene switching for waylink target nodes.
@@ -3121,6 +3267,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   T a r g e t   I m a g e
 
 
     /** The image of a waylink target node as mirrored by its source nodes.
@@ -3129,6 +3276,12 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
     {
 
 
+        /** Constructs a TargetImage.
+          *
+          *     @see #leader
+          *     @see #localName
+          *     @see #namespaceURI
+          */
         constructor( leader, localName, namespaceURI )
         {
             if( leader === undefined || leader === null
@@ -3178,6 +3331,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   T a r g e t   I m a g e   C a c h e
 
 
     const TargetImageCache = ( function() // [TIC]
@@ -3196,11 +3350,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           */
         expo.read = function( targetLoc )
         {
-            const s = sessionStorage.getItem( KEY_PREFIX + targetLoc );
+            const s = sessionStorage.getItem( SS_KEY_PREFIX + targetLoc );
             if( s !== null )
             {
-                const p = JSON.parse( s );
-                try { return new TargetImage( p._leader, p._localName, p._namespaceURI ); }
+                const o = JSON.parse( s ); // Yields object form (o) of original image stored
+                try { return new TargetImage( o._leader, o._localName, o._namespaceURI ); }
 
                 catch( x )
                 {
@@ -3228,8 +3382,8 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
             if( image === null ) throw NULL_PARAMETER;
 
-            sessionStorage.setItem( KEY_PREFIX + targetLoc,
-              JSON.stringify( image, /*replacer*/null, /*space*/1 ));
+            sessionStorage.setItem( SS_KEY_PREFIX + targetLoc,
+              JSON.stringify( image, /*replacer*/null, SESSION_STRINGIFY_SPACING ));
         };
 
 
@@ -3237,7 +3391,10 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
-        const KEY_PREFIX = NS_READ + '.TargetImageCache.';
+        /** Common prefix of any session storage key (string)
+          * for a cached target image (JSON stringified TargetImage).
+          */
+        const SS_KEY_PREFIX = NS_READ + '.TargetImageCache.';
 
 
 
@@ -3248,10 +3405,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   T a r g e t   W h e r e a b o u t s
 
 
-    const TARGET_UP   = 'up';
-    const TARGET_DOWN = 'down';
+        const TARGET_UP   = 'up';
+        const TARGET_DOWN = 'down';
 
 
 
@@ -3354,6 +3512,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   V i e w p o r t i n g
 
 
     /** Dealing with the viewport and its scroller.
@@ -3406,15 +3565,16 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
    // ==================================================================================================
+   //   W a y t r a c e r
 
 
     /** A device for tracing the way across multiple waylinked documents.  It traces the root element's
       * waylinks to their target nodes, thence onward till it traces the full network of waylinks.
-      * The trace serves two purposes: (1) to discover documents for omnireaders; and (2) to adjust the
-      * form of the present document based on the results.
+      * The trace serves two purposes: (1) to discover documents for cache omnireaders; and
+      * (2) to adjust the form of the present document based on the results.
       *
       *     @see http://reluk.ca/project/wayic/cast/root#root_element
-      *     @see Documents#addOmnireader
+      *     @see DocumentCache#addOmnireader
       */
     const WayTracer = ( function()
     {
@@ -3431,13 +3591,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             const id = ROOT_LEG_ID;
             console.assert( !(toEnforceConstraints && wasOpened(id)), A );
             openLeg( id );
-            Documents.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
+            DocumentCache.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
             {
-                close( docReg ) { shutLeg( id ); }
-                read( docReg, doc )
+                close( cacheEntry ) { shutLeg( id ); }
+                read( cacheEntry, doc )
                 {
                     const target = doc.getElementById( 'root', doc );
-                    if( target !== null ) traceLeg( id, target, docReg );
+                    if( target !== null ) traceLeg( id, target, cacheEntry );
                     else tsk( 'Unable to trace: Missing root waybit: ' + id );
                 }
             });
@@ -3547,11 +3707,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           *
           *     @see #newLegID
           *     @param branch (Element) Base element of the branch that comprises the leg.
-          *     @param docReg (DocumentRegistration)
+          *     @param cacheEntry (DocumentCacheEntry)
           */
-        function traceLeg( legID, branch, docReg )
+        function traceLeg( legID, branch, cacheEntry )
         {
-            const docLoc = docReg.location;
+            const docLoc = cacheEntry.location;
             const doc = branch.ownerDocument;
             if( doc === document )
             {
@@ -3580,7 +3740,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     if( wasOpened( targetLegID )) break source;
 
                     openLeg( targetLegID );
-                    Documents.readNowOrLater( tDocLoc, new class extends DocumentReader
+                    DocumentCache.readNowOrLater( tDocLoc, new class extends DocumentReader
                     {
                         close( tDocReg )
                         {
@@ -3748,6 +3908,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
   *
   *  [PSA]  Page-show animation.  On revisiting a loaded page in session history (forward or backward),
   *         sometimes Firefox (60) fails to start or restart an animation commanded by a style rule.
+  *
+  *  [RPP]  Restricted public property.  Despite its exposure in the public interface,
+  *         this property is not intended for general use.
   *
   *  [SH] · Standard HTML.  Here avoiding special markup in favour of standard HTML,
   *         thus gaining access to HTML-particular features such as the *style* attribute.
