@@ -1890,7 +1890,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             const req = new XMLHttpRequest();
             req.open( 'GET', docLoc, /*async*/true ); // Misnomer; opens nothing, only sets config
          // req.overrideMimeType( 'application/xhtml+xml' );
-         /// Still it parses to an XMLDocument (Firefox 52), unlike this document
+         /// Still it parses to an XMLDocument (Firefox 52), unlike the present document
             req.responseType = 'document';
             req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
 
