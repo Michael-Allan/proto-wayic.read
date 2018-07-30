@@ -533,30 +533,20 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       *     @param sourceNS (string) The namespace of the source node.
       *     @param sourceN (string) The local part of the source node's name.
       *     @param linkV (string) The value of the source node's *link* attribute.
-      *     @param isBit (boolean) Whether the source node is a waybit.
       *     @param target (Element | TargetImage) The target node, or its cached image.
       *     @param transform (PartTransformC)
       */
-    function configureForTarget( sourceNS, sourceN, linkV, isBit, target, transform )
+    function configureForTarget( sourceNS, sourceN, linkV, target, transform )
     {
         const targetNS = target.namespaceURI;
         const targetN = target.localName;
-        let isMalNameReported = false;
         if( sourceNS !== targetNS )
         {
             tsk( 'Source node namespace (' + sourceNS + ') differs from target node namespace ('
               + targetNS + ') for waylink: ' + a2s('link',linkV) );
-            isMalNameReported = true;
         }
-        if( !isMalNameReported && !isBit && sourceN !== targetN )
-        {
-            tsk( 'Source node name (' + sourceN + ') differs from target node name (' + targetN
-              + ') for waylink: ' + a2s('link',linkV) );
-        }
-        if( isBit && sourceN === ELEMENT_NAME_UNCHANGED )
-        {
-            transform.localPartOverride = targetN; // Transforming to the same name as the target
-        }
+        if( sourceN === ELEMENT_NAME_UNCHANGED ) transform.localPartOverride = targetN;
+          // Transforming to the same name as the target
     }
 
 
@@ -1104,7 +1094,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                         {
                             partTransform.imaging = 'present';
                             targetPreviewString = image.leader;
-                            configureForTarget( tNS, tN, linkV, isBit, image, partTransform );
+                            configureForTarget( tNS, tN, linkV, image, partTransform );
                         }
                         break targeting;
                     }
@@ -1120,7 +1110,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     // The target is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
                     const target = targetWhereabouts.target;
-                    configureForTarget( tNS, tN, linkV, isBit, target, partTransform );
+                    configureForTarget( tNS, tN, linkV, target, partTransform );
                     LeaderReader.read( target );
                     targetPreviewString = LeaderReader.leader;
                 }
@@ -2514,10 +2504,11 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                             }
 
                             LeaderReader.read( target );
-                            const sL = LeaderReader.leader;
+                            const leader = LeaderReader.leader;
                             const sN = source.localName;
+                            const sNResolved = sN === ELEMENT_NAME_UNCHANGED? target.localName: sN;
                             const sNS = source.namespaceURI;
-                            const image = new TargetImage( sL, sN, sNS );
+                            const image = new TargetImage( leader, sNResolved, sNS );
                             if( image.equals( /*imageWas*/linkReg.targetImage ))
                             {
                               // Affirm the source node as is
@@ -2529,9 +2520,9 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                           // Amend the source node, as it shows an outdated image
                           // ---------------------
                             const part2 = new PartTransformC2( source );
-                            configureForTarget( sNS, sN, linkV, isBitNS(sNS), target, part2 );
+                            configureForTarget( sNS, sN, linkV, target, part2 );
                             part2.run();
-                            setTargetPreview( source, sL );
+                            setTargetPreview( source, leader );
 
                           // Update the cached image
                           // -----------------------
