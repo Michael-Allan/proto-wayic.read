@@ -58,16 +58,6 @@
  *   an element with a namespace prefix of ‘_’ the same form as an element that has no prefix.
  *
  *
- * COMPOSITION LEADER ALIGNMENT
- * ----------------------------
- *   In the source, it may happen that a composer start tag is followed on the same line by text
- *   or HTML content.  For example:
- *
- *       <cog:including>, as it may happen
- *
- *   When the transformer encounters this, it tries to reproduce a similar layout.
- *
- *
  * SECTIONING
  * ----------
  *   This transformer puts vertical margins on HTML *section* elements.  It adds the same margins
@@ -294,50 +284,44 @@ html[read|lighting='paper']
 
 
 
-/* ---  C o m p o s e r  -------------------------------------------------------------------------------
+/* ---  G r o u p --------------------------------------------------------------------------------------
  */
 
-*[read|isComposer]
+cog|group
 {
     border-radius: 0.5em;
     border-width: 0.1em;
            left: -0.1em; /* Despite the border, maintain a precise text margin for appearance sake */
-    margin-left:          -2.5em; /* Meet constraints on COMPOSER_L */
+    margin-left:          -2.5em; /* Meet constraints on GROUP_L */
     padding: 0.2em 0.2em 0.2em 2.5em; /* TRBL */
     position: relative;
 }
 
 
-*[read|isComposer] [read|isComposer] /* When nested */
+cog|group cog|group /* Nested groups */
 {
     margin-right: 0.7em; /* Space between adjacent, vertical border lines to better show the nesting */
 }
 
 
-*[read|isComposer] > eSTag
+cog|group > eSTag
 {
     font-style: italic;
     opacity: 0.6;
-    padding-left: 3em; /* ≥ NEST_INDENT, for any inline composition leader that flows to next line */
+    padding-left: 3em; /* ≥ NEST_INDENT, in case any inline qualifying text flows to next line */
     text-indent: -3em; /* But not on the first line, rather maintain its alignment */
 }
 
 
-*[read|isComposer] > eSTag > eQName > ePrefix
+cog|group > eSTag > eQName > ePrefix
 {
-    display: none; /* Assume that it is uninformative */
-}
-
-
-*[read|isComposer] > eSTag > eQName::after
-{
-    content: ':';
+    display: none; /* Assuming that it is uninformative */
 }
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[read|lighting='neon'] *[read|isComposer]
+html[read|lighting='neon'] cog|group
 {
     border-color: hsla( 0, 0%, 100%, 0.35 );
     border-style: dashed;
@@ -348,7 +332,7 @@ html[read|lighting='neon'] *[read|isComposer]
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[read|lighting='paper'] *[read|isComposer]
+html[read|lighting='paper'] cog|group
 {
     border-color: hsla( 0, 0%, 0%, 0.25 );
     border-style: solid none none solid; /* TRBL */
@@ -594,7 +578,7 @@ read|eSTag > eQName[read|isAnonymous] > eName /* Transformed to a mere bullet by
  *
  * The inlining is done by floating the start tag which allows the leading flow content to fall in line.
  * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method of the defunct composer elements [DCE],
+ * then consider switching to the simpler, more direct method of the *group* element,
  * namely shipping the leading flow content into the start tag.  A drawback would be the loss
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
@@ -759,10 +743,10 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isWaybit] [read|isComposer] >
-[read|isWaylinkTargetable] > eSTag > .inway > hall /* When also it is a topmost component */
+[read|isWaybit] cog|group >
+[read|isWaylinkTargetable] > eSTag > .inway > hall /* When also it is a *group* child */
 {
-    width: 2.0em; /* ∴ COMPOSER_L ≥ 2.0em; no wider, as there is no direct overbit content */
+    width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no direct overbit content */
 }
 
 
@@ -1108,8 +1092,6 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *
  *  [C]  · Class selectors.  These fail for NS_READ elements under Chrome (59).  Instead select
  *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
- *
- *  [DCE]  Defunct composer elements.  http://reluk.ca/project/wayic/read/composer/
  *
  *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
  *         wrongly resolves the relative URL against the document rather than the style sheet.

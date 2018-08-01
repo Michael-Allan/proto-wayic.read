@@ -89,7 +89,6 @@
   *   --------------------------
   *     [hasLeader]    · Has leading, non-whitespace text?  [BA]
   *     [hasShortName] · Has a visible name no longer than three characters?
-  *     [isComposer]   · Is a composer element?  [BA]
   *     [isWaybit]    · Is a waybit?
   *     [isWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
   *
@@ -754,8 +753,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
       */
     function lastDescendant( node )
     {
-        do node = node.lastChild;
-        while( node.hasChildNodes() );
+        do { node = node.lastChild } while( node.hasChildNodes() );
         return node;
     }
 
@@ -1128,13 +1126,41 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
          // =========
          // Start tag of element t
          // =========
+            if( tSubNS === SUB_NS_COG && tN === 'group' )
+            {
+                partTransform.localPartOverride = ''; // Emptied to accomodate text shipment, q.v. below
+                partTransform.run();
+
+              // Qualifying text for the group
+              // ---------------
+                console.assert( LeaderReader.element === t, A );
+                if( LeaderReader.hasLeader ) // Then ship it into the start tag, for sake of alignment
+                {
+                    let n;
+                    function isSafeToMove()
+                    {
+                        const type = n.nodeType;
+                        return type === TEXT_NODE || type === COMMENT_NODE
+                          || type === ELEMENT_NODE && n.namespaceURI === NS_HTML
+                                                   && willDisplayInLine_likely( n );
+                    }
+                    const eSTag = partTransform.eSTag;
+                    const eQName = asElementNamed( 'eQName', eSTag.firstChild );
+                    for( n = eSTag.nextSibling; n != null && isSafeToMove(); n = n.nextSibling )
+                    {
+                        eQName.appendChild( n );
+                    }
+                }
+                continue tt;
+            }
+
             partTransform.run();
-            const eSTag = partTransform.eSTag;
             if( lidV !== null ) // Then t is waylink targetable
             {
                 t.setAttributeNS( NS_READ, 'isWaylinkTargetable',
                   lidV === Hyperlinkage.idOnTarget()? 'on target':'off target' );
                 t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
+                const eSTag = partTransform.eSTag;
 
               // Inway
               // -----
@@ -1151,63 +1177,6 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
               // -----
                 TargetControl.addControls( eSTag );
-            }
-            else if( tSubNS === SUB_NS_COG
-             && (tN === 'comprising' || tN === 'including'))
-            {
-                t.setAttributeNS( NS_READ, 'isComposer', 'isComposer' );
-
-              // Composition leader alignment  (see readable.css)
-              // ----------------------------
-                console.assert( LeaderReader.element === t, A );
-                alignment: if( LeaderReader.hasLeader )
-                {
-                    let n = eSTag.nextSibling; /* Whether special alignment is needed depends on the
-                      node that follows the start tag. */
-                    let type = n.nodeType;
-                    function isNonethelessSafeToMove() // Though type ≠ TEXT_NODE, an assumption here
-                    {
-                        return type === COMMENT_NODE
-                            || type === ELEMENT_NODE && n.namespaceURI === NS_HTML;
-                    }
-
-                    if( type === TEXT_NODE )
-                    {
-                        const cc = n.data; // Leading characters
-                        if( cc.length === 0 )
-                        {
-                            console.assert( false, A );
-                            break alignment;
-                        }
-
-                        const c = cc.charAt( 0 );
-                        if( c === '\n' || c === '\r' ) break alignment; /* Not in line with start tag,
-                          needs no special alignment. */
-                    }
-                    else if( !isNonethelessSafeToMove() ) break alignment;
-
-                    // Let the leader align neatly with the content of the start tag as it would in
-                    // the source.  Let it even *abut* the start tag (see the example in readable.css).
-                    // Do this by shipping the leader nodes into the start tag.
-                    const eQName = asElementNamed( 'eQName', eSTag.firstChild );
-                    do
-                    {
-                        const nNext = n.nextSibling;
-                        eQName.appendChild( n );
-                        n = nNext;
-                        if( n === null ) break;
-
-                        type = n.nodeType;
-                    } while( type === TEXT_NODE || isNonethelessSafeToMove() );
-                    n = lastDescendant( eQName ); // Last node of the leader
-                    if( n.nodeType === TEXT_NODE )
-                    {
-                        const trailer = n.data;
-                        const m = trailer.match( /\s+$/ ); // Trailing whitespace
-                        if( m !== null ) n.replaceData( m.index, trailer.length, '' );
-                          // Stripping it so that readable.css can neatly append a colon to eQName
-                    }
-                }
             }
         }
     }
@@ -1248,7 +1217,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Answers whether the given HTML element is very likely to be placed in line by the browser.
+    /** Answers whether the given HTML element is very likely to be displayed in line by the browser.
       */
     function willDisplayInLine_likely( htmlElement ) // A workaround function for its caller, q.v.
     {
@@ -3021,7 +2990,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
             /** A non-null value indicates a tranformation that might actually be redone.
-              * Meantime the form is either based on a cached image of the target node
+              * Meantime the form is either based on a cached image of a waylink target node
               * (value ‘present’) or not (‘absent’).
               */
             this.imaging = null;
@@ -3091,17 +3060,27 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
           // local part of name
           // - - - - - - - - - -
             const eName = eQName.appendChild( document.createElementNS( NS_READ, 'eName' ));
-            let lp = this.localPartOverride === null? e.localName : this.localPartOverride;
-            const isAnonymous = lp === ELEMENT_NAME_NONE;
-            if( isAnonymous )
+            let isAnonymous = false;
+            let lp = this.localPartOverride;
+            localPart:
             {
-                lp = '●'; // Unicode 25cf (black circle)
-                eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
+                if( lp === null )
+                {
+                    lp = e.localName;
+                    if( lp === ELEMENT_NAME_NONE )
+                    {
+                        isAnonymous = true;
+                        lp = '●'; // Unicode 25cf (black circle)
+                        eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
+                    }
+                    else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE );
+                      // Starts with a non-underscore, hopefully followed by some other visible content?
+                      // Then replace any underscores with nonbreaking spaces for sake of readability.
+                }
+                else if( lp.length === 0 ) break localPart;
+
+                eName.appendChild( document.createTextNode( lp ));
             }
-            else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE ); /* If it starts
-              with a non-underscore, which hopefully means it has some letters or other visible content,
-              then replace any underscores with nonbreaking spaces for sake of readability. */
-            eName.appendChild( document.createTextNode( lp ));
 
           // formation of name
           // - - - - - - - - -
