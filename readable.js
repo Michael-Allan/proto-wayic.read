@@ -920,13 +920,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
           // ============
-          // General form of element t
+          // General form of element *t*
           // ============
             const tNS = t.namespaceURI;
             const tN = t.localName;
             let isBit, isHTML, isWayscript;
-            let tSubNS; // Wayscript subnamespace, or null if element t is not wayscript
-            if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // Then element t is wayscript
+            let tSubNS; // Wayscript subnamespace, or null if element *t* is not wayscript
+            if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // Then element *t* is wayscript
             {
                 isHTML = false;
                 isWayscript = true;
@@ -935,7 +935,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 isBit = isBitSubNS( tSubNS );
                 layoutBlock = t; // Sync'd ← readable.css § Wayscript
             }
-            else // Element t is non-wayscript
+            else // element *t* is non-wayscript
             {
                 isHTML = tNS === NS_HTML;
                 isBit = isWayscript = false;
@@ -948,14 +948,14 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
           // ============
-          // Hyperlinkage by element t
+          // Hyperlinkage by element *t*
           // ============
             hyperlinkage: if( isHTML && tN === 'a' )
             {
                 let href = t.getAttribute( 'href' );
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
                 let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentLocationN
-                if( href !== null ) // Then t is a generic hyperlink
+                if( href !== null ) // Then *t* is a generic hyperlink
                 {
                     if( linkV !== null )
                     {
@@ -967,7 +967,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                     const docLocN = URIs.defragmented( URIs.normalized( href ));
                     targetExtradocLocN = docLocN === DOCUMENT_LOCATION? '': docLocN;
                 }
-                else if( linkV !== null ) // Then t is a hyperform waylink
+                else if( linkV !== null ) // Then *t* is a hyperform waylink
                 {
                     let link;
                     try { link = new LinkAttribute( linkV ); }
@@ -996,7 +996,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
                 const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
                 const symbol = ( ()=>
                 {
-                    if( layoutBlock !== layoutBlock_aLast ) // Then t is the 1st hyperlink in this block
+                    if( layoutBlock !== layoutBlock_aLast ) // Then *t* is first hyperlink in this block
                     {
                         layoutBlock_aLast = layoutBlock;
                         layoutBlock_aCount = 0;
@@ -1014,20 +1014,26 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
           ///////////////////////////////////////////////////////////////////////////////////  WAYSCRIPT
 
-            const isDeclaredEmpty = !t.hasChildNodes();
-            if( tSubNS === SUB_NS_STEP )
-            {
-                const textAligner = document.createElementNS( NS_READ, 'textAligner' );
-                t.insertBefore( textAligner, t.firstChild );
-            }
-            if( isBit ) t.setAttributeNS( NS_READ, 'isWaybit', 'isWaybit' );
+            const isDeclaredEmpty = !t.hasChildNodes(); // Tested before adding any special markup
             const partTransform = new PartTransformC( t );
+            if( isBit )
+            {
+                t.setAttributeNS( NS_READ, 'isWaybit', 'isWaybit' );
+                if( toEnforceConstraints && tN.startsWith('_')
+                 && tN !== ELEMENT_NAME_NONE
+                 && tN !== ELEMENT_NAME_UNCHANGED ) tsk( 'A waybit with a reserved name: ' + tN );
+                if( tSubNS === SUB_NS_STEP )
+                {
+                    const textAligner = document.createElementNS( NS_READ, 'textAligner' );
+                    t.insertBefore( textAligner, t.firstChild );
+                }
+            }
 
 
           // ==================
-          // Bitform waylinkage of element t
+          // Bitform waylinkage of element *t*
           // ==================
-            const lidV = ( ()=> // Target identifier, non-null if t is a potential waylink target node
+            const lidV = ( ()=> // Target identifier, non-null if *t* is a potential waylink target node
             {
                 if( !isBit ) return null;
 
@@ -1036,7 +1042,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
                 return null;
             })();
-            const linkV = ( ()=> // Waylink declaration, non-null if t is a source node
+            const linkV = ( ()=> // Waylink declaration, non-null if *t* is a source node
             {
                 let v = t.getAttributeNS( NS_COG, 'link' );
                 if( v === null ) return null;
@@ -1124,10 +1130,14 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
          // =========
-         // Start tag of element t
+         // Start tag of element *t*
          // =========
             if( tSubNS === SUB_NS_COG && tN === 'group' )
             {
+                if( t.getAttribute('rel') !== 'in' )
+                {
+                    tsk( "A *group* element without the mandatory *rel* attribute, e.g. rel='in'" );
+                }
                 partTransform.localPartOverride = ''; // Emptied to accomodate text shipment, q.v. below
                 partTransform.run();
 
@@ -1155,7 +1165,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             }
 
             partTransform.run();
-            if( lidV !== null ) // Then t is waylink targetable
+            if( lidV !== null ) // Then *t* is waylink targetable
             {
                 t.setAttributeNS( NS_READ, 'isWaylinkTargetable',
                   lidV === Hyperlinkage.idOnTarget()? 'on target':'off target' );
@@ -1183,13 +1193,13 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
 
 
 
-    /** Reports a fault that a user with write access to the present document might be able to correct,
-      * such as malformed wayscript.
+    /** Reports a rule violation or formal fault, such as malformed wayscript,
+      * that a user with write access to the present document might be able to correct.
       *
       *     @param report (string)
-      *     @param doc (Document) The document at fault.  Typically this parameter is left undefined.
-      *       Otherwise a value that is unequal to the present document will defeat the function call,
-      *       causing no report to be sent.
+      *     @param doc (Document) The document in which the violation or fault occurs.
+      *       Typically this parameter is left undefined.  Otherwise a value that is unequal
+      *       to the present document will defeat the function call, causing no report to be sent.
       */
     function tsk( report, doc )
     {
@@ -1202,7 +1212,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
             if( doc !== document ) return;
         }
 
-        console.error( report );
+        console.warn( report );
         if( isUserEditor ) alert( report ); // See readable.css § TROUBLESHOOTING
     }
 
@@ -3111,7 +3121,7 @@ if( window.wayic.read === undefined ) window.wayic.read = {};
    //   P a r t   T r a n s f o r m   C 2
 
 
-    /** PartTransformC for an element whose initial transformation needs to be redone.
+    /** PartTransformC for an element whose initial transformation is now being redone.
       */
     class PartTransformC2 extends PartTransformC
     {
