@@ -169,9 +169,7 @@ console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'),
   'Failed assertion: Strict mode is in effect' );
   // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
   // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-if( window.wayic      === undefined ) window.wayic      = {};
-if( window.wayic.read === undefined ) window.wayic.read = {};
-                                      window.wayic.read.readable = ( function()
+window.wayic_read_readable = ( function()
 {
 
     const expo = {}; // The public interface of this program

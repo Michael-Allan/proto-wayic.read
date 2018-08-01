@@ -32,7 +32,7 @@
  *         s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
  *         s.addEventListener( 'load', ( _Event ) =>
  *         {
- *            wayic.read.readable.start();
+ *            wayic_read_readable.start();
  *         });
  *
  *
@@ -44,8 +44,8 @@
  *       ⋮
  *       s.addEventListener( 'load', ( _Event ) =>
  *       {
- *          wayic.read.readable.setEnforceConstraints( true );
- *          wayic.read.readable.start();
+ *          wayic_read_readable.setEnforceConstraints( true );
+ *          wayic_read_readable.start();
  *       });
  *
  *   The available configuration options are detailed in readable.js § Public interface.
