@@ -58,7 +58,7 @@
   *     [travelDelta]    · Travel distance in session history to reach the present entry
   *                        from the last entry of ours that was shown: -N, 0 or N
   *                        (backward by N entries, reload, or forward by N entries).  [OUR]
-  *     [targetDirection] · (only if a node is on target, that is indicated by window.location.hash)
+  *     [targetDirection] · (only if window.location.hash is on target with a waylink)
   *                         Direction to the on-target node from the source.
   *         Value  Meaning
   *         ·····  ·······································································
@@ -2593,16 +2593,15 @@ window.wayic_read_readable = ( function()
       *          ⋮                          ⋮  ⋮     ⋮      ╱ ⋮
       *          ⋮                          ⋮  ⋮  waybit1  ╱  ⋮
       *          ⋮                          ⋮  ⋮     ⋮    ╱   ⋮
-      *           ∙ ·  ·   ·    ·     ·         ·     target11
-      *          ╱       │                                Content of target11
-      *         ╱        │                        waybit2
-      *        ╱         │                            Content of waybit2, which is not a target
-      *       ╱   ∙ ·  · │ ·    ·             ·   target3
-      *   edging         │                            Content of target3
-      *                 path
+      *                                         ·     target11
+      *                                                   Content of target11
+      *                                           waybit2
+      *                                               Content of waybit2, which is not a target
+      *                                       ·   target3
+      *                                               Content of target3
       *
       *
-      * On the pointer (↖) crossing any part of the eSTag (including the inway approach),
+      * When the pointer (↖) crosses any part of the eSTag (including the inway approach),
       * the target icon reveals itself in full:
       *
       *          ┌············································┐
@@ -2611,14 +2610,29 @@ window.wayic_read_readable = ( function()
       *          ⋮                          ⋮  ⋮     ⋮        ⋮
       *          ⋮                          ⋮  ⋮  waybit1     ⋮
       *          ⋮                          ⋮  ⋮     ⋮        ⋮
-      *           ∙ ·  ·   ·    ·     ·         ◉     target11
+      *                                         ◉     target11
       *                        ↖               ╱          Content of target11
       *                                       ╱   waybit2
       *                                      ╱        Content of waybit2, which is not a target
-      *           ∙ ·  ·   ·    ·           ╱ ·   target3
+      *                                     ╱ ·   target3
       *                                    ╱          Content of target3
       *                                target
       *                                 icon
+      *
+      *
+      * If the target icon is clicked, or somehow else the window moves on target,
+      * then the inway approach becomes visible:
+      *
+      *          ┌———————— approach ————————┐  ┌—————┐
+      *          ⋮                          ⋮  ⋮     ⋮
+      *          ⋮                          ⋮  ⋮  waybit1
+      *          ⋮                          ⋮  ⋮     ⋮
+      *           ∙ ·  ·   ·    ·     ·         ◉     target11
+      *          ╱       │                                Content of target11
+      *         ╱        │                        waybit2
+      *     edging       │                            Content of waybit2, which is not a target
+      *                 path                  ·   target3
+      *                                               Content of target3
       */
     const Inways = ( function()
     {

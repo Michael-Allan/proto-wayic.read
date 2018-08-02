@@ -840,63 +840,78 @@ html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > 
 
 /* ---  T a r g e t   n o d e   ( w a y l i n k )  --  O n - t a r g e t  ------------------------------
  */
-
-[read|isWaylinkTargetable]                     > eSTag > .inway > svg.approach > path
+[read|isWaylinkTargetable]                     > eSTag > .inway > svg.approach
 {
-    opacity: 0.5;
+    animation-duration: calc( var(--inflightDuration) + var(--inflightImpactPropagation) * 2 );
+    animation-timing-function: step-start;
+    display: none;
 }
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > svg.approach > path
+[read|isWaylinkTargetable='on target']         > eSTag > .inway > svg.approach
 {
-    opacity: 1;
+    display: unset; /* Allowing it to show */
+    z-index: 1; /* Raised clear of the *offWayScreen* */
+}
+html[read|animatedShow][read|travelDelta='0'] /* Reload */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > svg.approach,
+html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > svg.approach
+{
+    animation-name: inflightInwayApproach; /* As a travel target locator */
 }
 
 
-[read|isWaylinkTargetable='on target']/*[FT]*/ >      eSTag > .inway > hall > icon > span
+@keyframes inflightInwayApproach
+{
+     0% { visibility: hidden } /* Held constant, delaying the *on target* styling till after impact */
+   100% { visibility: hidden }
+}
+
+
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
+[read|isWaylinkTargetable]                     > eSTag > .inway > hall > icon > span
+{
+    animation-delay: var(--inflightDurationAbove);
+    animation-duration: calc( var(--inflightDurationBelow) + var(--inflightImpactPropagation) );
+    animation-timing-function: step-start;
+}
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > span,
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > span
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     animation-name: inflightTarget; /* As a travel target locator */
-}
-[read|isWaylinkTargetable]                     >      eSTag > .inway > hall > icon > span
-{
-    animation-delay: var(--inflightFlyby);
-    animation-duration: calc( var(--inflightDuration)
-      + /*delayed effect of impact*/0.1s/*for sake of emphasis*/ );
-    animation-timing-function: step-start;
 }
 
 
 @keyframes inflightTarget /* Target symbol, the main content (span) of the target icon */
 {
      0% { opacity: var(--iconicOpacity); z-index: unset }
-       /* Holding these constant, thus delaying the *on target* styling till the moment of impact */
+       /* Held constant, delaying the *on target* styling till after impact */
    100% { opacity: var(--iconicOpacity); z-index: unset }
 }
 
 
-html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > bullseye,
-html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > read|eSTag > .inway > hall > icon > bullseye
+[read|isWaylinkTargetable]                     > eSTag > .inway > hall > icon > bullseye
 {
-    animation-name: inflightMissile_constants, /* As travel target locators */
-                    inflightMissile_perspective;
-}
-[read|isWaylinkTargetable]                     >      eSTag > .inway > hall > icon > bullseye
-{
-    animation-delay: var(--inflightFlyby);
-    animation-duration: var(--inflightDuration);
+    animation-delay: var(--inflightDurationAbove);
+    animation-duration: var(--inflightDurationBelow);
     animation-timing-function: /*constants*/step-start,
                              /*perspective*/linear; /* A linear function of distance */
     opacity: 0.2; /* Dimming the missile while retaining its basic colour, e.g. in the case of orphan.
       The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
+}
+html[read|animatedShow][read|travelDelta='0'] /* Reload */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
+html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
+[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
+{
+    animation-name: inflightMissile_constants, /* As travel target locators */
+                    inflightMissile_perspective;
 }
 
 
@@ -916,9 +931,12 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 
 html
 {
-    --inflightDuration: 0.4s; /* Duration of missile flight from flyby till impact */
-    --inflightFlyby: calc( var(--inflightDuration) * 0.2 ); /* Time till it passes the user
-        and becomes visible.  Rest time for browser, avoiding a balky start to the animation. */
+    --inflightDurationAbove: 0.1s; /* Duration of missile flight from start to flyby,
+        when it passes the user and becomes visible.  This is rest time for the browser,
+        avoiding a balky start to the animation. */
+    --inflightDurationBelow: 0.4s; /* Duration of missile flight from flyby till impact */
+    --inflightDuration: calc( var(--inflightDurationAbove) + var(--inflightDurationBelow) );
+    --inflightImpactPropagation: 0.1s; /* Time till effect of impact first becomes visible */
     --inflightSpread: 5rem; /* Apparent size of missile at flight start */
     --sourceX: 0; /* Apparent position of source node relative to on-target node */
     --sourceY: -0.5px; /* [VCT] */
