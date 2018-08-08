@@ -739,14 +739,14 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 [read|isWaybit]
 [read|isWaylinkTargetable] > eSTag > .inway > hall /* When it is an underbit */
 {
-    width: 3.5em; /* Wider to better separate from overbit content */
+    width: 3.5em; /* Wider to better separate from suprabutting content */
 }
 
 
 [read|isWaybit] cog|group >
 [read|isWaylinkTargetable] > eSTag > .inway > hall /* When also it is a *group* child */
 {
-    width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no direct overbit content */
+    width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
 }
 
 
