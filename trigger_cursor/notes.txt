@@ -1,0 +1,7 @@
+
+[FL] · Filter linkage.  Using an *xlink:href* to inherit these filter nodes from base.svg#shadow
+       would be better than copying them, but apparently Chrome (59) does not supported that.
+
+[NIL]  No interdocument links.  Else the referent elements fail to render (Firefox 52, Chrome 59).
+       The workaround employed here: manually copy the element declarations to whatever documents
+       need them.

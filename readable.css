@@ -88,8 +88,8 @@
  *     Limitations
  *     -----------
  *       When the user requests a way declaration document from a ‘file’ scheme URL,
- *       intracast, interdocument waylinks may fail to resolve their targets. [SFL]
- *       In that case, any bitform waylinks that fail to resolve will be marked ‘⋯?⋯’,
+ *       intracast, interdocument referential jointers may fail to resolve their references. [EFL]
+ *       In that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
  *       and generally the transformation will be incomplete and the way definition harder to view.
  *       Security constraints enforced by the browser are the underlying cause of this.
  *
@@ -116,7 +116,7 @@
 
 *:root
 {
-    margin: 0; padding: 0; /* See § scene */
+    margin: 0; padding: 0; /* See § Scene */
     position: relative; /* To contain the absolutely positioned *offWayScreen*. [ECB]
       Typically one would give this function to its parent (*body* element).
       Better however to size and position the screen to cover the document as a whole,
@@ -127,7 +127,7 @@
 html|body
 {
     display: none; /* Pending layout completion by readable.js */
-    margin: 0; padding: 0; /* See § scene */
+    margin: 0; padding: 0; /* See § Scene */
 
                color: hsl( 0, 0%, var(--textLight) );
     background-color: hsl( 0, 0%, var(--backLight) );
@@ -193,20 +193,19 @@ html[read|lighting='paper'] > html|body > read|offWayScreen
 
 
 
-/* ---  a  --  H y p e r l i n k s  --------------------------------------------------------------------
+/* ---  a  --  H y p e r l i n k   t r i g g e r s  ----------------------------------------------------
  */
 
 html|a:active
 {
-    outline: none; /* Defeat any browser default (Firefox).  It looks confusing in composite hyperlinks
-      (e.g. a > verticalTruncator).  Also the need of styling for the active state is questionable;
-      Chrome has none, and the programmatically activated links have none. */
+    outline: none; /* Defeat any browser default (Firefox).  Outlines are confusing in composite
+      triggers (a > verticalTruncator, e.g.).  No trigger of any kind needs active-state styling. */
 }
 
 
 html|a[href]
 {
-    cursor: url('link_cursor/hyperlink.svg') 13 2 /* HLINK_CURSOR */, pointer; /* [CVU] */
+    cursor: url('trigger_cursor/base.svg') 13 2 /* TRIGGER_CURSOR */, pointer; /* [CVU] */
 }
 
 
@@ -373,43 +372,14 @@ html[read|lighting='paper']
 
 
 
-/* ---  S c e n e  -------------------------------------------------------------------------------------
- */
-
-read|scene
-{
-    display: block;
-}
-
-
-read|scene#data\:\,wayic\.read\.document_scene
-{
-    --section-margin: 3em;
-    margin: var(--section-margin) auto 5em auto; /* TRBL */
-    max-width: 50em;
-    padding: 0 0.7em 0 3.4rem; /* TRBL, where L = MIN_CLICK_WIDTH_REM + MIN_GAP_REM + HALL_W,
-                                        where the *_REM components are defined in readable.js */
-}
-
-
-read|scene#data\:\,wayic\.read\.document_scene html|section,
-read|scene#data\:\,wayic\.read\.document_scene > *[read|isWayscript]
-{
-    margin-top:    var(--section-margin);
-    margin-bottom: var(--section-margin);
-}
-
-
-
-/* ---  S o u r c e   n o d e   ( w a y l i n k )  -----------------------------------------------------
+/* ---  J o i n t e r  ---------------------------------------------------------------------------------
  */
 
 read|forelinker > a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
-    text-decoration: none; /* Defeat any browser default (Chrome).  It looks confusing
-      in this composite hyperlink.  Moreover the *verticalTruncator* component already suffices
-      to indicate the presence of the hyperlink. */
+    text-decoration: none; /* Defeat any browser default (Chrome).  Underlines are confusing here.
+      The contained *verticalTruncator* already suffices to indicate hyperlink presence. */
 }
 
 
@@ -463,29 +433,29 @@ read|forelinker > a[read|showsBreadcrumb] > verticalTruncator > span
 }
 
 
-/* - - -  target orientation   - - - - -
+/* - - -  directional cueing   - - - - -
  */
 read|forelinker/*bitform*/ > a:not([href^='#']), /* With a target reference in interdocument form */
 read|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
 {
-    cursor: url('link_cursor/waylink_out.svg') 13 2, pointer;
+    cursor: url('trigger_cursor/target_out.svg') 13 2, pointer;
 }
 
 
 read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='up'], /* Intradocument, target above */
 read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='up'][cog|link]
 {
-    cursor: url('link_cursor/waylink_in_up.svg') 13 2, pointer;
+    cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
 }
 read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='down'], /* Target below */
 read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='down'][cog|link]
 {
-    cursor: url('link_cursor/waylink_in_down.svg') 13 2, pointer;
+    cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
 }
 read|forelinker/*bitform*/ > a[href^='#']:not([read|targetDirection]), /* Target missing */
 read|a       /*hyperform*/ > a[href^='#']:not([read|targetDirection])[cog|link]
 {
-    cursor: url('link_cursor/waylink_in.svg') 13 2, pointer;
+    cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
 }
 
 
@@ -494,7 +464,7 @@ read|a       /*hyperform*/ > a[href^='#']:not([read|targetDirection])[cog|link]
 html[read|lighting='neon'] *[read|imaging]:not(step|*) > eSTag > eQName > eName,
 html[read|lighting='neon'] *[read|imaging] > read|forelinker > a > preview
 {
-    color: hsl( var(--targetImage-hue), 30%, 50% );
+    color: hsl( var(--subjointImage-hue), 30%, 50% );
 }
 
 
@@ -526,7 +496,7 @@ html[read|lighting='neon'] read|forelinker > a[read|showsBreadcrumb] > verticalT
 html[read|lighting='paper'] *[read|imaging] > eSTag > eQName > eName,
 html[read|lighting='paper'] *[read|imaging] > read|forelinker > a > preview
 {
-    color: hsl( var(--targetImage-hue), 100%, 30% );
+    color: hsl( var(--subjointImage-hue), 100%, 30% );
 }
 
 
@@ -550,6 +520,34 @@ html[read|lighting='paper'] read|forelinker > a:hover                 > vertical
 html[read|lighting='paper'] read|forelinker > a[read|showsBreadcrumb] > verticalTruncator
 {
     opacity: 1;
+}
+
+
+
+/* ---  S c e n e  -------------------------------------------------------------------------------------
+ */
+
+read|scene
+{
+    display: block;
+}
+
+
+read|scene#data\:\,wayic\.read\.document_scene
+{
+    --section-margin: 3em;
+    margin: var(--section-margin) auto 5em auto; /* TRBL */
+    max-width: 50em;
+    padding: 0 0.7em 0 3.4rem; /* TRBL, where L = MIN_CLICK_WIDTH_REM + MIN_GAP_REM + HALL_W,
+                                        where the *_REM components are defined in readable.js */
+}
+
+
+read|scene#data\:\,wayic\.read\.document_scene html|section,
+read|scene#data\:\,wayic\.read\.document_scene > *[read|isProperWayscript]
+{
+    margin-top:    var(--section-margin);
+    margin-bottom: var(--section-margin);
 }
 
 
@@ -664,7 +662,7 @@ html[read|lighting='neon'] step|*             > eSTag > eQName
 }
 html[read|lighting='neon'] step|*[read|imaging] > eSTag > eQName
 {
-    background-color: hsla( var(--targetImage-hue), 100%, 60%, 0.45 );;
+    background-color: hsla( var(--subjointImage-hue), 100%, 60%, 0.45 );;
 }
 
 
@@ -692,16 +690,16 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 
 
-/* ---  T a r g e t   n o d e   ( w a y l i n k )  -----------------------------------------------------
+/* ---  S u b j o i n e d   w a y b i t  ---------------------------------------------------------------
  */
 
-[read|isWaylinkTargetable] > eSTag
+[read|hasSubjoiningPotential] > eSTag
 {
     position: relative; /* [ECB] */
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway
+[read|hasSubjoiningPotential] > eSTag > .inway
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -709,25 +707,25 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
 {
     position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > svg.approach > .edging
+[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach > .edging
 {
     fill: currentColor;
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > svg.approach > path
+[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach > path
 {
     stroke: currentColor;
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > hall
+[read|hasSubjoiningPotential] > eSTag > .inway > hall
 {
     position: absolute;
     top: 0; right: 0;
@@ -737,32 +735,32 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 
 [read|isWaybit]
-[read|isWaylinkTargetable] > eSTag > .inway > hall /* When it is an underbit */
+[read|hasSubjoiningPotential] > eSTag > .inway > hall /* When it is an underbit */
 {
     width: 3.5em; /* Wider to better separate from suprabutting content */
 }
 
 
 [read|isWaybit] cog|group >
-[read|isWaylinkTargetable] > eSTag > .inway > hall /* When also it is a *group* child */
+[read|hasSubjoiningPotential] > eSTag > .inway > hall /* When also it is a *group* child */
 {
     width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > hall > icon
+[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon
 {
     position: relative; /* [ECB] */
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon > span
 {
     position: relative; /* Enabling *z-index* change */
 }
 
 
-[read|isWaylinkTargetable] > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon > bullseye
 {
     width: 0; /* Declares no inner content, rather a horizontal position for outer shadowing */
     margin-left: auto;   /* Centered horizontally in the icon,           */
@@ -774,7 +772,7 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isWaylinkTargetable]:not([read|isOrphan]) > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential]:not([read|isOrphan]) > eSTag > .inway > hall > icon > bullseye
 {
     height: 0; /* Declares no inner content, rather a vertical position for outer shadowing */
     margin-top: auto;     /* Centered vertically in the icon,             */
@@ -787,7 +785,7 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isWaylinkTargetable][     read|isOrphan]  > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential][     read|isOrphan]  > eSTag > .inway > hall > icon > bullseye
 {
     top: 0; height: 100%;
 }
@@ -795,21 +793,21 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[read|lighting='neon'] [read|isWaylinkTargetable] > eSTag > .inway > svg.approach
+html[read|lighting='neon'] [read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
 {
     opacity: 0.50;
 }
 
 
-html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway .edging
+html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway .edging
 {
     fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
 }
-html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway path
+html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway path
 {
     stroke: hsl( 0, 80%, 80% );
 }
-html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway > hall > icon
+html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway > hall > icon
 {
     color:  hsl( 0, 80%, 80% );
 }
@@ -817,44 +815,44 @@ html[read|lighting='neon'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .
 
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[read|lighting='paper'] [read|isWaylinkTargetable] > eSTag > .inway > svg.approach
+html[read|lighting='paper'] [read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
 {
     opacity: 0.30;
 }
 
 
-html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway .edging
+html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway .edging
 {
     fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
 }
-html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway path
+html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway path
 {
     stroke: hsl( 0, 100%, 40% );
 }
-html[read|lighting='paper'] [read|isWaylinkTargetable][read|isOrphan] > eSTag > .inway > hall > icon
+html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway > hall > icon
 {
     color:  hsl( 0, 100%, 40% );
 }
 
 
 
-/* ---  T a r g e t   n o d e   ( w a y l i n k )  --  O n - t a r g e t  ------------------------------
+/* ---  S u b j o i n e d   w a y b i t  --  O n - t a r g e t  ----------------------------------------
  */
-[read|isWaylinkTargetable]                     > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential]                     > eSTag > .inway > svg.approach
 {
     animation-duration: calc( var(--inflightDuration) + var(--inflightImpactPropagation) * 2 );
     animation-timing-function: step-start;
     display: none;
 }
-[read|isWaylinkTargetable='on target']         > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential='on target']         > eSTag > .inway > svg.approach
 {
     display: unset; /* Allowing it to show */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > svg.approach,
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > svg.approach,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > svg.approach
 {
     animation-name: inflightInwayApproach; /* As a travel target locator */
 }
@@ -867,28 +865,28 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-[read|isWaylinkTargetable]                     > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential]                     > eSTag > .inway > hall > icon > span
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: calc( var(--inflightDurationBelow) + var(--inflightImpactPropagation) );
     animation-timing-function: step-start;
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span,
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     animation-name: inflightTarget; /* As a travel target locator */
 }
 
 
-@keyframes inflightTarget /* Target symbol, the main content (span) of the target icon */
+@keyframes inflightTarget /* Target symbol, the main content (span) of the subjoint icon */
 {
      0% { opacity: var(--iconicOpacity); z-index: unset }
        /* Held constant, delaying the *on target* styling till after impact */
@@ -896,7 +894,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|isWaylinkTargetable]                     > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential]                     > eSTag > .inway > hall > icon > bullseye
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: var(--inflightDurationBelow);
@@ -906,9 +904,9 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
       The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isWaylinkTargetable='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
 {
     animation-name: inflightMissile_constants, /* As travel target locators */
                     inflightMissile_perspective;
@@ -923,9 +921,9 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 
 
 @keyframes inflightMissile_perspective /* Apparent size and position of missile */
-{      /*             X offset        Y offset        Blur Spread                */
-     0% { box-shadow: var(--sourceX)  var(--sourceY)  0    var(--inflightSpread) }
-   100% { box-shadow: 0              -0.5px/*[VCT]*/  0    0                     }
+{      /*             X offset         Y offset        Blur Spread                */
+     0% { box-shadow: var(--triggerX)  var(--triggerY)  0    var(--inflightSpread) }
+   100% { box-shadow: 0               -0.5px/*[VCB]*/   0    0                     }
 }
 
 
@@ -938,56 +936,56 @@ html
     --inflightDuration: calc( var(--inflightDurationAbove) + var(--inflightDurationBelow) );
     --inflightImpactPropagation: 0.1s; /* Time till effect of impact first becomes visible */
     --inflightSpread: 5rem; /* Apparent size of missile at flight start */
-    --sourceX: 0; /* Apparent position of source node relative to on-target node */
-    --sourceY: -0.5px; /* [VCT] */
+    --triggerX: 0; /* Apparent position of hyperlink trigger relative to bullseye */
+    --triggerY: -0.5px; /* [VCB] */
 }
 html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='up']
 {
-    --sourceX: 0;
-    --sourceY: calc(  1.3 * var(--inflightSpread) - 0.5px/*[VCT]*/ );
+    --triggerX: 0;
+    --triggerY: calc(  1.3 * var(--inflightSpread) - 0.5px/*[VCB]*/ );
 }
 html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='down']
 {
-    --sourceX: 0;
-    --sourceY: calc( -1.3 * var(--inflightSpread) - 0.5px/*[VCT]*/ );
+    --triggerX: 0;
+    --triggerY: calc( -1.3 * var(--inflightSpread) - 0.5px/*[VCB]*/ );
 }
 html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='out'] /* ∴ right */
 {
-    --sourceX: calc( -1.3 * var(--inflightSpread) );
-    --sourceY: -0.5px; /* [VCT] */
+    --triggerX: calc( -1.3 * var(--inflightSpread) );
+    --triggerY: -0.5px; /* [VCB] */
 }
 html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='self'] /* ∴ left */
 {
-    --sourceX: calc(  0.6 * var(--inflightSpread) );
-    --sourceY: -0.5px; /* [VCT] */
+    --triggerX: calc(  0.6 * var(--inflightSpread) );
+    --triggerY: -0.5px; /* [VCB] */
 }
 
 
 
-/* ---  T a r g e t   n o d e   ( w a y l i n k )  --  S e l f - h y p e r l i n k i n g  --------------
+/* ---  S u b j o i n e d   w a y b i t  --  S e l f - h y p e r l i n k i n g  ------------------------
  */
 
-[read|isWaylinkTargetable] > eSTag > .inway > hall,
-[read|isWaylinkTargetable] > eSTag > eQName
+[read|hasSubjoiningPotential] > eSTag > .inway > hall,
+[read|hasSubjoiningPotential] > eSTag > eQName
 {
-    cursor: url('link_cursor/hyperlink.svg') 13 2 /* = HLINK_CURSOR */, pointer; /* [CVU]
-      Has click function, as per readable.js TargetControl handleClick. */
+    cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
+      Has click function, as per readable.js SelfLinkingControl handleClick. */
 }
 
 
-[read|isWaylinkTargetable]                       > eSTag > eQName
+[read|hasSubjoiningPotential]                       > eSTag > eQName
 {
     animation-duration: 3s;
     outline-offset: 0.3em;
 }
 html[read|animatedShow]
-[read|isWaylinkTargetable][read|showsBreadcrumb] > eSTag > eQName
+[read|hasSubjoiningPotential][read|showsBreadcrumb] > eSTag > eQName
 {
     animation-name: fadingCrumb; /* As a breadcrumb locator */
 }
 
 
-[read|isWaylinkTargetable] > eSTag:hover > .inway > hall > icon > span
+[read|hasSubjoiningPotential] > eSTag:hover > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
@@ -1001,16 +999,16 @@ html[read|lighting='neon']
 }
 
 
-html[read|lighting='neon']  [read|isWaylinkTargetable]             > eSTag       > .inway icon > span
+html[read|lighting='neon']  [read|hasSubjoiningPotential]             > eSTag       > .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='neon']  [read|isWaylinkTargetable]             > eSTag:hover > .inway icon > span
+html[read|lighting='neon']  [read|hasSubjoiningPotential]             > eSTag:hover > .inway icon > span
 {
     opacity: 0.7;
 }
-html[read|lighting='neon']  [read|isWaylinkTargetable='on target'] > eSTag:hover > .inway icon > span,
-html[read|lighting='neon']  [read|isWaylinkTargetable='on target'] > eSTag       > .inway icon > span                            /* [FT] */
+html[read|lighting='neon']  [read|hasSubjoiningPotential='on target'] > eSTag:hover > .inway icon > span,
+html[read|lighting='neon']  [read|hasSubjoiningPotential='on target'] > eSTag       > .inway icon > span                            /* [FT] */
 {
     opacity: 1;
 }
@@ -1024,16 +1022,16 @@ html[read|lighting='paper']
 }
 
 
-html[read|lighting='paper'] [read|isWaylinkTargetable]             > eSTag       > .inway icon > span
+html[read|lighting='paper'] [read|hasSubjoiningPotential]             > eSTag       > .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='paper'] [read|isWaylinkTargetable]             > eSTag:hover > .inway icon > span
+html[read|lighting='paper'] [read|hasSubjoiningPotential]             > eSTag:hover > .inway icon > span
 {
     opacity: 0.5;
 }
-html[read|lighting='paper'] [read|isWaylinkTargetable='on target'] > eSTag:hover > .inway icon > span,
-html[read|lighting='paper'] [read|isWaylinkTargetable='on target'] > eSTag       > .inway icon > span
+html[read|lighting='paper'] [read|hasSubjoiningPotential='on target'] > eSTag:hover > .inway icon > span,
+html[read|lighting='paper'] [read|hasSubjoiningPotential='on target'] > eSTag       > .inway icon > span
 {                                                    /* [FT] */
     opacity: 1;
 }
@@ -1056,7 +1054,7 @@ read|textAligner
 *[read|isWaybit]
 {
     margin-left: 2em; /* NEST_INDENT to effect the nesting of waybit dependents */
-    --targetImage-hue: 44/*reddish brown*/;
+    --subjointImage-hue: 44/*reddish brown*/;
 }
 
 
@@ -1080,10 +1078,10 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
 
 
 
-/* ---  W a y s c r i p t  -----------------------------------------------------------------------------
+/* ---  W a y s c r i p t   p r o p e r  ---------------------------------------------------------------
  */
 
-*[read|isWayscript]
+*[read|isProperWayscript]
 {
     clear: left;
     display: block; /* Changing the wayscript *display* property?  sync'd → readable.js layoutBlock. */
@@ -1117,17 +1115,24 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *  [ECB]  Here establishing the containing block for absolutely positioned descendants.
  *          https://www.w3.org/TR/css-position-3/#cb
  *
+ *  [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
+ *         across all relative (intracast) hyperlinks, that is, and throughout the local waycast.
+ *         They will not extend across *intercast* referential joints.  Though the original document
+ *         was requested from a ‘file’ scheme URL, still its *intercast* references will resolve
+ *         because waycasts are served with a response header of ‘Access-Control-Allow-Origin: *’.
+ *         http://reluk.ca/project/wayic/intercast § Design constraints § waycast publication
+ *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
  *
- *             [read|isWaylinkTargetable='on target']
+ *             [read|hasSubjoiningPotential='on target']
  *
  *         Instead of the proper form:
  *
- *             [read|isWaylinkTargetable]:target
+ *             [read|hasSubjoiningPotential]:target
  *
  *         The proper form was seen to fail on Chrome 65.0.  It failed during relatively fast
  *         (∼1 s interval) back-and-forth travel.  Otherwise no workaround would be necessary
- *         and attribute *isWaylinkTargetable* would need only a boolean value [BA in readable.js].
+ *         and attribute *hasSubjoiningPotential* would need only a boolean value [BA in readable.js].
  *
  *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
  *         “general sibling combinator” is really rather particular in its application, in that it
@@ -1148,17 +1153,11 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *         because it happens these alone determine the calculated direction.  Showing that direction
  *         in other cases is unlikely to help reorient the user, rather likely to mislead him.
  *
- *  [SFL]  Scope of file-scheme limitations.  The scope is unlikely to extend to intercast waylinks.
- *         Regardless of whether the source document is requested from a ‘file’ scheme URL,
- *         still its intercast targets are likely to resolve given that they are served
- *         with a response header of ‘Access-Control-Allow-Origin: *’.
- *         http://reluk.ca/project/wayic/intercast § design constraints § waycast publication
- *
  *  [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
  *         if the parent directory of the originating file is an ancestor directory of the target file.”
  *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  *
- *  [VCT]  Vertical centering on target.  Here deflecting Y offset by -BBW for a better centering.
+ *  [VCB]  Vertical centering on bullseye.  Here deflecting Y offset by -BBW for a better centering.
  *         Unicode 1f78b round target.  Droid Sans/Chrome, Georgia/Firefox.
  */
 

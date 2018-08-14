@@ -14,9 +14,9 @@
   *
   *   Element
   *   -------
-  *       interlinkScene · (boolean) Set on a waylink target node, answers whether this target node has
+  *       interlinkScene · (boolean) Set on a subjoining waybit, answers whether this subjoining waybit has
   *                        an interlink scene.  That is only its temporary use; later this property will
-  *           instead point to the *scene* element that encodes the target node’s interlink scene.
+  *           instead point to the *scene* element that encodes the subjoining waybit’s interlink scene.
   *
   *
   * FORMATION of SESSION HISTORY STATE
@@ -52,21 +52,21 @@
   *
   *   html:html ∙ Document element
   *   ---------
-  *     [animatedShow] · Style rules that must animate or re-animate on each load of the document,
-  *                      and on each revisit to it, must depend on this attribute.
-  *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
-  *     [travelDelta]    · Travel distance in session history to reach the present entry
-  *                        from the last entry of ours that was shown: -N, 0 or N
-  *                        (backward by N entries, reload, or forward by N entries).  [OUR]
-  *     [targetDirection] · (only if window.location.hash is on target with a waylink)
-  *                         Direction to the on-target node from the source.
+  *     [animatedShow]   · Style rules that must animate or re-animate on each load of the document,
+  *                        and on each revisit to it, must depend on this attribute.
+  *     [lighting]        · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *     [travelDelta]      · Travel distance in session history to reach the present entry
+  *                          from the last entry of ours that was shown: -N, 0 or N
+  *                          (backward by N entries, reload, or forward by N entries).  [OUR]
+  *     [targetDirection] · (only if an element is on target) Direction to the targeted element
+  *                         (target) from its hyperlink trigger.
   *         Value  Meaning
-  *         ·····  ·······································································
-  *         self   Target and source node are identical
-  *         up     Target is above the source node in document order
-  *         down   Target is below the source node
-  *         in     Intradocument travel by non-nodal source (e.g. bookmark or address bar)
-  *         out    Extradocument travel (i.e. interdocument or from a non-document source)
+  *         ·····  ············································································
+  *         self   Target and trigger are identical
+  *         up     Target is above the trigger in document order
+  *         down   Target is below the trigger
+  *         in     Intradocument travel by extradocument trigger (e.g. bookmark or address bar)
+  *         out    Extradocument travel (i.e. interdocument or from a non-document location)
   *
   *
   *   html:body
@@ -87,10 +87,10 @@
   *
   *   * (as a) Wayscript element
   *   --------------------------
-  *     [hasLeader]    · Has leading, non-whitespace text?  [BA]
-  *     [hasShortName] · Has a visible name no longer than three characters?
-  *     [isWaybit]    · Is a waybit?
-  *     [isWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
+  *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
+  *     [hasShortName]      · Has a visible name no longer than three characters?
+  *     [isProperWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
+  *     [isWaybit]          · Is a waybit?
   *
   *     eSTag       ∙ Start tag of an element, reproducing content that would otherwise be invisible
   *                   except in the wayscript source.
@@ -103,49 +103,49 @@
   *     textAligner ∙ (only if element is a step)
   *
   *
-  *   html:a, Hyperlink source node
+  *   html:a, hyperlink trigger
   *   ------
   *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
-  *                         history?  Set after travelling back in history onto this source node,
+  *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
   *                         Appears at most on one element.  [BA, FIB]
-  *     [targetDirection] · Direction to the target node (‘up’ or ‘down’) if the link is
-  *                         an intradocument link and unbroken (its target node exists).
+  *     [targetDirection] · Direction to the target (‘up’ or ‘down’) if the link is
+  *                         an intradocument link and unbroken (its target exists).
   *
   *
-  *   a, Waylink source node, Hyperform
+  *   a, Referential jointer, Hyperform
   *   ----------------------
   *     html:a         ∙ (§ q.v.)
   *         [cog:link]  ·
-  *     html:sup       ∙ Hyperlink indicator, containing ‘*’, ‘†’ or ‘‡’
+  *     html:sup       ∙ Hyperlink presence indicator.  It contains ‘*’, ‘†’ or ‘‡’.
   *
   *
-  *   * (as a) Waylink source node, Bitform
+  *   * (as a) Referential jointer, Bitform
   *   ----------------------------
-  *     [hasPreviewString] · Has a non-empty preview of the target text?  [BA]
+  *     [hasPreviewString] · Has a non-empty subjoint preview string?  [BA]
   *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on
-  *                          a cached image of the target node (value ‘present’) or not (‘absent’).
-  *     [isBroken] · Has a broken target reference?  [BA]
+  *                          a cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
+  *     [isBroken] · Refers to a non-existent subjoining waybit, forming a broken joint?  [BA]
   *     [cog:link] ·
   *
   *     eSTag                  ∙ (q.v. under § Wayscript element)
   *     textAligner             ∙ (only if element is a step)
-  *     forelinker               ∙ Hyperlink effector
+  *     forelinker               ∙ Hyperlink presenter
   *         html:a                ∙ (§ q.v.)
-  *             [targetDirection]  · (q.v. under § a § html:a)
-  *             preview           ∙ Preview of the target text
+  *             [targetDirection]  · (q.v. under § html:a)
+  *             preview           ∙ Subjoint preview
   *             html:br           ∙
-  *             verticalTruncator ∙ Indicating the source node as such (half a link)
+  *             verticalTruncator ∙ Indicator of the joint’s presence and the partialness of the subjoint preview
   *                 html:span     ∙ Containing the visible indicator, exclusive of padding
   *
   *
-  *   * (as a) Waylink target node
+  *   * (as a) Subjoining waybit
   *   ----------------------------
-  *     [:id]               ·
-  *     [isOrphan]           · Is waylink targetable, yet targeted by no waylink source node?
-  *     [isWaylinkTargetable] · Iff this attribute is absent, then the answer is ‘no’; else its value
-  *                             is either ‘on target’ or ‘off target’.  [FT in readable.css]
-  *     [showsBreadcrumb]   · (q.v. under § html:a)
+  *     [hasSubjoiningPotential] · Iff this attribute is absent, then the answer is ‘no’; else its value
+  *                                is either ‘on target’ or ‘off target’.  [FT in readable.css]
+  *     [:id]            ·
+  *     [isOrphan]        · Is potentially subjoining, yet referenced by no referential jointer?
+  *     [showsBreadcrumb] · (q.v. under § html:a)
   *
   *     eSTag               ∙ (q.v. under § Wayscript element)
   *         html:div         ∙ Inway  [SH, ODO]
@@ -156,7 +156,7 @@
   *                     [:class]  · ‘edging’
   *                 svg:path     ∙ Path
   *             hall             ∙
-  *                 icon          ∙ Target icon
+  *                 icon          ∙ Subjoining waybit icon
   *                     html:span ∙ Holder of main content
   *                     bullseye  ∙ Dimensionless point centered on icon
   *
@@ -245,7 +245,7 @@ window.wayic_read_readable = ( function()
       // ----------
         transform();
 
-      // Document shown, view stable in the typical case [TIC]
+      // Document shown, view stable in the typical case [SIC]
       // --------------
         ensureDocumentWillShow();
         if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
@@ -253,8 +253,8 @@ window.wayic_read_readable = ( function()
       // Processes launched, view may deflect in atypical cases
       // ------------------
         DocumentCachePersistor.start();
-        InterdocScanner.start();
-        InterdocWaylinkTransformer.start();
+        AlterdocScanner.start();
+        SurjointFinisher.start();
         WayTracer.start();
     };
 
@@ -467,7 +467,8 @@ window.wayic_read_readable = ( function()
 
 
 
-    const BREAK_SYMBOL = '\u{1f5d9}'; // Unicode 1f5d9 (cancellation X).  Changing? sync'd → readable.css.
+    const BREAK_SYMBOL = '\u{1f5d9}';
+      // Unicode 1f5d9 (cancellation X).  Changing? sync'd → readable.css.
 
 
 
@@ -525,45 +526,45 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Configures a bitform waylink source node for a given target node.
+    /** Configures a bitform referential jointer for a given, actual subjoining waybit.
       *
-      *     @param sourceNS (string) The namespace of the source node.
-      *     @param sourceN (string) The local part of the source node's name.
-      *     @param linkV (string) The value of the source node's *link* attribute.
-      *     @param target (Element | TargetImage) The target node, or its cached image.
+      *     @param jtrNS (string) The namespace of the jointer.
+      *     @param jtrN (string) The local part of the jointer's name.
+      *     @param linkV (string) The value of the jointer's *link* attribute.
+      *     @param sbj (Element | SubjointImage) The subjoining waybit, or its cached image.
       *     @param transform (PartTransformC)
       */
-    function configureForTarget( sourceNS, sourceN, linkV, target, transform )
+    function configureForSubjoint( jtrNS, jtrN, linkV, sbj, transform )
     {
-        const targetNS = target.namespaceURI;
-        const targetN = target.localName;
-        if( sourceNS !== targetNS )
+        const sbjNS = sbj.namespaceURI;
+        const sbjN = sbj.localName;
+        if( jtrNS !== sbjNS )
         {
-            tsk( 'Source node namespace (' + sourceNS + ') differs from target node namespace ('
-              + targetNS + ') for waylink: ' + a2s('link',linkV) );
+            tsk( 'Jointer namespace (' + jtrNS + ') differs from subjoining waybit namespace ('
+              + sbjNS + ') for referential jointer: ' + a2s('link',linkV) );
         }
-        if( sourceN === ELEMENT_NAME_UNCHANGED ) transform.localPartOverride = targetN;
-          // Transforming to the same name as the target
+        if( jtrN === ELEMENT_NAME_UNCHANGED ) transform.localPartOverride = sbjN;
+          // Transforming to the same name as the subjoining waybit
     }
 
 
 
-    /** Configures a bitform waylink source node for a given target preview.
+    /** Configures a bitform referential jointer for a given subjoint *preview* element.
       *
-      *     @param source (Element) The source node.
+      *     @param jointer (Element) The jointer.
       *     @param preview (Element) Its *preview* element.
       */
-    function configureForTargetPreview( source, preview, previewString )
+    function configureForSubjointPreview( jointer, preview, previewString )
     {
         const pointCount = countCodePoints( previewString );
         if( pointCount === 0 )
         {
-            source.removeAttributeNS( NS_READ, 'hasPreviewString' );
+            jointer.removeAttributeNS( NS_READ, 'hasPreviewString' );
             preview.classList.remove( 'singleCharacterContent' ); // If present
         }
         else
         {
-            source.setAttributeNS( NS_READ, 'hasPreviewString', 'hasPreviewString' );
+            jointer.setAttributeNS( NS_READ, 'hasPreviewString', 'hasPreviewString' );
             preview.classList.toggle( 'singleCharacterContent', pointCount === 1 ); // [AEP]
         }
     }
@@ -622,8 +623,8 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The string that means *same as the target name* when it encodes the local part of the name
-      * of a waylink souce node.
+    /** The name that, when it forms the local part of a referential jointer's name,
+      * signifies *the same name* as the referent subjoining waybit.
       */
     const ELEMENT_NAME_UNCHANGED = '_same';
 
@@ -710,7 +711,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The symbol to indicate a hyperlink.  It is styled as superscript.
+    /** The symbol for use in hyperlink presence indicators.  These are styled in superscript.
       */
     const HYPERLINK_SYMBOL = '*'; // Unicode 2a (asterisk)
 
@@ -787,13 +788,13 @@ window.wayic_read_readable = ( function()
       */
     const MS_DELAY_INWAYS = 49;
 
-    /** Delay in milliseconds before the first delayed procedure of InterdocWaylinkTransformer.
+    /** Delay in milliseconds before the first delayed procedure of SurjointFinisher.
       */
-    const MS_DELAY_IWT = MS_DELAY_INWAYS + 142;
+    const MS_DELAY_SF = MS_DELAY_INWAYS + 142;
 
     /** Delay in milliseconds before the first delayed procedure of DocumentCachePersistor.
       */
-    const MS_DELAY_DCP = MS_DELAY_IWT + 1991;
+    const MS_DELAY_DCP = MS_DELAY_SF + 1991;
 
 
 
@@ -844,28 +845,27 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Tests whether the given *id* attribute declaration is well formed for the purpose of waylinkage.
-      * Returns true if it is well formed, otherwise reports it as malformed and returns false.
+    /** Tests whether the given, *id* attributed element obeys certain identification constraints.
+      * Returns true if it obeys them, otherwise reports the violation and returns false.
       *
-      *     @param t (Element) A waylink target node.
-      *     @param id (string) The value of t's *id* attribute.
+      *     @param e (Element) An element with an *id* attribute.
+      *     @param id (string) The value of the *id* attribute.
+      *
+      *     @see http://w3c.github.io/html/dom.html#element-attrdef-global-id
       */
-    function testWaylinkIdForm( t, id )
+    function testIdentification( e, id )
     {
         if( id === null ) throw NULL_PARAMETER;
 
-        let isWellFormed = true;
-        const doc = t.ownerDocument;
-        console.assert( t.hasAttribute('id'), A );
-        t.removeAttribute( 'id' );
-        const e = doc.getElementById( id );
-        t.setAttribute( 'id', id );
-        if( e !== null )
-        {
-            isWellFormed = false;
-            tsk( 'Malformed *id* declaration, value not unique: ' + a2s('id',id), doc );
-        }
-        return isWellFormed;
+        const doc = e.ownerDocument;
+        console.assert( e.hasAttribute('id'), A );
+        e.removeAttribute( 'id' );
+        const eOther = doc.getElementById( id );
+        e.setAttribute( 'id', id );
+        if( eOther === null ) return true;
+
+        tsk( 'Duplicate *id* declaration, value not unique: ' + a2s('id',id), doc );
+        return false;
     }
 
 
@@ -922,13 +922,13 @@ window.wayic_read_readable = ( function()
           // ============
             const tNS = t.namespaceURI;
             const tN = t.localName;
-            let isBit, isHTML, isWayscript;
+            let isBit, isHTML, isProperWayscript;
             let tSubNS; // Wayscript subnamespace, or null if element *t* is not wayscript
             if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // Then element *t* is wayscript
             {
                 isHTML = false;
-                isWayscript = true;
-                t.setAttributeNS( NS_READ, 'isWayscript', 'isWayscript' );
+                isProperWayscript = true;
+                t.setAttributeNS( NS_READ, 'isProperWayscript', 'isProperWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
                 isBit = isBitSubNS( tSubNS );
                 layoutBlock = t; // Sync'd ← readable.css § Wayscript
@@ -936,7 +936,7 @@ window.wayic_read_readable = ( function()
             else // element *t* is non-wayscript
             {
                 isHTML = tNS === NS_HTML;
-                isBit = isWayscript = false;
+                isBit = isProperWayscript = false;
                 tSubNS = null;
                 if( !getComputedStyle(t).getPropertyValue('display').startsWith('inline') )
                 {
@@ -965,7 +965,7 @@ window.wayic_read_readable = ( function()
                     const docLocN = URIs.defragmented( URIs.normalized( href ));
                     targetExtradocLocN = docLocN === DOCUMENT_LOCATION? '': docLocN;
                 }
-                else if( linkV !== null ) // Then *t* is a hyperform waylink
+                else if( linkV !== null ) // Then *t* is a hyperform referential jointer
                 {
                     let link;
                     try { link = new LinkAttribute( linkV ); }
@@ -976,14 +976,14 @@ window.wayic_read_readable = ( function()
                     }
 
                     link.hrefTo( t );
-                    const targetWhereabouts = TargetWhereabouts.fromSource( t, link );
+                    const targetWhereabouts = TargetWhereabouts.fromJointer( t, link );
                     targetExtradocLocN = targetWhereabouts.documentLocationN;
                     const direction = targetWhereabouts.direction;
                     if( direction !== null ) t.setAttributeNS( NS_READ, 'targetDirection', direction );
                 }
                 if( targetExtradocLocN.endsWith( '/way.xht' )) // Likely a way declaration document.
-                {                                             // So tell the transformer:
-                    InterdocWaylinkTransformer.noteTargetDocument( targetExtradocLocN );
+                {                                             // So tell the joint finisher:
+                    SurjointFinisher.noteSubjoiningDocument( targetExtradocLocN );
                 }
 
               // Superscripting
@@ -1007,7 +1007,7 @@ window.wayic_read_readable = ( function()
                 sup.appendChild( document.createTextNode( symbol ));
             }
 
-            if( !isWayscript ) continue tt;
+            if( !isProperWayscript ) continue tt;
 
 
           ///////////////////////////////////////////////////////////////////////////////////  WAYSCRIPT
@@ -1028,19 +1028,19 @@ window.wayic_read_readable = ( function()
             }
 
 
-          // ==================
-          // Bitform waylinkage of element *t*
-          // ==================
-            const lidV = ( ()=> // Target identifier, non-null if *t* is a potential waylink target node
+          // ================
+          // Bitform jointing by element *t*
+          // ================
+            const lidV = ( ()=> // Element identifier, non-null if *t* is a potential subjoining waybit
             {
                 if( !isBit ) return null;
 
                 const v = t.getAttribute( 'id' );
-                if( v && testWaylinkIdForm(t,v) ) return v;
+                if( v && testIdentification(t,v) ) return v;
 
                 return null;
             })();
-            const linkV = ( ()=> // Waylink declaration, non-null if *t* is a source node
+            const linkV = ( ()=> // Subjoining waybit reference, non-null if *t* is a jointer
             {
                 let v = t.getAttributeNS( NS_COG, 'link' );
                 if( v === null ) return null;
@@ -1052,18 +1052,18 @@ window.wayic_read_readable = ( function()
                 }
                 return v;
             })();
-            source: if( linkV !== null )
+            jointer: if( linkV !== null )
             {
                 if( lidV !== null )
                 {
-                    tsk( 'A bitform waylink node with both *id* and *link* attributes: ' + a2s('id',lidV) );
-                    break source;
+                    tsk( 'A bitform referential jointer with both *id* and *link* attributes: ' + a2s('id',lidV) );
+                    break jointer;
                 }
 
                 if( !isDeclaredEmpty )
                 {
-                    tsk( 'A bitform waylink source node with content: ' + a2s('link',linkV) );
-                    break source;
+                    tsk( 'A bitform referential jointer with content: ' + a2s('link',linkV) );
+                    break jointer;
                 }
 
                 let link;
@@ -1071,54 +1071,54 @@ window.wayic_read_readable = ( function()
                 catch( unparseable )
                 {
                     tsk( unparseable );
-                    break source;
+                    break jointer;
                 }
 
                 const forelinker = t.appendChild( document.createElementNS( NS_READ, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
-                const targetWhereabouts = TargetWhereabouts.fromSource( t, link );
-                let targetPreviewString;
-                targeting:
+                const targetWhereabouts = TargetWhereabouts.fromJointer( t, link );
+                let subjointPreviewString;
+                jointing:
                 {
-                    const targetDocLocN = targetWhereabouts.documentLocationN;
-                    if( targetDocLocN.length > 0 ) // Then *t* links to a separate document
+                    const sbjDocLocN = targetWhereabouts.documentLocationN;
+                    if( sbjDocLocN.length > 0 ) // Then *t* refers to a separate document
                     {
-                        const registration = InterdocWaylinkTransformer.registerBitformLink( t,
-                          link.targetID, targetDocLocN );
-                        const image = registration.targetImage;
+                        const registration = SurjointFinisher.registerBitformJointer( t,
+                          link.subjointID, sbjDocLocN );
+                        const image = registration.subjointImage;
                         if( image === null )
                         {
                             partTransform.imaging = 'absent';
-                            targetPreviewString = '⌚'; // Unicode 231a (watch) = pending symbol
+                            subjointPreviewString = '⌚'; // Unicode 231a (watch) = pending symbol
                         }
                         else
                         {
                             partTransform.imaging = 'present';
-                            targetPreviewString = image.leader;
-                            configureForTarget( tNS, tN, linkV, image, partTransform );
+                            subjointPreviewString = image.leader;
+                            configureForSubjoint( tNS, tN, linkV, image, partTransform );
                         }
-                        break targeting;
+                        break jointing;
                     }
 
                     const direction = targetWhereabouts.direction;
-                    if( direction === null ) // Then *t* is a broken waylink
+                    if( direction === null ) // Then the joint is broken
                     {
-                        targetPreviewString = BREAK_SYMBOL;
+                        subjointPreviewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
-                        break targeting;
+                        break jointing;
                     }
 
-                    // The target is within the present document
+                    // The subjoining waybit is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
-                    const target = targetWhereabouts.target;
-                    configureForTarget( tNS, tN, linkV, target, partTransform );
-                    LeaderReader.read( target );
-                    targetPreviewString = LeaderReader.leader;
+                    const sbj = targetWhereabouts.target;
+                    configureForSubjoint( tNS, tN, linkV, sbj, partTransform );
+                    LeaderReader.read( sbj );
+                    subjointPreviewString = LeaderReader.leader;
                 }
                 const preview = a.appendChild( document.createElementNS( NS_READ, 'preview' ));
-                preview.appendChild( document.createTextNode( targetPreviewString ));
-                configureForTargetPreview( t, preview, targetPreviewString );
+                preview.appendChild( document.createTextNode( subjointPreviewString ));
+                configureForSubjointPreview( t, preview, subjointPreviewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_READ, 'verticalTruncator' ))
                  .appendChild( document.createElementNS( NS_HTML, 'span' ))
@@ -1163,9 +1163,9 @@ window.wayic_read_readable = ( function()
             }
 
             partTransform.run();
-            if( lidV !== null ) // Then *t* is waylink targetable
+            if( lidV !== null ) // Then *t* is potentially subjoining
             {
-                t.setAttributeNS( NS_READ, 'isWaylinkTargetable',
+                t.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
                   lidV === Hyperlinkage.idOnTarget()? 'on target':'off target' );
                 t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
                 const eSTag = partTransform.eSTag;
@@ -1184,7 +1184,7 @@ window.wayic_read_readable = ( function()
                 Inways.layWhen( inway, eSTag );
 
               // -----
-                TargetControl.addControls( eSTag );
+                SelfLinkingControl.addControls( eSTag );
             }
         }
     }
@@ -1271,9 +1271,123 @@ window.wayic_read_readable = ( function()
 /// ====================================================================================================
 
 
+   //   A l t e r d o c   S c a n n e r
+
+
+    /** A scanner of related documents.  It discovers related documents, scans them for references
+      * to the present document, and updates the form of the present document based on the results.
+      * It finishes the presentation of referential joints on the subjoint side (figure right).
+      *
+      *                    surjoint           Surjoint    *
+      *                      ancestors          side     *    Subjoint
+      *                    ╱                            *       side
+      *                   ╱    surjoining              *
+      *                  ╱       waybit               *
+      *         waybit         ╱                     *
+      *                       ╱                     *               subjoining
+      *             waybit   ╱                      *                 waybit
+      *                                             *               ╱
+      *              ┌  waybit                      *              ╱
+      *              │      Text content            *             ╱
+      *     joint ───┤· · · · · · · · · · · · · · · * · · · · · · · · · · · · · ·
+      *              │      waybit                  *     ◉  waybit
+      *              └          Text content        *            Text content
+      *                     ╱     ⋱⋱                *
+      *                    ╱          ╲             *            waybit
+      *                   ╱            ╲            *
+      *              jointer            ╲           *                waybit
+      *            (in bitform)       subjoint      *            ╱
+      *                                 preview     *           ╱
+      *                                             *          ╱
+      *                                            *        subjoint
+      *                                           *       descendants
+      *                                          *
+      *
+      *     @see SurjointFinisher, it finishes joints on the surjoint side (figure left).
+      */
+    const AlterdocScanner = ( function()
+    {
+
+        const expo = {}; // The public interface of AlterdocScanner
+
+
+
+        /** Starts this scanner.
+          */
+        expo.start = function()
+        {
+            DocumentCachePersistor.addOmnireader( new class extends DocumentReader
+            {
+                read( cacheEntry, doc ) { scan( doc, cacheEntry.location ); }
+            });
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        /** Notes the fact of an unbroken intradocument joint.
+          *
+          *     @param sbj (Element) The joint's subjoining waybit, located within the present document.
+          */
+        function noteJoint( sbj )
+        {
+            if( sbj.interlinkScene ) return; // Already noted
+
+            sbj.interlinkScene = true;
+            const span = asElementNamed( 'span', sbj.firstChild/*eSTag*/
+              .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
+            const iconicText = span.firstChild;
+            iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
+            sbj.removeAttributeNS( NS_READ, 'isOrphan' );
+        }
+
+
+
+        /** @param doc (Document) The document to scan, which might be the present document.
+          * @param docLoc (string) The location of the document in normal form.
+          */
+        function scan( doc, docLoc )
+        {
+            const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
+            for( traversal.nextNode()/*onto the document node itself*/;; )
+            {
+                const t = traversal.nextNode();
+                if( t === null ) break;
+
+                const linkV = t.getAttributeNS( NS_COG, 'link' );
+                if( linkV === null ) continue;
+
+                let link;
+                try { link = new LinkAttribute( linkV ); }
+                catch( unparseable ) { continue; }
+
+                // No need here to fend against other types of malformed link declaration.
+                // Rather take it as the wayscribe intended.
+                let sbjDocLoc = link.subjointDocumentLocation;
+                sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
+                if( sbjDocLoc !== DOCUMENT_LOCATION ) continue;
+
+                const sbj = document.getElementById( link.subjointID );
+                if( sbj !== null) noteJoint( sbj );
+            }
+        }
+
+
+
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
+   //   A p p r o a c h e s
+
 
     /** Dealing with *approaches*.  The *approach* is an inway component that draws vector graphics
-      * for a waylink target node and controls the scene switching for it.
+      * for a subjoining waybit and controls the scene switching for it.
       *
       *             approach path
       *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1404,9 +1518,10 @@ window.wayic_read_readable = ( function()
     /** Cueing for the purpose of user reorientation after hyperlink back travel.  For this purpose
       * are maintained, in subprogram statelet 'Breadcrumbs', the following properties:
       *
-      *     sourcePath · Identifier (string in XPath form) of the hyperlink source node
-      *                  whose activation caused the last exit from the present entry
-      *                  of the session history; or null if the present entry was never exited,
+      *     triggerPath · Identifier (string in XPath form) of the nominal hyperlink trigger
+      *                   whose activation caused the latest exit from the present entry
+      *                   of the session history.  It is null if the present entry was never exited,
+      *                   and null if the latest exit had some other cause.
       *                       or its last exit had some other cause.
       *     targetDirection · Q.v. under § INTRODUCTION of SPECIAL MARKUP § html:html
       *     travel          · Ordinal (number) of the present entry within the session history,
@@ -1421,28 +1536,27 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** @param s (Element) The element that determines the position of the dropped crumb,
-          *   typically a hyperlink source node.
+        /** @param t (Element) The nominal hyperlink trigger on which to drop the crumb.
           */
-        expo.dropCrumb = function( s )
+        expo.dropCrumb = function( t )
         {
-            travelStop.sourceNode = s;
-            dropCrumb_store( definitePath(s) );
-            if( crumbShower === s ) return; // None is showing, or none other than *s*
+            travelStop.trigger = t;
+            dropCrumb_store( definitePath(t) );
+            if( crumbShower === t ) return; // None is showing, or none other than *t*
 
-            hideCrumb(); // Removed above and dropped on *s*, it is no longer where it appears to be
+            hideCrumb(); // Removed above and dropped on *t*, it is no longer where it appears to be
         };
 
 
-            function dropCrumb_store( p ) // p → statelet property Breadcrumbs.sourcePath
+            function dropCrumb_store( p ) // p → statelet property Breadcrumbs.triggerPath
             {
                 const state = history./*copy of*/state;
                 console.assert( state !== null, A ); // Assured by *reorient*
                 const statelet = state[NS_READ].Breadcrumbs;
                 console.assert( statelet !== undefined, A ); // Assured by *reorient*
-                if( statelet.sourcePath === p ) return; // Already stored
+                if( statelet.triggerPath === p ) return; // Already stored
 
-                statelet.sourcePath = p;
+                statelet.triggerPath = p;
                 history.replaceState( state, /*no title*/'' );
             }
 
@@ -1506,7 +1620,7 @@ window.wayic_read_readable = ( function()
                 const tN = t.localName;
                 if( tN === 'body' || tN === 'html' ) break;
 
-                if( tN !== 'a'/*hyperlink source node*/ ) continue;
+                if( tN !== 'a'/*hyperlink trigger*/ ) continue;
 
                 if( !t.hasAttribute( 'href' )) break; // Dud link
 
@@ -1578,7 +1692,7 @@ window.wayic_read_readable = ( function()
 
               // Initialize the subprogram statelet
               // ----------------------------------
-                statelet.sourcePath = null; // Properly formed, as per Breadcrumbs contract
+                statelet.triggerPath = null; // Properly formed, as per Breadcrumbs contract
                 statelet.travel = travel;
                 statelet.targetDirection = ( ()=>
                 {
@@ -1589,12 +1703,12 @@ window.wayic_read_readable = ( function()
                     const previousStop = travelStops[travel-1];
                     if( previousStop === undefined ) return 'out';
 
-                    const sourceNode = previousStop.sourceNode;
-                    if( sourceNode === null )  return 'in';
+                    const trigger = previousStop.trigger;
+                    if( trigger === null )  return 'in';
 
-                    if( sourceNode === elementOnTarget ) return 'self';
+                    if( trigger === elementOnTarget ) return 'self';
 
-                    const dP = sourceNode.compareDocumentPosition( elementOnTarget );
+                    const dP = trigger.compareDocumentPosition( elementOnTarget );
                     if( dP & DOCUMENT_POSITION_PRECEDING ) return 'up';
 
                     console.assert( dP & DOCUMENT_POSITION_FOLLOWING, A );
@@ -1647,7 +1761,7 @@ window.wayic_read_readable = ( function()
                     break sC;
                 }
 
-                const p = statelet.sourcePath;
+                const p = statelet.triggerPath;
                 if( p === null )
                 {
                     hideCrumb();
@@ -1656,7 +1770,7 @@ window.wayic_read_readable = ( function()
 
                 const pR = document.evaluate( p, document, /*namespace resolver*/null,
                   ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
-                const s = pR.iterateNext(); // Resolved hyperlink source node
+                const s = pR.iterateNext(); // Resolved hyperlink trigger
                 console.assert( pR.iterateNext() === null, A ); /* At most there is the one
                   if *definitePath* is unambiguous, as claimed and required. */
                 if( crumbShower === s ) break sC;
@@ -1688,17 +1802,17 @@ window.wayic_read_readable = ( function()
         class TravelStop
         {
 
-            constructor() { this._sourceNode = null; }
+            constructor() { this._trigger = null; }
 
 
-            /** The hyperlink source node whose activation caused the last exit from this stop.
-              * This is null if the stop was never exited during the present load of the document,
-              * or its last exit had some other cause.
+            /** The nominal hyperlink trigger (Element) whose activation caused the latest exit
+              * from this stop.  It is null if the stop was never exited during the present load
+              * of the document, and null if the latest exit had some other cause.
               *
-              *     @see Statelet property Breadcrumbs.sourcePath
+              *     @see Statelet property Breadcrumbs.triggerPath
               */
-            get sourceNode() { return this._sourceNode; }
-            set sourceNode( _ ) { this._sourceNode = _; }
+            get trigger() { return this._trigger; }
+            set trigger( _ ) { this._trigger = _; }
 
         }
 
@@ -1722,9 +1836,9 @@ window.wayic_read_readable = ( function()
         });
         addEventListener( 'pagehide', ( /*PageTransitionEvent*/e ) =>
         {
-            if( travelStop.sourceNode === null )
+            if( travelStop.trigger === null )
             {
-                dropCrumb_store( null ); /* Clear any *sourcePath* from the statelet
+                dropCrumb_store( null ); /* Clear any *triggerPath* from the statelet
                   because this exit is not caused by a hyperlink activation. */
                 if( /*might later revisit*/e.persisted ) hideCrumb();
             }
@@ -1893,7 +2007,7 @@ window.wayic_read_readable = ( function()
                     if( t === null ) break;
 
                     const id = t.getAttribute( 'id' );
-                    if( id !== null ) testWaylinkIdForm( t, id );
+                    if( id !== null ) testIdentification( t, id );
                 }
             };
             req.onloadend = ( _event/*ignored*/ ) =>
@@ -2001,8 +2115,8 @@ window.wayic_read_readable = ( function()
             {
                 const locations = JSON.parse( s );
 
-              // Recache the recalled documents
-              // -------
+              // Re-cache the recalled documents
+              // --------
                 for( const loc of locations )
                 {
                     if( !isPresentDocumentMemorized && loc === DOCUMENT_LOCATION )
@@ -2011,7 +2125,7 @@ window.wayic_read_readable = ( function()
                         continue; // Always the present document is already cached
                     }
 
-                    DocumentCache.readNowOrLater( loc, DOCUMENT_READER_NULL ); // Recaching it
+                    DocumentCache.readNowOrLater( loc, DOCUMENT_READER_NULL ); // Re-caching it
                 }
             }
 
@@ -2112,7 +2226,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The element that is actively hyperlink-targeted by the browser, or null if there is none.
+        /** The element indicated by window.location.hash, or null if there is none.
           *
           *     @return (Element)
           *     @see #idOnTarget
@@ -2127,9 +2241,9 @@ window.wayic_read_readable = ( function()
             {
                 if( elementOnTarget === null ) return;
 
-                if( elementOnTarget.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
+                if( elementOnTarget.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    elementOnTarget.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'off target' );
+                    elementOnTarget.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'off target' );
                 }
                 elementOnTarget = null;
             }
@@ -2140,22 +2254,22 @@ window.wayic_read_readable = ( function()
                 if( elementOnTarget === e ) return;
 
                 if( elementOnTarget !== null
-                 && elementOnTarget.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
+                 && elementOnTarget.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    elementOnTarget.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'off target' );
+                    elementOnTarget.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'off target' );
                 }
-                if( e.hasAttributeNS( NS_READ, 'isWaylinkTargetable' ))
+                if( e.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    e.setAttributeNS( NS_READ, 'isWaylinkTargetable', 'on target' );
+                    e.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'on target' );
                 }
                 elementOnTarget = e;
             }
 
 
 
-        /** The element identifier that is actively hyperlink-targeted by the browser, as obtained from
-          * the fragment part of window.location without the preceding delimiter character '#'.
-          * If the fragment part is missing, then the return value is null.
+        /** The window targeted identifier, or null if there is none.  This is the value
+          * of window.location.hash without a preceding delimiter character '#', or null
+          * if that value is an empty string.
           *
           *     @return (string)
           *     @see #elementOnTarget
@@ -2179,22 +2293,26 @@ window.wayic_read_readable = ( function()
 
         function hearHashChange/* event handler */( _HashChangeEvent )
         {
-            const hash = location.hash; // [WDL]
-            const id = hash.length === 0? null: hash.slice(1);
-            if( idOnTarget === id ) return; // Redundant call owing to use of *refresh*
+            // † Use of *refresh* may cause redundant calls, as detected and marked below †
 
-            idOnTarget = id;
-            if( id !== null )
+            const hash = location.hash; // [WDL]
+            if( hash.length <= 1 )
             {
-                const e = document.getElementById( id );
-                if( e !== null )
+                if( idOnTarget !== null ) // Otherwise this call is redundant †
                 {
-                    setElementOnTarget( e );
-                    return;
+                    idOnTarget = null;
+                    clearElementOnTarget();
                 }
+                return;
             }
 
-            clearElementOnTarget();
+            const id = hash.slice( 1 );
+            if( idOnTarget === id ) return; // This call is redundant †
+
+            idOnTarget = id;
+            const e = document.getElementById( id );
+            if( e === null ) clearElementOnTarget();
+            else setElementOnTarget( e );
         }
 
 
@@ -2208,382 +2326,12 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   I n t e r d o c   S c a n n e r
-
-
-    /** A scanner of related documents.  It discovers related documents, scans them for references
-      * to the present document, and updates the form of the present document based on the results.
-      */
-    const InterdocScanner = ( function()
-    {
-
-        const expo = {}; // The public interface of InterdocScanner
-
-
-
-        /** Starts this scanner.
-          */
-        expo.start = function()
-        {
-            DocumentCachePersistor.addOmnireader( new class extends DocumentReader
-            {
-                read( cacheEntry, doc ) { scan( doc, cacheEntry.location ); }
-            });
-        };
-
-
-
-       // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        /** Notes the fact of an unbroken waylink that targets a node of the present document.
-          *
-          *     @param target (Element) A waylink target node in the present document.
-          */
-        function noteWaylink( target )
-        {
-            if( target.interlinkScene ) return; // Already noted
-
-            target.interlinkScene = true;
-            const span = asElementNamed( 'span', target.firstChild/*eSTag*/
-              .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
-            const iconicText = span.firstChild;
-            iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
-            target.removeAttributeNS( NS_READ, 'isOrphan' );
-        }
-
-
-
-        /** @param doc (Document) The document to scan, which might be the present document.
-          * @param docLoc (string) The location of the document in normal form.
-          */
-        function scan( doc, docLoc )
-        {
-            const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
-            for( traversal.nextNode()/*onto the document node itself*/;; )
-            {
-                const t = traversal.nextNode();
-                if( t === null ) break;
-
-                const linkV = t.getAttributeNS( NS_COG, 'link' );
-                if( linkV === null ) continue;
-
-                let link;
-                try { link = new LinkAttribute( linkV ); }
-                catch( unparseable ) { continue; }
-
-                // No need here to fend against other types of malformed link declaration.
-                // Rather take it as the wayscribe intended.
-                let targDocLoc = link.targetDocumentLocation;
-                targDocLoc = targDocLoc.length > 0? URIs.normalized(targDocLoc): docLoc;
-                if( targDocLoc !== DOCUMENT_LOCATION ) continue;
-
-                const target = document.getElementById( link.targetID );
-                if( target !== null) noteWaylink( target );
-            }
-        }
-
-
-
-        return expo;
-
-    }() );
-
-
-
-   // ==================================================================================================
-   //   I n t e r d o c   W a y l i n k   T r a n s f o r m e r
-
-
-            class InterdocWaylinkTransformer_Registration
-            {
-
-                /** Constructs an InterdocWaylinkTransformer_Registration.
-                  *
-                  *     @see #sourceNode
-                  *     @see #targetID
-                  *     @param targDocLoc (string) The location of the other document in normal URL form.
-                  */
-                constructor( sourceNode, targetID, targDocLoc )
-                {
-                    this._sourceNode = sourceNode;
-                    this._targetID = targetID;
-                    this._targetImage = TargetImageCache.read( targDocLoc + '#' + targetID );
-                }
-
-
-                /** The waylink source node (Element).
-                  */
-                get sourceNode() { return this._sourceNode; }
-
-
-                /** The identifier of the target (string) within the other document.
-                  */
-                get targetID() { return this._targetID; }
-
-
-                /** The image of the target (TargetImage) as retrieved from the cache,
-                  * or null if none was cached.
-                  */
-                get targetImage() { return this._targetImage; }
-
-            }
-
-
-
-    /** A device to complete the formation of interdocument bitform waylinks, those whose target nodes
-      * are outside of the present document.  It fetches the documents, reads their target nodes
-      * and transforms the wayscript accordingly.
-      */
-    const InterdocWaylinkTransformer = ( function()
-    {
-
-        const expo = {}; // The public interface of InterdocWaylinkTransformer
-
-
-
-        /** Tells this transformer of a separate way declaration document that the user may reach
-          * from the present document by a direct link, which is not a bitform waylink.
-          *
-          *     @param loc (string) The location of the other document in normal URL form.
-          *
-          *     @see #registerBitformLink
-          *     @see URIs#normalized
-          */
-        expo.noteTargetDocument = function( loc ) { registerTargetDocument( loc ); };
-
-
-
-        /** Registers an unresolved, interdocument bitform waylink and returns the registration.
-          *
-          *     @param sourceNode (Element) A bitform waylink source node that targets another document.
-          *     @param id (string) The identifier of the target within the other document.
-          *     @param targDocLoc (string) The location of the other document in normal URL form.
-          *
-          *     @return (InterdocWaylinkTransformer_Registration)
-          *
-          *     @see URIs#normalized
-          */
-        expo.registerBitformLink = function( sourceNode, id, targDocLoc )
-        {
-            const reg = new InterdocWaylinkTransformer_Registration( sourceNode, id, targDocLoc );
-            const regList = registerTargetDocument( targDocLoc );
-            regList.push( reg );
-            return reg;
-        };
-
-
-
-        /** Starts this transformer.
-          */
-        expo.start = function()
-        {
-            start1_presentDocument( linkRegistry );
-            setTimeout( start2_targetDocuments, MS_DELAY_IWT/*browser rest*/, linkRegistry );
-            linkRegistry = null; /* Freeing it for eventual garbage collection,
-              and blocking henceforth any further attempt to register */
-        };
-
-
-
-       // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        /** Map of registered links.  The key to each entry is the location (string) in normal URL form
-          * of a targeted way declaration document; the value a registration list (Array of Interdoc-
-          * WaylinkTransformer_Registration), one for each bitform, waylink source node of the present
-          * document that targets the keyed document, if any.  The keys cover every directly reachable
-          * way declaration document as far as possible, regardless of how its source nodes are formed,
-          * while the registration lists cover only those source nodes in waylink bitform.
-          */
-        let linkRegistry = new Map(); // Nulled on *start*
-
-
-
-        const MYSTERY_SYMBOL = '?';
-
-
-
-        /** @param loc (string) The location of the target document in normal URL form.
-          * @return (Array of InterdocWaylinkTransformer_Registration)
-          *
-          * @see URIs#normalized
-          */
-        function registerTargetDocument( loc )
-        {
-            let regList = linkRegistry.get( loc );
-            if( regList === undefined )
-            {
-                if( loc.length !== URIs.defragmented(loc).length )
-                {
-                    throw MALFORMED_PARAMETER + ': Fragmented (#) document location: ' + loc;
-                }
-
-                if( URIs.isDetectedAbnormal( loc )) throw URIs.message_abnormal( loc );
-
-                if( loc === DOCUMENT_LOCATION ) throw MALFORMED_PARAMETER + ': Not a separate document';
-
-                regList = [];
-                linkRegistry.set( loc, regList );
-            }
-            return regList;
-        }
-
-
-
-        function setTargetPreview( sourceNode, newPreviewString )
-        {
-            const forelinker = sourceNode.lastChild;
-            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
-            const previewText = preview.firstChild;
-            previewText.replaceData( 0, previewText.length, newPreviewString );
-            configureForTargetPreview( sourceNode, preview, newPreviewString );
-        }
-
-
-
-        /** Ensures that all interdocument bitform waylinks are formed and their target images cached.
-          */
-        function start1_presentDocument( linkRegistry )
-        {
-            for( const entry of linkRegistry )
-            {
-                const linkRegList = entry[1];
-                if( linkRegList.length === 0 ) continue; // No bitform links to this target
-
-                const targDocLoc = entry[0];
-                DocumentCache.readNowOrLater( targDocLoc, new class extends DocumentReader
-                {
-                    close( cacheEntry )
-                    {
-                        if( cacheEntry.document !== null ) return;
-
-                        for( const r of linkRegList ) setTargetPreview( r.sourceNode, MYSTERY_SYMBOL );
-                    }
-
-                    read( cacheEntry, targDoc )
-                    {
-                        for( const linkReg of linkRegList )
-                        {
-                            const id = linkReg.targetID;
-                            const target = targDoc.getElementById( id );
-                            const source = linkReg.sourceNode;
-                            const linkV = source.getAttributeNS( NS_COG, 'link' ); /* Nominal form as
-                              declared (for reporting only) of normalized form <targDocLoc>#<id> */
-                            if( target === null )
-                            {
-                              // Flag the source node as broken
-                              // --------------------
-                                tsk( 'Broken link: No such *id* in that document: ' + a2s('link',linkV) );
-                                setTargetPreview( source, BREAK_SYMBOL );
-                                source.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
-                                continue;
-                            }
-
-                            LeaderReader.read( target );
-                            const leader = LeaderReader.leader;
-                            const sN = source.localName;
-                            const sNResolved = sN === ELEMENT_NAME_UNCHANGED? target.localName: sN;
-                            const sNS = source.namespaceURI;
-                            const image = new TargetImage( leader, sNResolved, sNS );
-                            if( image.equals( /*imageWas*/linkReg.targetImage ))
-                            {
-                              // Affirm the source node as is
-                              // ----------------------
-                                source.removeAttributeNS( NS_READ, 'imaging' );
-                                continue;
-                            }
-
-                          // Amend the source node, as it shows an outdated image
-                          // ---------------------
-                            const part2 = new PartTransformC2( source );
-                            configureForTarget( sNS, sN, linkV, target, part2 );
-                            part2.run();
-                            setTargetPreview( source, leader );
-
-                          // Update the cached image
-                          // -----------------------
-                            TargetImageCache.write( targDocLoc + '#' + id, image );
-                        }
-                    }
-                });
-            }
-        }
-
-
-
-        /** Pre-caches the target images for each way declaration document that is directly reachable
-          * from the present document.
-          */
-        function start2_targetDocuments( linkRegistry )
-        {
-            // Now call each such target a source, and image  *its* targets:
-            for( const srcDocLoc of linkRegistry.keys() )
-            {
-                DocumentCache.readNowOrLater( srcDocLoc, new class extends DocumentReader
-                {
-                    read( _cacheEntry/*ignored*/, srcDoc )
-                    {
-                        const traversal = srcDoc.createNodeIterator( srcDoc, SHOW_ELEMENT );
-                        for( traversal.nextNode()/*onto the document node itself*/;; )
-                        {
-                            const source = traversal.nextNode();
-                            if( source === null ) break;
-
-                            const sNS = source.namespaceURI;
-                            if( !isBitNS( sNS )) continue; // Needs no target image, link is not bitform
-
-                            const linkV = source.getAttributeNS( NS_COG, 'link' );
-                            if( linkV === null ) continue;
-
-                            let link;
-                            try { link = new LinkAttribute( linkV ); }
-                            catch( unparseable ) { continue; }
-
-                            // No need here to fend against other types of malformed link declaration;
-                            // no harm in caching a superfluous image.
-                            let targDocLoc = link.targetDocumentLocation;
-                            if( targDocLoc.length === 0 ) continue;
-                              // Target image needs no caching, target in same document
-
-                            targDocLoc = URIs.normalized( targDocLoc );
-                            if( targDocLoc === srcDocLoc ) continue;
-                              // Target image needs no caching, target in same document
-
-                            DocumentCache.readNowOrLater( targDocLoc, new class extends DocumentReader
-                            {
-                                read( _cacheEntry/*ignored*/, targDoc )
-                                {
-                                    const id = link.targetID;
-                                    const target = targDoc.getElementById( id );
-                                    if( target === null ) return; // Broken link
-
-                                    LeaderReader.read( target );
-                                    TargetImageCache.write( targDocLoc + '#' + id,
-                                      new TargetImage( LeaderReader.leader, source.localName, sNS ));
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        }
-
-
-
-        return expo;
-
-    }() );
-
-
-
-   // ==================================================================================================
    //   I n w a y s
 
 
-    /** Dealing with inways.  Formally the inway is a component of the start tag (eSTag).
-      * Apparently however it lies outside of the tag to the left, where it spans the distance
-      * from the page edge to the tag.
+    /** Dealing with inways.  Formally the inway is a component the start tag (eSTag) of a subjoining
+      * waybit (sbj* in figure below).  Apparently however it lies outside of the tag to the left,
+      * where it spans the distance from the page edge to the tag.
       *
       *          ┌·················· eSTag ···················┐
       *                                                       ⋮
@@ -2591,48 +2339,48 @@ window.wayic_read_readable = ( function()
       *                                         hall         tag name
       *          ┌———————— approach ————————┐  ┌—————┐       ╱⋮
       *          ⋮                          ⋮  ⋮     ⋮      ╱ ⋮
-      *          ⋮                          ⋮  ⋮  waybit1  ╱  ⋮
+      *          ⋮                          ⋮  ⋮  1waybit  ╱  ⋮
       *          ⋮                          ⋮  ⋮     ⋮    ╱   ⋮
-      *                                         ·     target11
-      *                                                   Content of target11
-      *                                           waybit2
-      *                                               Content of waybit2, which is not a target
-      *                                       ·   target3
-      *                                               Content of target3
+      *                                         ·     11sbj
+      *                                                   Content of 11sbj
+      *                                           2waybit
+      *                                               Content of 2waybit, a non-subjoining waybit
+      *                                       ·   3sbj
+      *                                               Content of 3sbj
       *
       *
       * When the pointer (↖) crosses any part of the eSTag (including the inway approach),
-      * the target icon reveals itself in full:
+      * the subjoint icon reveals itself in full:
       *
       *          ┌············································┐
       *          ┌———————————————————————————————————┐        ⋮
       *          ┌——————————————————————————┐  ┌—————┐        ⋮
       *          ⋮                          ⋮  ⋮     ⋮        ⋮
-      *          ⋮                          ⋮  ⋮  waybit1     ⋮
+      *          ⋮                          ⋮  ⋮  1waybit     ⋮
       *          ⋮                          ⋮  ⋮     ⋮        ⋮
-      *                                         ◉     target11
-      *                        ↖               ╱          Content of target11
-      *                                       ╱   waybit2
-      *                                      ╱        Content of waybit2, which is not a target
-      *                                     ╱ ·   target3
-      *                                    ╱          Content of target3
-      *                                target
-      *                                 icon
+      *                                         ◉     11sbj
+      *                        ↖               ╱          Content of 11sbj
+      *                                       ╱   2waybit
+      *                                      ╱        Content of 2waybit, a non-subjoining waybit
+      *                                     ╱ ·   3sbj
+      *                                    ╱          Content of 3sbj
+      *                              subjoint
+      *                                icon
       *
       *
-      * If the target icon is clicked, or somehow else the window moves on target,
+      * If the subjoint icon is clicked, or somehow else the window targets the subjoining waybit,
       * then the inway approach becomes visible:
       *
       *          ┌———————— approach ————————┐  ┌—————┐
       *          ⋮                          ⋮  ⋮     ⋮
-      *          ⋮                          ⋮  ⋮  waybit1
+      *          ⋮                          ⋮  ⋮  1waybit
       *          ⋮                          ⋮  ⋮     ⋮
-      *           ∙ ·  ·   ·    ·     ·         ◉     target11
-      *          ╱       │                                Content of target11
-      *         ╱        │                        waybit2
-      *     edging       │                            Content of waybit2, which is not a target
-      *                 path                  ·   target3
-      *                                               Content of target3
+      *           ∙ ·  ·   ·    ·     ·         ◉     11sbj
+      *          ╱       │                                Content of 11sbj
+      *         ╱        │                        2waybit
+      *     edging       │                            Content of 2waybit, a non-subjoining waybit
+      *                 path                  ·   3sbj
+      *                                               Content of 3sbj
       */
     const Inways = ( function()
     {
@@ -2911,7 +2659,7 @@ window.wayic_read_readable = ( function()
    //   L i n k   A t t r i b u t e
 
 
-    /** The parsed value of a waylink source node's *link* attribute.
+    /** The parsed value of a referential jointer's *link* attribute.
       */
     class LinkAttribute
     {
@@ -2930,10 +2678,10 @@ window.wayic_read_readable = ( function()
                 const fragment = value.slice( loc.length + 1 );
                 if( fragment === '' )
                 {
-                    throw "Missing fragment sign '#' in target identifier: " + a2s('link',value);
+                    throw "Missing fragment sign '#': " + a2s('link',value);
                 }
 
-                this._targetID = fragment;
+                this._subjointID = fragment;
             }
             if( loc.length > 0 )
             {
@@ -2950,29 +2698,30 @@ window.wayic_read_readable = ( function()
 
                 if( loc.endsWith('/') ) loc += 'way.xht';
             }
-            this._targetDocumentLocation = loc;
+            this._subjointDocumentLocation = loc;
         }
 
 
 
-        /** Sets an *href* attribute on the given element in reference to the target node.
+        /** Sets on the given element an *href* attribute that refers to the same subjoining waybit
+          * as this *link* attribute.
           */
-        hrefTo( el ) { el.setAttribute( 'href', this._targetDocumentLocation + '#' + this._targetID ); }
+        hrefTo( el ) { el.setAttribute( 'href', this._subjointDocumentLocation + '#' + this._subjointID ); }
 
 
 
-        /** The location of the target document as a URL string, or the empty string if the *link*
+        /** The location of the subjoint document as a URL string, or the empty string if the *link*
           * attribute encodes a *same-document reference*.
           *
           *     @see https://tools.ietf.org/html/rfc3986#section-4.4
           */
-        get targetDocumentLocation() { return this._targetDocumentLocation; }
+        get subjointDocumentLocation() { return this._subjointDocumentLocation; }
 
 
 
-        /** The target identifier.
+        /** The identifier of the subjoining waybit.
           */
-        get targetID() { return this._targetID; }
+        get subjointID() { return this._subjointID; }
 
 
 
@@ -3012,7 +2761,7 @@ window.wayic_read_readable = ( function()
 
 
             /** A non-null value indicates a tranformation that might actually be redone.
-              * Meantime the form is either based on a cached image of a waylink target node
+              * Meantime the form is either based on a cached image of a subjoining waybit
               * (value ‘present’) or not (‘absent’).
               */
             this.imaging = null;
@@ -3049,7 +2798,7 @@ window.wayic_read_readable = ( function()
           // Leader
           // ------
             const toIncludeRead = true;
-              // Else the leader would exclude *forelinker* content in the case of a waylink source node
+              // Else the leader would exclude *forelinker* content in the case of a bitform jointer
             console.assert( e.firstChild === null || e.firstChild.nodeName !== 'eSTag', A );
               // Else the leader would include the start tag
             LeaderReader.read( e, /*maxLength*/0, toIncludeRead );
@@ -3162,21 +2911,21 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   T a r g e t   C o n t r o l
+   //   S e l f   L i n k i n g   C o n t r o l
 
 
-    /** Self activation and scene switching for waylink target nodes.
+    /** Window targeting and scene switching for self hyperlinked subjoining waybits.
       */
-    const TargetControl = ( function()
+    const SelfLinkingControl = ( function()
     {
 
-        const expo = {}; // The public interface of TargetControl
+        const expo = {}; // The public interface of SelfLinkingControl
 
 
 
-        /** Adds controls for a target node.
+        /** Adds controls to a subjoining waybit.
           *
-          *     @param eSTag (Element) The start tag of the target node.
+          *     @param eSTag (Element) The start tag of the waybit.
           */
         expo.addControls = function( eSTag ) { eSTag.addEventListener( 'click', hearClick ); };
 
@@ -3204,23 +2953,23 @@ window.wayic_read_readable = ( function()
           // ================
           // Inway *approach* clicked?  Function is scene switching
           // ================
-            const targetNode = eSTag.parentNode; // *Waylink* target node
+            const bit = eSTag.parentNode; // Subjoining waybit
             const elementOnTarget = Hyperlinkage.elementOnTarget();
             if( eClickedNS === NS_SVG ) // inway approach
             {
-                if( targetNode !== elementOnTarget ) return; // Switch is disabled
+                if( bit !== elementOnTarget ) return; // Switch is disabled
 
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
                 const pp = u.searchParams;
                 pp.set( 'sc', 'inter' );
-                pp.set( 'link', targetNode.getAttribute('id') );
+                pp.set( 'link', bit.getAttribute('id') );
              // history.replaceState( history./*duplicate of*/state, /*no title*/'', u.href ); // TEST
                 return;
             }
 
           // ==============================
-          // Inway *hall* or start tag name clicked:  Function is self activation
+          // Inway *hall* or start tag name clicked:  Function is self hyperlinking
           // ==============================
             const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
@@ -3228,11 +2977,11 @@ window.wayic_read_readable = ( function()
 
           // Drop a breadcrumb before changing location
           // -----------------
-            Breadcrumbs.dropCrumb( targetNode );
+            Breadcrumbs.dropCrumb( bit );
 
           // Toggle the browser location, on target ⇄ off target
           // ---------------------------
-            if( targetNode === elementOnTarget ) // Δ: on target → off target
+            if( bit === elementOnTarget ) // Δ: on target → off target
             {
                 location.hash = ''; // Moving off target, no URI fragment in address bar
                 const loc = location.toString(); // [WDL]
@@ -3242,7 +2991,7 @@ window.wayic_read_readable = ( function()
                       loc.slice(0,-1) );
                 }
             }
-            else location.hash = targetNode.getAttribute( 'id' ); // Δ: off target → on target
+            else location.hash = bit.getAttribute( 'id' ); // Δ: off target → on target
 
           // Stabilize the view within the viewport
           // ------------------
@@ -3259,16 +3008,16 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   T a r g e t   I m a g e
+   //   S u b j o i n t   I m a g e
 
 
-    /** The image of a waylink target node as mirrored by its source nodes.
+    /** The image of a subjoining waybit for use in subjoint previews.
       */
-    class TargetImage
+    class SubjointImage
     {
 
 
-        /** Constructs a TargetImage.
+        /** Constructs a SubjointImage.
           *
           *     @see #leader
           *     @see #localName
@@ -3288,7 +3037,7 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether this image equals another.
           *
-          *     @param other (TargetImage) The other image, which may be null.
+          *     @param other (SubjointImage) The other image, which may be null.
           */
         equals( other )
         {
@@ -3323,30 +3072,30 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   T a r g e t   I m a g e   C a c h e
+   //   S u b j o i n t   I m a g e   C a c h e
 
 
-    const TargetImageCache = ( function() // [TIC]
+    const SubjointImageCache = ( function() // [SIC]
     {
 
-        const expo = {}; // The public interface of TargetImageCache
+        const expo = {}; // The public interface of SubjointImageCache
 
 
 
-        /** Retrieves the image of the indicated target.
+        /** Retrieves the image of the indicated subjoining waybit.
           *
-          *     @param targetLoc (string) The target location in normal URL form.
-          *     @return (TargetImage) The cached image, or null if none is cached.
+          *     @param sbjLoc (string) The location of the subjoining waybit in normal URL form.
+          *     @return (SubjointImage) The cached image, or null if none is cached.
           *
           *     @see URIs#normalized
           */
-        expo.read = function( targetLoc )
+        expo.read = function( sbjLoc )
         {
-            const s = sessionStorage.getItem( SS_KEY_PREFIX + targetLoc );
+            const s = sessionStorage.getItem( SS_KEY_PREFIX + sbjLoc );
             if( s !== null )
             {
                 const o = JSON.parse( s ); // Yields object form (o) of original image stored
-                try { return new TargetImage( o._leader, o._localName, o._namespaceURI ); }
+                try { return new SubjointImage( o._leader, o._localName, o._namespaceURI ); }
 
                 catch( x )
                 {
@@ -3361,20 +3110,20 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Stores the image of the indicated target.
+        /** Stores the image of the indicated subjoining waybit.
           *
-          *     @param targetLoc (string) The target location in normal URL form.
-          *     @param image (TargetImage)
+          *     @param sbjLoc (string) The location of the subjoining waybit in normal URL form.
+          *     @param image (SubjointImage)
           *
           *     @see URIs#normalized
           */
-        expo.write = function( targetLoc, image )
+        expo.write = function( sbjLoc, image )
         {
-            if( URIs.isDetectedAbnormal( targetLoc )) throw URIs.message_abnormal( targetLoc );
+            if( URIs.isDetectedAbnormal( sbjLoc )) throw URIs.message_abnormal( sbjLoc );
 
             if( image === null ) throw NULL_PARAMETER;
 
-            sessionStorage.setItem( SS_KEY_PREFIX + targetLoc,
+            sessionStorage.setItem( SS_KEY_PREFIX + sbjLoc,
               JSON.stringify( image, /*replacer*/null, SESSION_STRINGIFY_SPACING ));
         };
 
@@ -3384,9 +3133,331 @@ window.wayic_read_readable = ( function()
 
 
         /** Common prefix of any session storage key (string)
-          * for a cached target image (JSON stringified TargetImage).
+          * for a cached subjoint image (JSON stringified SubjointImage).
           */
-        const SS_KEY_PREFIX = NS_READ + '.TargetImageCache.';
+        const SS_KEY_PREFIX = NS_READ + '.SubjointImageCache.';
+
+
+
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
+   //   S u r j o i n t   F i n i s h e r
+
+
+            class SurjointFinisher_Registration
+            {
+
+                /** Constructs an SurjointFinisher_Registration.
+                  *
+                  *     @see #jointer
+                  *     @see #subjointID
+                  *     @param subjointDocLoc (string) The location of the subjoint document
+                  *       in normal URL form.
+                  */
+                constructor( jointer, subjointID, subjointDocLoc )
+                {
+                    this._jointer = jointer;
+                    this._subjointID = subjointID;
+                    this._subjointImage = SubjointImageCache.read( subjointDocLoc + '#' + subjointID );
+                }
+
+
+                /** The referential jointer (Element).
+                  */
+                get jointer() { return this._jointer; }
+
+
+                /** The image of the subjoining waybit (SubjointImage) as retrieved from the cache,
+                  * or null if none was cached.
+                  */
+                get subjointImage() { return this._subjointImage; }
+
+
+                /** The identifier of the subjoining waybit (string) within the subjoint document.
+                  */
+                get subjointID() { return this._subjointID; }
+
+            }
+
+
+
+    /** A combined *presentation finisher* and *image pre-cacher* for interdocument referential joints.
+      * It finishes the presentation of bitform joints on the surjoint side (figure left).
+      *
+      *                    surjoint           Surjoint    *
+      *                      ancestors          side     *    Subjoint
+      *                    ╱                            *       side
+      *                   ╱    surjoining              *
+      *                  ╱       waybit               *
+      *         waybit         ╱                     *
+      *                       ╱                     *               subjoining
+      *             waybit   ╱                      *                 waybit
+      *                                             *               ╱
+      *              ┌  waybit                      *              ╱
+      *              │      Text content            *             ╱
+      *     joint ───┤· · · · · · · · · · · · · · · * · · · · · · · · · · · · · ·
+      *              │      waybit                  *     ◉  waybit
+      *              └          Text content        *            Text content
+      *                     ╱     ⋱⋱                *
+      *                    ╱          ╲             *            waybit
+      *                   ╱            ╲            *
+      *              jointer            ╲           *                waybit
+      *            (in bitform)       subjoint      *            ╱
+      *                                 preview     *           ╱
+      *                                             *          ╱
+      *                                            *        subjoint
+      *                                           *       descendants
+      *                                          *
+      *
+      * It pre-caches any images that will be needed by directly subjoint documents (all forms of joint)
+      * should the user travel to them. [SIC]
+      *
+      *     @see AlterdocScanner, it finishes joints on the subjoint side (figure right).
+      *     @see SubjointImage
+      */
+    const SurjointFinisher = ( function()
+    {
+
+        const expo = {}; // The public interface of SurjointFinisher
+
+
+
+        /** Tells this finisher of a separate document joined to the present document
+          * by a non-bitform jointer.
+          *
+          *     @param loc (string) The location of the subjoint document in normal URL form.
+          *
+          *     @see #registerBitformJointer
+          *     @see URIs#normalized
+          */
+        expo.noteSubjoiningDocument = function( loc ) { registerSubjoiningDocument( loc ); };
+
+
+
+        /** Registers an unresolved, interdocument bitform joint and returns the registration.
+          *
+          *     @param jointer (Element) A bitform jointer that joins across documents.
+          *     @param subjointID (string) The identifier of the subjoining waybit
+          *       within the subjoint document.
+          *     @param subjointDocLoc (string) The location of the subjoint document in normal URL form.
+          *
+          *     @return (SurjointFinisher_Registration)
+          *
+          *     @see URIs#normalized
+          */
+        expo.registerBitformJointer = function( jointer, subjointID, subjointDocLoc )
+        {
+            const reg = new SurjointFinisher_Registration( jointer, subjointID, subjointDocLoc );
+            const regList = registerSubjoiningDocument( subjointDocLoc );
+            regList.push( reg );
+            return reg;
+        };
+
+
+
+        /** Starts this finisher.
+          */
+        expo.start = function()
+        {
+            start1_presentDocument( jointRegistry );
+            setTimeout( start2_subjoiningDocuments, MS_DELAY_SF/*browser rest*/, jointRegistry );
+            jointRegistry = null; /* Freeing it for eventual garbage collection,
+              and blocking henceforth any further attempt to register */
+        };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        /** Map of interdocument joints.  The key to each entry is the location (string,
+          * in normal URL form) of a directly subjoint document.  The value is a registration list
+          * (Array of SurjointFinisher_Registration), one for each bitform jointer (if any)
+          * of the present document that refers to the keyed document.  The keys cover
+          * all referentially subjoining documents regardless of how their joints are formed,
+          * while the values' registration lists cover only bitform jointers.
+          */
+        let jointRegistry = new Map(); // Nulled on *start*
+
+
+
+        const MYSTERY_SYMBOL = '?';
+
+
+
+        /** @param loc (string) The location of the subjoining (directly subjoint) document
+          *   in normal URL form.
+          * @return (Array of SurjointFinisher_Registration)
+          *
+          * @see URIs#normalized
+          */
+        function registerSubjoiningDocument( loc )
+        {
+            let regList = jointRegistry.get( loc );
+            if( regList === undefined )
+            {
+                if( loc.length !== URIs.defragmented(loc).length )
+                {
+                    throw MALFORMED_PARAMETER + ': Fragmented (#) document location: ' + loc;
+                }
+
+                if( URIs.isDetectedAbnormal( loc )) throw URIs.message_abnormal( loc );
+
+                if( loc === DOCUMENT_LOCATION ) throw MALFORMED_PARAMETER + ': Not a separate document';
+
+                regList = [];
+                jointRegistry.set( loc, regList );
+            }
+            return regList;
+        }
+
+
+
+        function setSubjointPreview( jointer, newPreviewString )
+        {
+            const forelinker = jointer.lastChild;
+            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
+            const previewText = preview.firstChild;
+            previewText.replaceData( 0, previewText.length, newPreviewString );
+            configureForSubjointPreview( jointer, preview, newPreviewString );
+        }
+
+
+
+        /** Finishes the presentation of bitform joints on the surjoint side.
+          */
+        function start1_presentDocument( jointRegistry )
+        {
+            for( const entry of jointRegistry )
+            {
+                const jRegList = entry[1];
+                if( jRegList.length === 0 ) continue; // No bitform joints into this document
+
+                const sbjDocLoc = entry[0];
+                DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
+                {
+                    close( cacheEntry )
+                    {
+                        if( cacheEntry.document !== null ) return;
+
+                        for( const r of jRegList ) setSubjointPreview( r.jointer, MYSTERY_SYMBOL );
+                    }
+
+                    read( cacheEntry, sbjDoc )
+                    {
+                        for( const jReg of jRegList )
+                        {
+                            const id = jReg.subjointID;
+                            const sbj = sbjDoc.getElementById( id );
+                            const jointer = jReg.jointer;
+                            const linkV = jointer.getAttributeNS( NS_COG, 'link' ); /* Nominal form as
+                              declared (for reporting only) of normalized form <sbjDocLoc>#<id> */
+                            if( sbj === null )
+                            {
+                              // Flag the joint as broken
+                              // ------------------------
+                                tsk( 'Broken joint: No such *id* in that document: ' + a2s('link',linkV) );
+                                setSubjointPreview( jointer, BREAK_SYMBOL );
+                                jointer.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
+                                continue;
+                            }
+
+                            LeaderReader.read( sbj );
+                            const leader = LeaderReader.leader;
+                            const jN = jointer.localName;
+                            const jNResolved = jN === ELEMENT_NAME_UNCHANGED? sbj.localName: jN;
+                            const jNS = jointer.namespaceURI;
+                            const image = new SubjointImage( leader, jNResolved, jNS );
+                            if( image.equals( /*imageWas*/jReg.subjointImage ))
+                            {
+                              // Affirm the presentation as is
+                              // -----------------------
+                                jointer.removeAttributeNS( NS_READ, 'imaging' );
+                                continue;
+                            }
+
+                          // Amend the presentation, as it presents an outdated image
+                          // ----------------------
+                            const part2 = new PartTransformC2( jointer );
+                            configureForSubjoint( jNS, jN, linkV, sbj, part2 );
+                            part2.run();
+                            setSubjointPreview( jointer, leader );
+
+                          // Update the image cache
+                          // ----------------------
+                            SubjointImageCache.write( sbjDocLoc + '#' + id, image );
+                        }
+                    }
+                });
+            }
+        }
+
+
+
+        /** Pre-caches for each subjoining way declaration document the subjoint images *it* would need
+          * if it were loaded in turn, e.g. by travel to it across a joint from the present document.
+          */
+        function start2_subjoiningDocuments( jointRegistry )
+        {
+            // Now call each subjoining document *surjoint*, and image *its* subjoining waybits:
+            for( const srjDocLoc of jointRegistry.keys() )
+            {
+                DocumentCache.readNowOrLater( srjDocLoc, new class extends DocumentReader
+                {
+                    read( _cacheEntry/*ignored*/, srjDoc )
+                    {
+                        const traversal = srjDoc.createNodeIterator( srjDoc, SHOW_ELEMENT );
+                        for( traversal.nextNode()/*onto the document node itself*/;; )
+                        {
+                            const jointer = traversal.nextNode();
+                            if( jointer === null ) break;
+
+                            const linkV = jointer.getAttributeNS( NS_COG, 'link' );
+                            if( linkV === null ) continue; // Needs no image, is not an actual jointer
+
+                            const jNS = jointer.namespaceURI;
+                            if( !isBitNS( jNS )) continue; // Needs no image, is not bitform
+
+                            let link;
+                            try { link = new LinkAttribute( linkV ); }
+                            catch( unparseable ) { continue; }
+
+                            // No need here to fend against other types of malformed joint declaration;
+                            // no harm in caching a superfluous image.
+                            let sbjDocLoc = link.subjointDocumentLocation;
+                            if( sbjDocLoc.length === 0 ) continue;
+                              // Needs no caching, intradocument joint
+
+                            sbjDocLoc = URIs.normalized( sbjDocLoc );
+                            if( sbjDocLoc === srjDocLoc ) continue;
+                              // Needs no caching, intradocument joint
+
+                            DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
+                            {
+                                read( _cacheEntry/*ignored*/, sbjDoc )
+                                {
+                                    const id = link.subjointID;
+                                    const sbj = sbjDoc.getElementById( id );
+                                    if( sbj === null ) return; // Broken joint
+
+                                  // Pre-cache the image, or re-cache it  † [SIC]
+                                  // -------------------
+                                    LeaderReader.read( sbj );
+                                    SubjointImageCache.write( sbjDocLoc + '#' + id,
+                                      new SubjointImage( LeaderReader.leader, jointer.localName, jNS ));
+                                    // † Any re-caching here is only a side effect, not needed
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
 
 
 
@@ -3405,7 +3476,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The approximate location of a hyperlink target node relative to its source node.
+    /** The apparent direction of travel to a hyperlink target for the purpose of user orientation.
       */
     class TargetWhereabouts
     {
@@ -3426,7 +3497,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The relative direction to the target node if it exists in the present document.
+        /** The relative direction to the target element if it exists in the present document.
           *
           *     @return (string) Either TARGET_UP or TARGET_DOWN,
           *       or null if the target is nominally outside the present document.
@@ -3443,14 +3514,14 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Constructs a TargetWhereabouts from a waylink source node.
+        /** Constructs a TargetWhereabouts from a referential jointer.
           *
-          *     @param source (Element) The waylink source node.
-          *     @param link (LinkAttribute) The parsed *link* attribute of the source node.
+          *     @param jointer (Element) The referential jointer.
+          *     @param link (LinkAttribute) The parsed *link* attribute of the jointer.
           */
-        static fromSource( source, link )
+        static fromJointer( jointer, link )
         {
-            const docLoc = link.targetDocumentLocation;
+            const docLoc = link.subjointDocumentLocation;
             if( docLoc.length > 0 )
             {
                 const docLocN = URIs.normalized( docLoc );
@@ -3462,39 +3533,39 @@ window.wayic_read_readable = ( function()
             }
 
             // The target is nominally within the present document
-            const target = document.getElementById( link.targetID );
+            const target = document.getElementById( link.subjointID );
             if( target !== null )
             {
-                return fromLink( source, target );
+                return fromLink( jointer, target );
 
-                /** Constructs a TargetWhereabouts from a source and target node,
+                /** Constructs a TargetWhereabouts from a jointer and subjoining waybit,
                   * both located in the present document.
                   *
-                  *     @param source (Element) The source node.
-                  *     @param target (Element) The target node.
+                  *     @param jointer (Element) The jointer.
+                  *     @param sbj (Element) The subjoining waybit.
                   */
-                function fromLink( source, target )
+                function fromLink( jointer, sbj )
                 {
                     const direction = ( ()=>
                     {
-                        const targetPosition = source.compareDocumentPosition( target );
+                        const targetPosition = jointer.compareDocumentPosition( sbj );
                         if( targetPosition & DOCUMENT_POSITION_PRECEDING ) return TARGET_UP;
 
                         console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
                         return TARGET_DOWN;
                     })();
-                    return new TargetWhereabouts( direction, /*documentLocationN*/'', target );
+                    return new TargetWhereabouts( direction, /*documentLocationN*/'', sbj );
                 }
             }
 
-            tsk( 'Broken waylink: No such *id* in this document: ' + a2s('link',link.value) );
+            tsk( 'Broken joint: No such *id* in this document: ' + a2s('link',link.value) );
             return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', target );
         }
 
 
 
-        /** The target node within the present document, or null if there is none.
-          * This property is null in the case of an interdocument or broken hyperlink.
+        /** The target element within the present document, or null if there is none.
+          * This property is null in the case of an extradocument or broken hyperlink.
           */
         get target() { return this._target; }
 
@@ -3516,12 +3587,11 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Ensures that the actively hyperlink-targeted element, if any,
-          * will be visible within the viewport.
+        /** Ensures that the on target element, if any, will be visible within the viewport.
           *
           *     @see Hyperlinkage#elementOnTarget
           */
-        expo.ensureTargetWillShow = function() // [HTP]
+        expo.ensureTargetWillShow = function() // [WTP]
         {
             const e = Hyperlinkage.elementOnTarget();
             if( e === null ) return;
@@ -3560,10 +3630,10 @@ window.wayic_read_readable = ( function()
    //   W a y t r a c e r
 
 
-    /** A device for tracing the way across multiple waylinked documents.  It traces the root element's
-      * waylinks to their target nodes, thence onward till it traces the full network of waylinks.
-      * The trace serves two purposes: (1) to discover documents for cache omnireaders; and
-      * (2) to adjust the form of the present document based on the results.
+    /** A device for tracing the way across multiple, referentially joined documents.  It traces
+      * the root element's joints to their subjoining waybits, thence onward till it traces
+      * the full network of referential joints.  The trace serves two purposes: (1) to discover documents
+      * for cache omnireaders; and (2) to adjust the form of the present document based on the results.
       *
       *     @see http://reluk.ca/project/wayic/cast/root#root_element
       *     @see DocumentCache#addOmnireader
@@ -3588,8 +3658,8 @@ window.wayic_read_readable = ( function()
                 close( cacheEntry ) { shutLeg( id ); }
                 read( cacheEntry, doc )
                 {
-                    const target = doc.getElementById( 'root', doc );
-                    if( target !== null ) traceLeg( id, target, cacheEntry );
+                    const root = doc.getElementById( 'root', doc );
+                    if( root !== null ) traceLeg( id, root, cacheEntry );
                     else tsk( 'Unable to trace: Missing root waybit: ' + id );
                 }
             });
@@ -3622,13 +3692,13 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Constructs a trace leg identifier (string) for the specified target.
-          * Each trace leg is scoped to single DOM branch exclusive of waylinks.
+        /** Constructs a trace leg identifier (string) for the given subjoining waybit.
+          * Each trace leg is scoped to single DOM branch exclusive of subjoints.
           *
-          *     @param tDocLoc (string) The target document location in normal URL form.
-          *     @param targetID (string)
+          *     @param sbjDocLoc (string) The location of the subjoint document in normal URL form.
+          *     @param sbjID (string) The identifier of the subjoining waybit.
           */
-        function newLegID( tDocLoc, targetID ) { return tDocLoc + '#' + targetID; }
+        function newLegID( sbjDocLoc, sbjID ) { return sbjDocLoc + '#' + sbjID; }
 
 
 
@@ -3694,7 +3764,7 @@ window.wayic_read_readable = ( function()
 
 
         /** Ensures that the specified leg is fully traced before returning.
-          * May return with any number of its waylinked legs yet untraced,
+          * May return with any number of its referentially joined legs yet untraced,
           * each slated for a separate tracing.
           *
           *     @see #newLegID
@@ -3714,86 +3784,86 @@ window.wayic_read_readable = ( function()
             const traversal = doc.createTreeWalker( t, SHOW_ELEMENT );
             do
             {
-              // Source node, case of
-              // -----------
+              // Jointer, case of
+              // -------
                 const linkV = t.getAttributeNS( NS_COG, 'link' );
-                source: if( linkV !== null )
+                jointer: if( linkV !== null )
                 {
                     let link;
                     try { link = new LinkAttribute( linkV ); }
-                    catch( unparseable ) { break source; }
+                    catch( unparseable ) { break jointer; }
 
-                    // No need here to fend against other types of malformed waylink declaration.
+                    // No need here to fend against other types of malformed referential jointer.
                     // Rather take it as the wayscribe intended, so extend the trace.
-                    let tDocLoc = link.targetDocumentLocation;
-                    tDocLoc = tDocLoc.length > 0? URIs.normalized(tDocLoc): docLoc;
-                    const targetID = link.targetID;
-                    const targetLegID = newLegID( tDocLoc, targetID );
-                    if( wasOpened( targetLegID )) break source;
+                    let sbjDocLoc = link.subjointDocumentLocation;
+                    sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
+                    const sbjID = link.subjointID;
+                    const sbjLegID = newLegID( sbjDocLoc, sbjID );
+                    if( wasOpened( sbjLegID )) break jointer;
 
-                    openLeg( targetLegID );
-                    DocumentCache.readNowOrLater( tDocLoc, new class extends DocumentReader
+                    openLeg( sbjLegID );
+                    DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
                     {
-                        close( tDocReg )
+                        close( sbjDocReg )
                         {
-                            if( tDocReg.document === null ) shutLeg( targetLegID );
+                            if( sbjDocReg.document === null ) shutLeg( sbjLegID );
                             // Else readDirectly has (or will) shut it
                         }
 
-                        read( tDocReg, tDoc ) /* The call to this method might come now or later,
+                        read( sbjDocReg, sbjDoc ) /* The call to this method might come now or later,
                           but the method itself ensures that any actual reading is done only later,
                           after the present leg is fully traced and marked shut.  Thus it enables
                           optimizations elsewhere in the code that depend on such ordering. */
                         {
                             const wasCalledLate = isShut( legID );
                             const readMethod = wasCalledLate? this.readDirectly: this.readLater;
-                            readMethod.call( this, tDocReg, tDoc );
+                            readMethod.call( this, sbjDocReg, sbjDoc );
                         }
 
-                        readDirectly( tDocReg, tDoc )
+                        readDirectly( sbjDocReg, sbjDoc )
                         {
-                            const target = tDoc.getElementById( targetID );
-                            subTrace: if( target !== null )
+                            const sbj = sbjDoc.getElementById( sbjID );
+                            sbjTrace: if( sbj !== null )
                             {
-                              // Shield the sub-trace work with a scan of ancestors
-                              // --------------------------------------------------
-                                for( let r = target;; )
+                              // Shield the subjoint trace work with a scan of ancestors
+                              // ------------------------------
+                                for( let a = sbj;; )
                                 {
-                                    r = r.parentNode;
-                                    const ns = r.namespaceURI;
-                                    if( ns === null ) // Then r is the document node
+                                    a = a.parentNode;
+                                    const aNS = a.namespaceURI;
+                                    if( aNS === null ) // Then *a* is the document node
                                     {
-                                        tsk( 'Malformed document: Missing HTML *body* element: ' + tDocLoc );
+                                        tsk( 'Malformed document: Missing *body* element: ' + sbjDocLoc );
                                         break;
                                     }
 
-                                    if( isBitNS( ns ))
+                                    if( isBitNS( aNS ))
                                     {
-                                        const id = r.getAttribute( 'id' );
+                                        const id = a.getAttribute( 'id' );
                                         if( id === null ) continue;
 
-                                        if( isShut( newLegID( tDocLoc, id ))) break subTrace;
-                                          // If only for sake of efficiency, ∵ this target branch is
-                                          // already covered (or will be) as part of a larger branch.
+                                        if( isShut( newLegID( sbjDocLoc, id ))) break sbjTrace;
+                                          // If only for sake of efficiency, ∵ this subjoint branch is
+                                          // covered already (or will be) as part of a larger branch.
                                     }
-                                    else if( r.localName === 'body' && ns === NS_HTML ) break;
+                                    else if( a.localName === 'body' && aNS === NS_HTML ) break;
                                 }
 
-                              // Sub-trace
-                              // ---------
-                                traceLeg( targetLegID, target, tDocReg );
+                              // Trace into the subjoint
+                              // -----------------------
+                                traceLeg( sbjLegID, sbj, sbjDocReg );
                             }
-                            else console.warn( 'Broken waylink truncates trace at leg: ' + targetLegID );
-                            shutLeg( targetLegID );
+                            else console.warn( 'Broken joint truncates trace at leg: ' + sbjLegID );
+                            shutLeg( sbjLegID );
                         }
 
-                        readLater( tDocReg, tDoc )
+                        readLater( sbjDocReg, sbjDoc )
                         {
-                         // setTimeout( this.readDirectly, /*delay*/0, tDocReg, tDoc );
+                         // setTimeout( this.readDirectly, /*delay*/0, sbjDocReg, sbjDoc );
                          /// But more efficiently (as a microtask) and properly bound as a method call:
                             Promise.resolve().then( (()=>
                             {
-                                this.readDirectly( tDocReg, tDoc );
+                                this.readDirectly( sbjDocReg, sbjDoc );
                             }).bind( this ));
                             // This merely postpones execution till (I think) the end of the current
                             // event loop.  A more elegant and useful solution might be to specifically
@@ -3803,8 +3873,8 @@ window.wayic_read_readable = ( function()
                     });
                 }
 
-              // Target node, case of
-              // -----------
+              // Subjoining waybit, case of
+              // -----------------
                 const id = t.getAttribute( 'id' );
                 if( id && isShut(newLegID(docLoc,id)) ) toLastDescendant( traversal ); /* Bypassing
                   sub-branch t, if only for efficiency, as already it was traced in a separate leg. */
@@ -3867,22 +3937,6 @@ window.wayic_read_readable = ( function()
   *         by D2 may, after travelling back, be unreadable by D1, as though it had not been stored.
   *         Affects Firefox 52.6.  Does not affect Chrome under option ‘--allow-file-access-from-files’.
   *
-  *  [HTP]  Hyperlink target positioning.  Normally the browser itself does this, vertically scrolling
-  *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.
-  *         It failed when this program was loaded by a *script* element injected at runtime.
-  *         Probably because then the program was late in running and late in styling the elements
-  *         - especially in giving the crucial display style of ‘block’ to the specialized elements,
-  *         which are XML, therefore ‘inline’ by default - this confused the browser.
-  *
-  *         A remedy might be to make this program load immediately.  The only reliable way, however,
-  *         is to have the wayscribe write the *script* element into every way declaration document,
-  *         which would be too awkward.  To instead write the *script* element programatically
-  *         is disallowed for XML documents, and ‘strongly discouraged’ as unreliable for non-XML.
-  *         http://w3c.github.io/html/webappapis.html#documentwrite
-  *
-  *         That leaves only *eval* or *Function*.  https://stackoverflow.com/a/21730944/2402790
-  *         Neither seems reliable, especially in the case of debugging.
-  *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
   *  [ODO]  Out of display order.  This sometime present element is declared out of
@@ -3905,17 +3959,17 @@ window.wayic_read_readable = ( function()
   *         this property is not intended for general use.
   *
   *  [SH] · Standard HTML.  Here avoiding special markup in favour of standard HTML,
-  *         thus gaining access to HTML-particular features such as the *style* attribute.
+  *         thus gaining access to proper features of HTML such as the *style* attribute.
+  *
+  *  [SIC]  SubjointImageCache.  The purpose of caching the subjoint images is to stablize the view
+  *         within the viewport, especially on the vertical axis.  The vertical layout of the view
+  *         depends on subjoint imaging.  Images for extradocument joints cannot always be resolved
+  *         synchronously.  Their delayed resolution may cause layout changes that deflect the view
+  *         vertically.  Image caching and pre-caching are able to prevent this and stabilize the view
+  *         in all but a few edge cases.
   *
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
-  *
-  *  [TIC]  TargetImageCache.  The purpose of caching the target images is to stablize the view within
-  *         the viewport, especially on the vertical axis.  The vertical layout of the view depends on
-  *         target imaging.  Images for extradocument targets cannot always be resolved synchronously.
-  *         Their delayed resolution may cause layout changes that deflect the view vertically.
-  *         Image caching and pre-caching are able to prevent this and stabilize the view in all
-  *         but a few edge cases.
   *
   *  [UN] · Either *undefined* or null in value.
   *
@@ -3923,6 +3977,22 @@ window.wayic_read_readable = ( function()
   *
   *  [WDL]  ‘window.location’ or ‘document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
+  *
+  *  [WTP]  Window target positioning.  Normally the browser itself does this, vertically scrolling
+  *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.
+  *         It failed when this program was loaded by a *script* element injected at runtime.
+  *         Probably because then the program was late in running and late in styling the elements
+  *         - especially in giving the crucial display style of ‘block’ to the specialized elements,
+  *         which are XML, therefore ‘inline’ by default - this confused the browser.
+  *
+  *         A remedy might be to make this program load immediately.  The only reliable way, however,
+  *         is to have the wayscribe write the *script* element into every way declaration document,
+  *         which would be too awkward.  To instead write the *script* element programatically
+  *         is disallowed for XML documents, and ‘strongly discouraged’ as unreliable for non-XML.
+  *         http://w3c.github.io/html/webappapis.html#documentwrite
+  *
+  *         That leaves only *eval* or *Function*.  https://stackoverflow.com/a/21730944/2402790
+  *         Neither seems reliable, especially in the case of debugging.
   *
   *  [XN] · XML names.  https://www.w3.org/TR/xml-names/
   */

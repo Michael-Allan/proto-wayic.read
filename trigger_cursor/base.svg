@@ -1,44 +1,32 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!-- - -
- ! waylink_in.svg - Cursor for source nodes with a missing intradocument target.
+ ! base.svg - Basic cursor for hyperlink triggers.
  !
  ! Copyright © 2018 Michael Allan and contributors.  Licence MIT.
  -->
 <svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'
-      width='47' height='38'>
-    <use xlink:href='#hand'/> <!-- [NIL] -->
-    <use xlink:href='#arrow' style='filter:url(#arrow_shadow)'/>
+      width='34' height='38'>
+    <use xlink:href='#hand'/>
     <defs>
 
 
 
 <!-- - -
- ! Arrow pointing both up and down.
+ ! Shadow effect.
  -->
-<g id='arrow'>
-
-    <g style='stroke:#fff'>
-        <g style='stroke-width:1.5'>
-            <path d='m33.62 22.5 4.88-6.7 4.88 6.7'/>
-            <path d='m33.62 27.5 4.88 6.7 4.88-6.7'/>
-            </g>
-        <path d='m33.5 22 v .5 h 3 v 5 h-3 v .5
-                 m10.0  0 v-.5 h-3 v-5 h 3 v-.5' style='fill:none'/>
-        </g>
-    <rect height='5' width='3' y='22.5' x='37'/>
-
-    <!-- Changing?  sync'd ← waylink_in_up.svg  [NIL] -->
-    <filter id='arrow_shadow' x='-20%' y='-15%' width='160%' height='140%'>
-        <!-- Changing below?  sync'd ← hyperlink.svg#shadow  [FL] -->
-        <feDropShadow dx='1' dy='1.5' flood-opacity='.4' stdDeviation='0.5'/>
-        </filter>
-
-    </g>
+<filter id='shadow'> <!-- changing below?  sync'd → #hand_shadow, target_up.svg#arrow_shadow -->
+    <feDropShadow dx='1' dy='1.5' flood-opacity='.4' stdDeviation='0.5'/>
+    </filter>
 
 
 
 <!-- - -
- ! Hand pointing up.  Changing? sync'd ← hyperlink.svg, q.v. for more information. [NIL]
+ ! Hand with poised forefinger.
+ !
+ ! Modified from an original drawn and released to the public domain by Manuel Campagnoli.
+ ! Source: https://commons.wikimedia.org/wiki/File:Pointing_hand_cursor_vector.svg?oldid=228356657
+ !
+ ! Changing?  sync'd → target_*.svg
  -->
 <g id='hand'>
     <path style='filter:url(#hand_shadow); stroke:#fff; stroke-width:2'
@@ -58,7 +46,7 @@
     <rect style='fill:#fff' x='21' y='13' width='1' height='5'/>
     <rect style='fill:#fff' x='25' y='15' width='1' height='4'/>
     <filter id='hand_shadow' width='130%' height='130%'>
-        <!-- Changing below?  sync'd ← hyperlink.svg#shadow  [FL] -->
+        <!-- Changing below?  sync'd ← #shadow  [FL] -->
         <feDropShadow dx='1' dy='1.5' flood-opacity='.4' stdDeviation='0.5'/>
         </filter>
     </g>
