@@ -1,4 +1,4 @@
-/** readable - Way declarations that are readable on the web
+/** readable - Way declarations that are readable on the Web
   *
   *   See readable.css for a waycaster’s introduction.  The sections below are for programmers.
   *
@@ -58,7 +58,7 @@
   *     [travelDelta]      · Travel distance in session history to reach the present entry
   *                          from the last entry of ours that was shown: -N, 0 or N
   *                          (backward by N entries, reload, or forward by N entries).  [OUR]
-  *     [targetDirection] · (only if an element is on target) Direction to the targeted element
+  *     [targetDirection] · (only if an element is window targeted) Direction to the targeted element
   *                         (target) from its hyperlink trigger.
   *         Value  Meaning
   *         ·····  ············································································
@@ -141,8 +141,9 @@
   *
   *   * (as a) Subjoining waybit
   *   ----------------------------
-  *     [hasSubjoiningPotential] · Iff this attribute is absent, then the answer is ‘no’; else its value
-  *                                is either ‘on target’ or ‘off target’.  [FT in readable.css]
+  *     [hasSubjoiningPotential] · Iff this attribute is absent, then the answer is ‘no’;
+  *                                else its value is either ‘window targeted’ or ‘window untargeted’.
+  *                                [FT in readable.css]
   *     [:id]            ·
   *     [isOrphan]        · Is potentially subjoining, yet referenced by no referential jointer?
   *     [showsBreadcrumb] · (q.v. under § html:a)
@@ -1166,7 +1167,7 @@ window.wayic_read_readable = ( function()
             if( lidV !== null ) // Then *t* is potentially subjoining
             {
                 t.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
-                  lidV === Hyperlinkage.idOnTarget()? 'on target':'off target' );
+                  lidV === Hyperlinkage.windowTargetedID()? 'window targeted':'window untargeted' );
                 t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
                 const eSTag = partTransform.eSTag;
 
@@ -1697,8 +1698,8 @@ window.wayic_read_readable = ( function()
                 statelet.targetDirection = ( ()=>
                 {
                     Hyperlinkage.refresh();
-                    const elementOnTarget = Hyperlinkage.elementOnTarget();
-                    if( elementOnTarget === null ) return null;
+                    const windowTargetedElement = Hyperlinkage.windowTargetedElement();
+                    if( windowTargetedElement === null ) return null;
 
                     const previousStop = travelStops[travel-1];
                     if( previousStop === undefined ) return 'out';
@@ -1706,9 +1707,9 @@ window.wayic_read_readable = ( function()
                     const trigger = previousStop.trigger;
                     if( trigger === null )  return 'in';
 
-                    if( trigger === elementOnTarget ) return 'self';
+                    if( trigger === windowTargetedElement ) return 'self';
 
-                    const dP = trigger.compareDocumentPosition( elementOnTarget );
+                    const dP = trigger.compareDocumentPosition( windowTargetedElement );
                     if( dP & DOCUMENT_POSITION_PRECEDING ) return 'up';
 
                     console.assert( dP & DOCUMENT_POSITION_FOLLOWING, A );
@@ -2226,43 +2227,54 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The element indicated by window.location.hash, or null if there is none.
+        /** Immediately updates the Hyperlinkage state, rather than wait for an event
+          * that might yet be pending.
+          */
+        expo.refresh = function() { hearHashChange.call( /*this*/window ); };
+
+
+
+        /** The window targeted element, or null if there is none.  This is the element indicated
+          * by the value of window.location.hash, or null if that value is an empty string
+          * or it indicates an element does not exist.
           *
           *     @return (Element)
-          *     @see #idOnTarget
+          *     @see http://reluk.ca/project/wayic/web/target
           */
-        expo.elementOnTarget = function() { return elementOnTarget; };
+        expo.windowTargetedElement = function() { return windowTargetedElement; };
 
 
-            let elementOnTarget = null;
+            let windowTargetedElement = null;
 
 
-            function clearElementOnTarget()
+            function clearWindowTargetedElement()
             {
-                if( elementOnTarget === null ) return;
+                if( windowTargetedElement === null ) return;
 
-                if( elementOnTarget.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
+                if( windowTargetedElement.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    elementOnTarget.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'off target' );
+                    windowTargetedElement.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
+                      'window untargeted' );
                 }
-                elementOnTarget = null;
+                windowTargetedElement = null;
             }
 
 
-            function setElementOnTarget( e )
+            function setWindowTargetedElement( e )
             {
-                if( elementOnTarget === e ) return;
+                if( windowTargetedElement === e ) return;
 
-                if( elementOnTarget !== null
-                 && elementOnTarget.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
+                if( windowTargetedElement !== null
+                 && windowTargetedElement.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    elementOnTarget.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'off target' );
+                    windowTargetedElement.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
+                      'window untargeted' );
                 }
                 if( e.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
                 {
-                    e.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'on target' );
+                    e.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'window targeted' );
                 }
-                elementOnTarget = e;
+                windowTargetedElement = e;
             }
 
 
@@ -2272,19 +2284,12 @@ window.wayic_read_readable = ( function()
           * if that value is an empty string.
           *
           *     @return (string)
-          *     @see #elementOnTarget
+          *     @see http://reluk.ca/project/wayic/web/target
           */
-        expo.idOnTarget = function() { return idOnTarget; };
+        expo.windowTargetedID = function() { return windowTargetedID; };
 
 
-            let idOnTarget = null;
-
-
-
-        /** Immediately updates the Hyperlinkage state, rather than wait for an event
-          * that might yet be pending.
-          */
-        expo.refresh = function() { hearHashChange.call( /*this*/window ); };
+            let windowTargetedID = null;
 
 
 
@@ -2298,21 +2303,21 @@ window.wayic_read_readable = ( function()
             const hash = location.hash; // [WDL]
             if( hash.length <= 1 )
             {
-                if( idOnTarget !== null ) // Otherwise this call is redundant †
+                if( windowTargetedID !== null ) // Otherwise this call is redundant †
                 {
-                    idOnTarget = null;
-                    clearElementOnTarget();
+                    windowTargetedID = null;
+                    clearWindowTargetedElement();
                 }
                 return;
             }
 
             const id = hash.slice( 1 );
-            if( idOnTarget === id ) return; // This call is redundant †
+            if( windowTargetedID === id ) return; // This call is redundant †
 
-            idOnTarget = id;
+            windowTargetedID = id;
             const e = document.getElementById( id );
-            if( e === null ) clearElementOnTarget();
-            else setElementOnTarget( e );
+            if( e === null ) clearWindowTargetedElement();
+            else setWindowTargetedElement( e );
         }
 
 
@@ -2954,10 +2959,10 @@ window.wayic_read_readable = ( function()
           // Inway *approach* clicked?  Function is scene switching
           // ================
             const bit = eSTag.parentNode; // Subjoining waybit
-            const elementOnTarget = Hyperlinkage.elementOnTarget();
+            const windowTargetedElement = Hyperlinkage.windowTargetedElement();
             if( eClickedNS === NS_SVG ) // inway approach
             {
-                if( bit !== elementOnTarget ) return; // Switch is disabled
+                if( bit !== windowTargetedElement ) return; // Switch is disabled
 
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
@@ -2979,11 +2984,11 @@ window.wayic_read_readable = ( function()
           // -----------------
             Breadcrumbs.dropCrumb( bit );
 
-          // Toggle the browser location, on target ⇄ off target
+          // Toggle the browser location, window targeted ⇄ window untargeted
           // ---------------------------
-            if( bit === elementOnTarget ) // Δ: on target → off target
+            if( bit === windowTargetedElement ) // Δ: window targeted → window untargeted
             {
-                location.hash = ''; // Moving off target, no URI fragment in address bar
+                location.hash = ''; // Untargeting
                 const loc = location.toString(); // [WDL]
                 if( loc.endsWith( '#' )) // Then it left the fragment delimiter hanging there, visible,
                 {                 // like the grin of the Cheshire Cat (Firefox, Chrome).  Remove it:
@@ -2991,7 +2996,7 @@ window.wayic_read_readable = ( function()
                       loc.slice(0,-1) );
                 }
             }
-            else location.hash = bit.getAttribute( 'id' ); // Δ: off target → on target
+            else location.hash = bit.getAttribute( 'id' ); // Δ: window untargeted → window targeted
 
           // Stabilize the view within the viewport
           // ------------------
@@ -3587,13 +3592,13 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Ensures that the on target element, if any, will be visible within the viewport.
+        /** Ensures that the window targeted element, if any, will be visible within the viewport.
           *
-          *     @see Hyperlinkage#elementOnTarget
+          *     @see Hyperlinkage#windowTargetedElement
           */
         expo.ensureTargetWillShow = function() // [WTP]
         {
-            const e = Hyperlinkage.elementOnTarget();
+            const e = Hyperlinkage.windowTargetedElement();
             if( e === null ) return;
 
             const eBounds = e.getBoundingClientRect();

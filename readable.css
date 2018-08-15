@@ -1,4 +1,4 @@
-/* readable - Way declarations that are readable on the web
+/* readable - Way declarations that are readable on the Web
  *
  *   Here are usage instructions and advice for waycasters who wish to use this transformer.
  *
@@ -836,7 +836,7 @@ html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag
 
 
 
-/* ---  S u b j o i n e d   w a y b i t  --  O n - t a r g e t  ----------------------------------------
+/* ---  S u b j o i n e d   w a y b i t  --  W i n d o w - t a r g e t e d  ----------------------------
  */
 [read|hasSubjoiningPotential]                     > eSTag > .inway > svg.approach
 {
@@ -844,15 +844,15 @@ html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag
     animation-timing-function: step-start;
     display: none;
 }
-[read|hasSubjoiningPotential='on target']         > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential='window targeted']   > eSTag > .inway > svg.approach
 {
     display: unset; /* Allowing it to show */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > svg.approach,
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > svg.approach
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach
 {
     animation-name: inflightInwayApproach; /* As a travel target locator */
 }
@@ -860,12 +860,13 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 
 @keyframes inflightInwayApproach
 {
-     0% { visibility: hidden } /* Held constant, delaying the *on target* styling till after impact */
+     0% { visibility: hidden }
+       /* Held constant, delaying the *window targeted* styling till after impact */
    100% { visibility: hidden }
 }
 
 
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
@@ -878,9 +879,9 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
     animation-timing-function: step-start;
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span,
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     animation-name: inflightTarget; /* As a travel target locator */
 }
@@ -889,7 +890,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 @keyframes inflightTarget /* Target symbol, the main content (span) of the subjoint icon */
 {
      0% { opacity: var(--iconicOpacity); z-index: unset }
-       /* Held constant, delaying the *on target* styling till after impact */
+       /* Held constant, delaying the *window targeted* styling till after impact */
    100% { opacity: var(--iconicOpacity); z-index: unset }
 }
 
@@ -904,9 +905,9 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
       The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='on target']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
+[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
 {
     animation-name: inflightMissile_constants, /* As travel target locators */
                     inflightMissile_perspective;
@@ -999,16 +1000,20 @@ html[read|lighting='neon']
 }
 
 
-html[read|lighting='neon']  [read|hasSubjoiningPotential]             > eSTag       > .inway icon > span
+html[read|lighting='neon']  [read|hasSubjoiningPotential]                   > eSTag
+> .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='neon']  [read|hasSubjoiningPotential]             > eSTag:hover > .inway icon > span
+html[read|lighting='neon']  [read|hasSubjoiningPotential]                   > eSTag:hover
+> .inway icon > span
 {
     opacity: 0.7;
 }
-html[read|lighting='neon']  [read|hasSubjoiningPotential='on target'] > eSTag:hover > .inway icon > span,
-html[read|lighting='neon']  [read|hasSubjoiningPotential='on target'] > eSTag       > .inway icon > span                            /* [FT] */
+html[read|lighting='neon']  [read|hasSubjoiningPotential='window targeted'] > eSTag
+> .inway icon > span,
+html[read|lighting='neon']  [read|hasSubjoiningPotential='window targeted'] > eSTag:hover
+> .inway icon > span                                   /* [FT] */
 {
     opacity: 1;
 }
@@ -1022,17 +1027,21 @@ html[read|lighting='paper']
 }
 
 
-html[read|lighting='paper'] [read|hasSubjoiningPotential]             > eSTag       > .inway icon > span
+html[read|lighting='paper'] [read|hasSubjoiningPotential]                   > eSTag
+> .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='paper'] [read|hasSubjoiningPotential]             > eSTag:hover > .inway icon > span
+html[read|lighting='paper'] [read|hasSubjoiningPotential]                   > eSTag:hover
+> .inway icon > span
 {
     opacity: 0.5;
 }
-html[read|lighting='paper'] [read|hasSubjoiningPotential='on target'] > eSTag:hover > .inway icon > span,
-html[read|lighting='paper'] [read|hasSubjoiningPotential='on target'] > eSTag       > .inway icon > span
-{                                                    /* [FT] */
+html[read|lighting='paper'] [read|hasSubjoiningPotential='window targeted'] > eSTag
+> .inway icon > span,
+html[read|lighting='paper'] [read|hasSubjoiningPotential='window targeted'] > eSTag:hover
+> .inway icon > span                                   /* [FT] */
+{
     opacity: 1;
 }
 
@@ -1124,7 +1133,7 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
  *
- *             [read|hasSubjoiningPotential='on target']
+ *             [read|hasSubjoiningPotential='window targeted']
  *
  *         Instead of the proper form:
  *
