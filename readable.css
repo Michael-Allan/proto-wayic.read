@@ -95,7 +95,7 @@
  *
  *       A workaround for Chrome is its ‘--allow-file-access-from-files’ option. [AFA]
  *
- *       A workaround for Firefox is to first request the root way declaration document
+ *       A workaround for Firefox is to first request the waycast root document
  *       from the base directory of the waycast.  Then follow the links from there. [SPF]
  *       Travel by other means (e.g. bookmark or address bar) will break the workaround.
  *       Travel by any means to the directory index, which for file scheme the browser itself generates,

@@ -835,7 +835,7 @@ window.wayic_read_readable = ( function()
       *
       *     @see https://www.w3.org/TR/css-values/#rem
       */
-    const REM = emLength( /*root element 'r', sensu 'rem'*/document.documentElement );
+    const REM = emLength( document.documentElement );
 
 
 
@@ -3635,12 +3635,13 @@ window.wayic_read_readable = ( function()
    //   W a y t r a c e r
 
 
-    /** A device for tracing the way across multiple, referentially joined documents.  It traces
-      * the root element's joints to their subjoining waybits, thence onward till it traces
-      * the full network of referential joints.  The trace serves two purposes: (1) to discover documents
-      * for cache omnireaders; and (2) to adjust the form of the present document based on the results.
+    /** A device for tracing the way across multiple, referentially joined documents.  It traces into
+      * the waycast root, through its joints and onward till it traces the way declaration in full.
+      * The trace serves two ultimate purposes: (1) reforming the present document to show which parts
+      * are *on way*; and (2) discovery of other documents for cache omnireaders.
       *
-      *     @see http://reluk.ca/project/wayic/cast/root#root_element
+      *     @see http://reluk.ca/project/wayic/cast/waycast_root
+      *     @see http://reluk.ca/project/wayic/lex/way#on_way
       *     @see DocumentCache#addOmnireader
       */
     const WayTracer = ( function()
@@ -3665,7 +3666,7 @@ window.wayic_read_readable = ( function()
                 {
                     const root = doc.getElementById( 'root', doc );
                     if( root !== null ) traceLeg( id, root, cacheEntry );
-                    else tsk( 'Unable to trace: Missing root waybit: ' + id );
+                    else tsk( 'Unable to trace: Missing waycast root: ' + id );
                 }
             });
         };
@@ -3721,18 +3722,18 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The location of the root way declaration document (string) in normal URL form.
+        /** The location of the waycast root document (string) in normal URL form.
           *
-          *     @see http://reluk.ca/project/wayic/cast/root#root_way_declaration_document
+          *     @see http://reluk.ca/project/wayic/cast/waycast_root_document
           *     @see URIs#normalized
           */
         const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
 
 
 
-        /** The identifier of the root leg of the trace.
+        /** The identifier of the root leg of the trace, from which all other legs are traced.
           *
-          *     @see http://reluk.ca/project/wayic/cast/root#root_element
+          *     @see http://reluk.ca/project/wayic/cast/waycast_root
           */
         const ROOT_LEG_ID = newLegID( ROOT_DOCUMENT_LOCATION, 'root' );
 
