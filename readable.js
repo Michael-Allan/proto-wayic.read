@@ -387,7 +387,7 @@ window.wayic_read_readable = ( function()
 
         /** Returns a message that the given URI is not in normal form.
           */
-        expo.message_abnormal = function( uri ) { return 'Not in normal form:' + uri; };
+        expo.message_abnormal = function( uri ) { return 'Not in normal form: ' + uri; };
 
 
 
@@ -963,8 +963,6 @@ window.wayic_read_readable = ( function()
                     }
                     if( href.startsWith( '/' )) t.setAttribute( 'href', href = CAST_BASE_REF + href );
                       // Translating waycast space → universal space
-                    const docLocN = URIs.defragmented( URIs.normalized( href ));
-                    targetExtradocLocN = docLocN === DOCUMENT_LOCATION? '': docLocN;
                 }
                 else if( linkV !== null ) // Then *t* is a hyperform referential jointer
                 {
@@ -977,14 +975,12 @@ window.wayic_read_readable = ( function()
                     }
 
                     link.hrefTo( t );
-                    const targetWhereabouts = TargetWhereabouts.fromJointer( t, link );
-                    targetExtradocLocN = targetWhereabouts.documentLocationN;
-                    const direction = targetWhereabouts.direction;
+                    const sbjWhereabouts = TargetWhereabouts.fromJointer( t, link );
+                    const direction = sbjWhereabouts.direction;
                     if( direction !== null ) t.setAttributeNS( NS_READ, 'targetDirection', direction );
-                }
-                if( targetExtradocLocN.endsWith( '/way.xht' )) // Likely a way declaration document.
-                {                                             // So tell the joint finisher:
-                    SurjointFinisher.noteSubjoiningDocument( targetExtradocLocN );
+                    const sbjDocLocN = sbjWhereabouts.documentLocationN;
+                    if( sbjDocLocN.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocLocN );
+                      // Else jointer *t* forms an intradocument joint
                 }
 
               // Superscripting
@@ -1011,7 +1007,7 @@ window.wayic_read_readable = ( function()
             if( !isProperWayscript ) continue tt;
 
 
-          ///////////////////////////////////////////////////////////////////////////////////  WAYSCRIPT
+          ////////////////////////////////////////////////////////////////////////////  PROPER WAYSCRIPT
 
             const isDeclaredEmpty = !t.hasChildNodes(); // Tested before adding any special markup
             const partTransform = new PartTransformC( t );
@@ -1057,7 +1053,8 @@ window.wayic_read_readable = ( function()
             {
                 if( lidV !== null )
                 {
-                    tsk( 'A bitform referential jointer with both *id* and *link* attributes: ' + a2s('id',lidV) );
+                    tsk( 'A bitform referential jointer with both *id* and *link* attributes: '
+                      + a2s('id',lidV) );
                     break jointer;
                 }
 
@@ -1078,11 +1075,11 @@ window.wayic_read_readable = ( function()
                 const forelinker = t.appendChild( document.createElementNS( NS_READ, 'forelinker' ));
                 const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
-                const targetWhereabouts = TargetWhereabouts.fromJointer( t, link );
+                const sbjWhereabouts = TargetWhereabouts.fromJointer( t, link );
                 let subjointPreviewString;
                 jointing:
                 {
-                    const sbjDocLocN = targetWhereabouts.documentLocationN;
+                    const sbjDocLocN = sbjWhereabouts.documentLocationN;
                     if( sbjDocLocN.length > 0 ) // Then *t* refers to a separate document
                     {
                         const registration = SurjointFinisher.registerBitformJointer( t,
@@ -1102,7 +1099,7 @@ window.wayic_read_readable = ( function()
                         break jointing;
                     }
 
-                    const direction = targetWhereabouts.direction;
+                    const direction = sbjWhereabouts.direction;
                     if( direction === null ) // Then the joint is broken
                     {
                         subjointPreviewString = BREAK_SYMBOL;
@@ -1112,7 +1109,7 @@ window.wayic_read_readable = ( function()
 
                     // The subjoining waybit is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
-                    const sbj = targetWhereabouts.target;
+                    const sbj = sbjWhereabouts.target;
                     configureForSubjoint( tNS, tN, linkV, sbj, partTransform );
                     LeaderReader.read( sbj );
                     subjointPreviewString = LeaderReader.leader;
