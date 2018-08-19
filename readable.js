@@ -3633,11 +3633,11 @@ window.wayic_read_readable = ( function()
 
 
     /** A device for tracing the way across multiple, referentially joined documents.  It traces into
-      * the waycast root, through its joints and onward till it traces the way declaration in full.
+      * the waycast root element, through its joints and onward till it traces the way declaration in full.
       * The trace serves two ultimate purposes: (1) reforming the present document to show which parts
       * are *on way*; and (2) discovery of other documents for cache omnireaders.
       *
-      *     @see http://reluk.ca/project/wayic/cast/waycast_root
+      *     @see http://reluk.ca/project/wayic/cast/waycast_root_element
       *     @see http://reluk.ca/project/wayic/lex/way#on_way
       *     @see DocumentCache#addOmnireader
       */
@@ -3663,7 +3663,7 @@ window.wayic_read_readable = ( function()
                 {
                     const root = doc.getElementById( 'root', doc );
                     if( root !== null ) traceLeg( id, root, cacheEntry );
-                    else tsk( 'Unable to trace: Missing waycast root: ' + id );
+                    else tsk( 'Unable to trace: Missing waycast root element: ' + id );
                 }
             });
         };
@@ -3730,7 +3730,7 @@ window.wayic_read_readable = ( function()
 
         /** The identifier of the root leg of the trace, from which all other legs are traced.
           *
-          *     @see http://reluk.ca/project/wayic/cast/waycast_root
+          *     @see http://reluk.ca/project/wayic/cast/waycast_root_element
           */
         const ROOT_LEG_ID = newLegID( ROOT_DOCUMENT_LOCATION, 'root' );
 
