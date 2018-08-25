@@ -3966,10 +3966,9 @@ window.wayic_read_readable = ( function()
   *
   *  [SIC]  SubjointImageCache.  The purpose of caching the subjoint images is to stablize the view
   *         within the viewport, especially on the vertical axis.  The vertical layout of the view
-  *         depends on subjoint imaging.  Images for extradocument joints cannot always be resolved
-  *         synchronously.  Their delayed resolution may cause layout changes that deflect the view
-  *         vertically.  Image caching and pre-caching are able to prevent this and stabilize the view
-  *         in all but a few edge cases.
+  *         depends on subjoint imaging.  If an image for an extradocument joint loads asynchronously,
+  *         then it may deflect the view vertically.  Image caching and pre-caching will prevent this,
+  *         stabilizing the view in all but a few edge cases.
   *
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
