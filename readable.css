@@ -468,7 +468,7 @@ html[read|lighting='neon'] *[read|imaging] > read|forelinker > a > preview
 }
 
 
-html[read|lighting='neon'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
+html[read|lighting='neon'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
@@ -500,7 +500,7 @@ html[read|lighting='paper'] *[read|imaging] > read|forelinker > a > preview
 }
 
 
-html[read|lighting='paper'] *[cog|link$='/#commitment'] > eSTag > eQName > eName
+html[read|lighting='paper'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
