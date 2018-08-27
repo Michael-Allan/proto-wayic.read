@@ -34,8 +34,8 @@
   *             ⋮                         * Formal names and sub-hierarchies omitted
   *
   *
-  * INTRODUCTION of SPECIAL MARKUP
-  * ------------------------------
+  * MARKUP INSERTS
+  * --------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
   *   Key to these outlines:
   *
@@ -52,12 +52,12 @@
   *
   *   html:html ∙ Document element
   *   ---------
-  *     [animatedShow]   · Style rules that must animate or re-animate on each load of the document,
-  *                        and on each revisit to it, must depend on this attribute.
-  *     [lighting]        · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
-  *     [travelDelta]      · Travel distance in session history to reach the present entry
-  *                          from the last entry of ours that was shown: -N, 0 or N
-  *                          (backward by N entries, reload, or forward by N entries).  [OUR]
+  *     [animatedShow] · Style rules that must animate or re-animate on each load of the document,
+  *                      and on each revisit to it, must depend on this attribute.
+  *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *     [travelDelta]    · Travel distance in session history to reach the present entry
+  *                        from the last entry of ours that was shown: -N, 0 or N
+  *                        (backward by N entries, reload, or forward by N entries).  [OUR]
   *     [targetDirection] · (only if an element is window targeted) Direction to the targeted element
   *                         (target) from its hyperlink trigger.
   *         Value  Meaning
@@ -74,7 +74,7 @@
   *     scene      ∙ Document scene
   *         [:id]   · ‘wayic.read.document_scene’
   *     scene        ∙ Interlink scene(s), if any.  There may be any number of these.
-  *         [:class]  · ‘interlink’
+  *         [:class] · ‘interlink’
   *       ⋮
   *
   *     offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
@@ -97,7 +97,7 @@
   *         eQName              ∙ Qualified name [XN] of the element.
   *             [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
   *             ePrefix           ∙ Namespace prefix, if any.
-  *                 [isAnonymous]  · Has a prefix that is declared to be anonymous?
+  *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
   *             eName             ∙ Local part of the name.
   *
   *     textAligner ∙ (only if element is a step)
@@ -113,15 +113,15 @@
   *                         an intradocument link and unbroken (its target exists).
   *
   *
-  *   a, Referential jointer, Hyperform
-  *   ----------------------
+  *   hyperform, presenter of a referential jointer or a generic hyperlink trigger (both take this form)
+  *   ---------
   *     html:a         ∙ (§ q.v.)
-  *         [cog:link]  ·
-  *     html:sup       ∙ Hyperlink presence indicator.  It contains ‘*’, ‘†’ or ‘‡’.
+  *         [cog:link] · (only if element *a* is a referential jointer)
+  *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
   *
   *
-  *   * (as a) Referential jointer, Bitform
-  *   ----------------------------
+  *   * (as a) Bitform referential jointer
+  *   ------------------------------------
   *     [hasPreviewString] · Has a non-empty subjoint preview string?  [BA]
   *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on
   *                          a cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
@@ -130,12 +130,13 @@
   *
   *     eSTag                  ∙ (q.v. under § Wayscript element)
   *     textAligner             ∙ (only if element is a step)
-  *     forelinker               ∙ Hyperlink presenter
+  *     bitform                  ∙ Jointing presenter
   *         html:a                ∙ (§ q.v.)
-  *             [targetDirection]  · (q.v. under § html:a)
+  *             [targetDirection] · (q.v. under § html:a)
   *             preview           ∙ Subjoint preview
   *             html:br           ∙
-  *             verticalTruncator ∙ Indicator of the joint’s presence and the partialness of the subjoint preview
+  *             verticalTruncator ∙ Indicator of the hyperlink trigger, and of the partialness
+  *                                 of the subjoint preview.
   *                 html:span     ∙ Containing the visible indicator, exclusive of padding
   *
   *
@@ -154,7 +155,7 @@
   *             svg:svg        ∙ Approach
   *                 [:class]    · ‘approach’
   *                 svg:circle   ∙ Edging
-  *                     [:class]  · ‘edging’
+  *                     [:class] · ‘edging’
   *                 svg:path     ∙ Path
   *             hall             ∙
   *                 icon          ∙ Subjoining waybit icon
@@ -712,15 +713,6 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The symbol for use in hyperlink presence indicators.  These are styled in superscript.
-      */
-    const HYPERLINK_SYMBOL = '*'; // Unicode 2a (asterisk)
-
-    const HYPERLINK_SYMBOLS = [HYPERLINK_SYMBOL, '†', '‡']; /* '†' is Unicode 2020 (dagger);
-      '‡' 2021 (double dagger).  Avoiding '⁑' 2051 (two asterisks) as fonts render it poorly. */
-
-
-
     /** Answers whether *ns* is a namespace of waybits.  That means either NS_BIT itself
       * or another namespace that starts with NS_BIT and a dot separator.
       * The only other defined at present is NS_STEP.
@@ -908,10 +900,6 @@ window.wayic_read_readable = ( function()
                 return NodeFilter.FILTER_ACCEPT;
             }
         });
-        let layoutBlock = traversal.currentNode; /* Tracking the nearest container element in the
-          current hierarchy path (current element or nearest ancestor) that has a block layout. */
-        let layoutBlock_aLast = null; // Layout block of the most recent (author's) hyperlink
-        let layoutBlock_aCount = 0; // Count of such hyperlinks in that block, so far
         tt: for( ;; )
         {
             const t = traversal.nextNode(); // Maintaining *t* as the current element of the traversal
@@ -932,17 +920,12 @@ window.wayic_read_readable = ( function()
                 t.setAttributeNS( NS_READ, 'isProperWayscript', 'isProperWayscript' );
                 tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
                 isBit = isBitSubNS( tSubNS );
-                layoutBlock = t; // Sync'd ← readable.css § Wayscript
             }
-            else // element *t* is non-wayscript
+            else // Element *t* is non-wayscript
             {
                 isHTML = tNS === NS_HTML;
                 isBit = isProperWayscript = false;
                 tSubNS = null;
-                if( !getComputedStyle(t).getPropertyValue('display').startsWith('inline') )
-                {
-                    layoutBlock = t;
-                }
             }
 
 
@@ -983,25 +966,14 @@ window.wayic_read_readable = ( function()
                       // Else jointer *t* forms an intradocument joint
                 }
 
-              // Superscripting
-              // --------------
-                const aWrapper = document.createElementNS( NS_READ, 'a' );
-                t.parentNode.insertBefore( aWrapper, t );
-                aWrapper.appendChild( t );
-                const sup = aWrapper.appendChild( document.createElementNS( NS_HTML, 'sup' ));
-                const symbol = ( ()=>
-                {
-                    if( layoutBlock !== layoutBlock_aLast ) // Then *t* is first hyperlink in this block
-                    {
-                        layoutBlock_aLast = layoutBlock;
-                        layoutBlock_aCount = 0;
-                        return HYPERLINK_SYMBOL;
-                    }
-
-                    const count = ++layoutBlock_aCount; // t is a *subsequent* hyperlink in this block
-                    return HYPERLINK_SYMBOLS[count % HYPERLINK_SYMBOLS.length]; // Next in rotation
-                })();
-                sup.appendChild( document.createTextNode( symbol ));
+              // Hyperform
+              // ---------
+                const hyperform = document.createElementNS( NS_READ, 'hyperform' );
+                t.parentNode.insertBefore( hyperform, t );
+                hyperform.appendChild( t );
+                const mark = hyperform.appendChild( document.createElementNS( NS_READ, 'triggerMark' ));
+                mark.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk).
+                  // It needs no superscript styling, the font takes care of it.
             }
 
             if( !isProperWayscript ) continue tt;
@@ -1009,7 +981,7 @@ window.wayic_read_readable = ( function()
 
           ////////////////////////////////////////////////////////////////////////////  PROPER WAYSCRIPT
 
-            const isDeclaredEmpty = !t.hasChildNodes(); // Tested before adding any special markup
+            const isDeclaredEmpty = !t.hasChildNodes(); // Tested before inserting any markup
             const partTransform = new PartTransformC( t );
             if( isBit )
             {
@@ -1072,8 +1044,8 @@ window.wayic_read_readable = ( function()
                     break jointer;
                 }
 
-                const forelinker = t.appendChild( document.createElementNS( NS_READ, 'forelinker' ));
-                const a = forelinker.appendChild( document.createElementNS( NS_HTML, 'a' ));
+                const bitform = t.appendChild( document.createElementNS( NS_READ, 'bitform' ));
+                const a = bitform.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
                 const sbjWhereabouts = TargetWhereabouts.fromJointer( t, link );
                 let subjointPreviewString;
@@ -1223,9 +1195,35 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether the given HTML element is very likely to be displayed in line by the browser.
+    /** Answers whether the browser will lay out the given element in line.
+      * Thus is likely to be a slow test.
       */
-    function willDisplayInLine_likely( htmlElement ) // A workaround function for its caller, q.v.
+    function willDisplayInLine( element )
+    {
+        const elementNS = element.namespaceURI;
+        if( elementNS.startsWith( NS_WAYSCRIPT_DOT )) return false; // No wayscript element is inlined
+
+        const styleDeclarations = getComputedStyle( element );
+        const displayStyle = styleDeclarations.getPropertyValue( 'display' );
+        if( displayStyle === 'inline' ) return true;
+
+        if( styleDeclarations.length === 0 ) // Then something is wrong
+        {
+            // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
+            // ties that are supported CSS properties" must be reported, ∴ length should
+            // be > 0.  https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
+            if( elementNS === NS_HTML && willDisplayInLine_likely(element) ) return true;
+        }
+
+        return false;
+    }
+
+
+
+    /** Answers whether the browser is very likely to lay out the given HTML element in line.
+      * Thus is a fast test.
+      */
+    function willDisplayInLine_likely( htmlElement )
     {
         switch( htmlElement.localName )
         {
@@ -1234,7 +1232,7 @@ window.wayic_read_readable = ( function()
             case 'b':
             case 'bdi':
             case 'bdo':
-            case 'br':
+            case 'br': // Not displayed at all
             case 'cite':
             case 'code':
             case 'data':
@@ -1521,7 +1519,7 @@ window.wayic_read_readable = ( function()
       *                   of the session history.  It is null if the present entry was never exited,
       *                   and null if the latest exit had some other cause.
       *                       or its last exit had some other cause.
-      *     targetDirection · Q.v. under § INTRODUCTION of SPECIAL MARKUP § html:html
+      *     targetDirection · Q.v. under § MARKUP INSERTS § html:html
       *     travel          · Ordinal (number) of the present entry within the session history,
       *                       a number from zero (inclusive) to the history length (exclusive).
       *
@@ -2510,7 +2508,7 @@ window.wayic_read_readable = ( function()
 
 
     /** A reader of element leaders.  An element leader is the whitespace collapsed, text content
-      * of the element prior to any contained element of wayscript or non-inline layout.
+      * of the element prior to any forced line break or element of non-inline layout.
       *
       * To learn merely whether an element has a leader of non-zero length, give a maxLength
       * of zero to the *read* function then inspect *hasLeader* for the answer.
@@ -2527,13 +2525,6 @@ window.wayic_read_readable = ( function()
           *     @see #read
           */
         expo.element = null;
-
-
-
-     // /** The successor of the last child node that contributed to the leader, or null if either
-     //   * no child contributed or the last to contribute has no successor.
-     //   */
-     // expo.endChild = null;
 
 
 
@@ -2561,21 +2552,17 @@ window.wayic_read_readable = ( function()
           *
           *     @param maxLength (number) The length limit on the read.  A read that would exceed this
           *       limit will instead be truncated at the preceding word boundary.
-          *     @param toIncludeRead (boolean) Whether to include any text contained within
-          *       special markup (NS_READ) elements.
           */
-        expo.read = function( element, maxLength=Number.MAX_VALUE, toIncludeRead=false )
+        expo.read = function( element, maxLength=Number.MAX_VALUE )
         {
             let leader = '';
             let hasLeader = false;
-         // let firstContributingChild = null;
-         // let lastContributingChild = null;
             expo.isTruncated = false;
             const dive = document.createTreeWalker( element );
               // Node.innerText and textContent would be too inefficient for this purpose, often diving
               // deeply into the element hierarchy where only a shallow dive is needed.
             let headroom = maxLength; // Space remaining for the next word
-         // let child = null; // Tracking the last child that was encountered in the dive
+            let toMarkEllipse = false; // Whether a text omission has yet to be marked
             dive: for( ;; )
             {
                 const d = dive.nextNode();
@@ -2595,12 +2582,17 @@ window.wayic_read_readable = ( function()
                         if( wN > headroom )
                         {
                             expo.isTruncated = true;
-                            break dive;
+                            break dive; // Terminating the leader
                         }
 
-                        if( leader.length > 0 )
+                        if( leader.length > 0 ) // Then first append a word separator
                         {
-                            leader += ' '; // Word separator
+                            if( toMarkEllipse )
+                            {
+                                leader += '…'; // Unicode 2026 (horizontal ellipsis)
+                                toMarkEllipse = false;
+                            }
+                            else leader += ' ';
                             --headroom;
                         }
                         leader += word;
@@ -2612,42 +2604,55 @@ window.wayic_read_readable = ( function()
                 else if( dType === ELEMENT_NODE )
                 {
                     const dNS = d.namespaceURI;
-                    if( dNS.endsWith(NS_READ) && dNS.length === NS_READ.length ) // Fast failing test
+                    if( dNS === NS_READ )
                     {
-                        if( !toIncludeRead ) toLastDescendant( dive ); // Bypassing d and its content
-                    }
-                    else if( dNS.startsWith( NS_WAYSCRIPT_DOT )) break dive;
-                    else
-                    {
-                        const styleDeclarations = getComputedStyle( d );
-                        const displayStyle = styleDeclarations.getPropertyValue( 'display' );
-                        if( displayStyle === 'inline' ) continue dive;
-
-                        if( styleDeclarations.length === 0 ) // Then something is wrong
+                      // Non-HTML insert
+                      // ---------------
+                        switch( d.localName )
                         {
-                            // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
-                            // ties that are supported CSS properties" must be reported, ∴ length should
-                            // be > 0.  https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
-                            if( dNS === NS_HTML && willDisplayInLine_likely(d) ) continue dive;
+                            case 'bitform': // For the content of its *preview* element, below
+                            case 'hyperform': // For the content of its HTML *a* child
+                            case 'preview':
+                                continue dive; // Not bypassing *d* content
                         }
 
-                        break dive;
+                        toLastDescendant( dive ); // Bypassing *d* content
+                        continue;
                     }
+
+                    if( dNS === NS_HTML )
+                    {
+                        switch( d.localName )
+                        {
+                          // Forced line break
+                          // -----------------
+                            case 'br':
+                                break dive; // Terminating the leader
+
+                          // Significant markup unencodable in plain text
+                          // ------------------
+                            case 'bdi':
+                            case 'bdo':
+                            case 'del':
+                            case 's':
+                            case 'sub':
+                            case 'sup':
+                                toMarkEllipse = true;
+                                toLastDescendant( dive ); // Bypassing *d* content
+                                continue dive;
+                        }
+                    }
+
+                  // Non-inlined element
+                  // -------------------
+                    if( !willDisplayInLine( d )) break dive; // Terminating the leader
                 }
             }
 
             expo.element = element;
             expo.leader = leader;
             expo.hasLeader = hasLeader;
-         // expo.startChild = firstContributingChild;
-         // expo.endChild = lastContributingChild === null? null: lastContributingChild.nextSibling;
         };
-
-
-
-     // /** The first child node that contributed to the leader, or null if none did.
-     //   */
-     // expo.startChild = null;
 
 
 
@@ -2741,7 +2746,7 @@ window.wayic_read_readable = ( function()
    //   P a r t   T r a n s f o r m   C
 
 
-    /** The part of the transformation of a wayscript element that is generally open to being redone.
+    /** The part of a proper wayscript element's transformation that is generally open to being redone.
       * This is a disposable, single-use class.
       */
     class PartTransformC
@@ -2799,11 +2804,7 @@ window.wayic_read_readable = ( function()
 
           // Leader
           // ------
-            const toIncludeRead = true;
-              // Else the leader would exclude *forelinker* content in the case of a bitform jointer
-            console.assert( e.firstChild === null || e.firstChild.nodeName !== 'eSTag', A );
-              // Else the leader would include the start tag
-            LeaderReader.read( e, /*maxLength*/0, toIncludeRead );
+            LeaderReader.read( e, /*maxLength*/0 );
   /*[C2]*/  if( LeaderReader.hasLeader ) e.setAttributeNS( NS_READ, 'hasLeader', 'hasLeader' );
 
           // Start tag
@@ -2884,12 +2885,12 @@ window.wayic_read_readable = ( function()
    //   P a r t   T r a n s f o r m   C 2
 
 
-    /** PartTransformC for an element whose initial transformation is now being redone.
+    /** The redoing of a PartTransformC.
       */
     class PartTransformC2 extends PartTransformC
     {
 
-        /** Constructs a PartTransformC2, first removing the markup of the previous transform.
+        /** Constructs a PartTransformC2, first removing the markup of the earlier PartTransformC.
           *
           *     @see PartTransformC#element
           */
@@ -3322,8 +3323,8 @@ window.wayic_read_readable = ( function()
 
         function setSubjointPreview( jointer, newPreviewString )
         {
-            const forelinker = jointer.lastChild;
-            const preview = asElementNamed( 'preview', forelinker.firstChild/*a*/.firstChild );
+            const bitform = jointer.lastChild;
+            const preview = asElementNamed( 'preview', bitform.firstChild/*a*/.firstChild );
             const previewText = preview.firstChild;
             previewText.replaceData( 0, previewText.length, newPreviewString );
             configureForSubjointPreview( jointer, preview, newPreviewString );
@@ -3930,8 +3931,8 @@ window.wayic_read_readable = ( function()
   *  [FHS]  Firefox (52.2) has the wrong History.state after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
   *
-  *  [FIB]  Focus for inline breadcrumbs.  Here avoiding use of the HTML focus facility as a base
-  *         for inline breadcrumb trails.  It seems unreliable.  The browsers are doing their own
+  *  [FIB]  Focus for inlined breadcrumbs.  Here avoiding use of the HTML focus facility as a base
+  *         for inlined breadcrumb trails.  It seems unreliable.  The browsers are doing their own
   *         peculiar things with focus which are hard to work around.
   *         http://w3c.github.io/html/editing.html#focus
   *
@@ -3961,8 +3962,8 @@ window.wayic_read_readable = ( function()
   *  [RPP]  Restricted public property.  Despite its exposure in the public interface,
   *         this property is not intended for general use.
   *
-  *  [SH] · Standard HTML.  Here avoiding special markup in favour of standard HTML,
-  *         thus gaining access to proper features of HTML such as the *style* attribute.
+  *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
+  *         such as the *style* attribute.
   *
   *  [SIC]  SubjointImageCache.  The purpose of caching the subjoint images is to stablize the view
   *         within the viewport, especially on the vertical axis.  The vertical layout of the view
@@ -3983,9 +3984,9 @@ window.wayic_read_readable = ( function()
   *  [WTP]  Window target positioning.  Normally the browser itself does this, vertically scrolling
   *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.
   *         It failed when this program was loaded by a *script* element injected at runtime.
-  *         Probably because then the program was late in running and late in styling the elements
-  *         - especially in giving the crucial display style of ‘block’ to the specialized elements,
-  *         which are XML, therefore ‘inline’ by default - this confused the browser.
+  *         Probably because then the program ran late and was therefore late in styling the elements
+  *         - especially the crucial display style of ‘block’ for the proper wayscript elements,
+  *         which are XML and therefore ‘inline’ by default - which confused the browser.
   *
   *         A remedy might be to make this program load immediately.  The only reliable way, however,
   *         is to have the wayscribe write the *script* element into every way declaration document,

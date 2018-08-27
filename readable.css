@@ -209,63 +209,6 @@ html|a[href]
 }
 
 
-read|a       > html|a
-{
-    color: inherit; /* Defeat colour as unecessary and distracting */
-    text-decoration-color: transparent; /* Redundant but for enabling a *transition* effect */
- /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
-      while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
-      On the other, the latest standard replaces it with a *text-decoration-skip-ink-property* which is
-      enabled by default.  https://www.w3.org/TR/css-text-decor/#text-decoration-skip-ink-property */
-
-    animation-duration: 3s;
-    outline-offset: 0.5em;
-}
-html[read|animatedShow]
-read|a       > html|a[read|showsBreadcrumb]
-{
-    animation-name: fadingCrumb; /* As a breadcrumb locator */
-}
-
-
-read|a:hover > html|a,
-read|a       > html|a[read|showsBreadcrumb]
-{
-    text-decoration-color: var(--hyperlink-color);
-    text-decoration-line: underline; /* [FIB] */
-}
-
-
-read|a       > html|a:not([read|showsBreadcrumb])
-{
-    transition-property: text-decoration-color,    z-index;
-    transition-duration:                  0.2s,         0s;
-    transition-timing-function:       ease-out, step-start;
-    transition-delay:                     0.1s,       1.0s; /* Avoid distracting flash on passing */
-}
-
-
-read|a       > html|a,
-read|a       > html|sup
-{
-    position: relative; /* Enabling *z-index* change on hover */
-    z-index: 0; /* So enabling its *transition*, which the default does not */
-}
-read|a:hover > html|a,
-read|a       > html|a[read|showsBreadcrumb],
-read|a:hover > html|sup
-{
-    z-index: 1; /* Raised clear of the *offWayScreen* */
-}
-
-
-read|a       > html|sup
-{
-    color: var(--hyperlink-color);
-    line-height: 0.5em; /* Preserve line spacing despite an (implicit) *vertical-align* of 'super' */
-}
-
-
 /* - - -  neon   - - - - - - - - - - - -
  */
 html[read|lighting='neon']
@@ -283,7 +226,37 @@ html[read|lighting='paper']
 
 
 
-/* ---  G r o u p --------------------------------------------------------------------------------------
+/* ---  F a d i n g   c r u m b  -----------------------------------------------------------------------
+ */
+
+@keyframes fadingCrumb
+{
+     0% { outline: thin var(--crumbOutlineStyle) var(--hyperlink-color); animation-timing-function:
+       /* Holding constant */                                              linear }
+    33% { outline: thin var(--crumbOutlineStyle) var(--hyperlink-color); animation-timing-function:
+       /* Fading */                                                        ease-out }
+   100% { outline: thin var(--crumbOutlineStyle) transparent }
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+html[read|lighting='neon']
+{
+    --crumbOutlineStyle: dotted;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+html[read|lighting='paper']
+{
+    --crumbOutlineStyle: solid;
+}
+
+
+
+/* ---  G r o u p  -------------------------------------------------------------------------------------
  */
 
 cog|group
@@ -342,40 +315,98 @@ html[read|lighting='paper'] cog|group
 
 
 
-/* ---  F a d i n g   c r u m b  -----------------------------------------------------------------------
+/* ---  H y p e r f o r m   p r e s e n t e r  ---------------------------------------------------------
  */
 
-@keyframes fadingCrumb
+read|hyperform       > html|a
 {
-     0% { outline: thin var(--crumbOutlineStyle) var(--hyperlink-color); animation-timing-function:
-       /* Holding constant */                                              linear }
-    33% { outline: thin var(--crumbOutlineStyle) var(--hyperlink-color); animation-timing-function:
-       /* Fading */                                                        ease-out }
-   100% { outline: thin var(--crumbOutlineStyle) transparent }
+    color: inherit; /* Defeat colour as unecessary and distracting */
+    text-decoration-color: transparent; /* Redundant but for enabling a *transition* effect */
+ /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
+      while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
+      On the other, the latest standard replaces it with a *text-decoration-skip-ink-property* which is
+      enabled by default.  https://www.w3.org/TR/css-text-decor/#text-decoration-skip-ink-property */
+
+    animation-duration: 3s;
+    outline-offset: 0.5em;
+}
+html[read|animatedShow]
+read|hyperform       > html|a[read|showsBreadcrumb]
+{
+    animation-name: fadingCrumb; /* As a breadcrumb locator */
 }
 
 
-/* - - -  neon   - - - - - - - - - - - -
- */
-html[read|lighting='neon']
+read|hyperform:hover > html|a,
+read|hyperform       > html|a[read|showsBreadcrumb]
 {
-    --crumbOutlineStyle: dotted;
+    text-decoration-color: var(--hyperlink-color);
+    text-decoration-line: underline; /* [FIB] */
 }
 
 
-/* - - -  paper  - - - - - - - - - - - -
- */
-html[read|lighting='paper']
+read|hyperform       > html|a:not([read|showsBreadcrumb])
 {
-    --crumbOutlineStyle: solid;
+    transition-property: text-decoration-color,    z-index;
+    transition-duration:                  0.2s,         0s;
+    transition-timing-function:       ease-out, step-start;
+    transition-delay:                     0.1s,       1.0s; /* Avoid distracting flash on passing */
+}
+
+
+read|hyperform       > html|a,
+read|hyperform       > read|triggerMark
+{
+    position: relative; /* Enabling *z-index* change on hover */
+    z-index: 0; /* So enabling its *transition*, which the default does not */
+}
+read|hyperform:hover > html|a,
+read|hyperform       > html|a[read|showsBreadcrumb],
+read|hyperform:hover > read|triggerMark
+{
+    z-index: 1; /* Raised clear of the *offWayScreen* */
+}
+
+
+read|hyperform       > read|triggerMark
+{
+    color: var(--hyperlink-color);
 }
 
 
 
-/* ---  J o i n t e r  ---------------------------------------------------------------------------------
+/* ---  R e f e r e n t i a l   j o i n t e r  ---------------------------------------------------------
  */
 
-read|forelinker > a
+read|bitform   > a:not([href^='#']), /* With a target reference in interdocument form */
+read|hyperform > a:not([href^='#'])[cog|link]
+{
+    cursor: url('trigger_cursor/target_out.svg') 13 2, pointer; /* As a directional cue */
+}
+
+
+read|bitform   > a[href^='#'][read|targetDirection='up'], /* Intradocument, target above */
+read|hyperform > a[href^='#'][read|targetDirection='up'][cog|link]
+{
+    cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
+}
+read|bitform   > a[href^='#'][read|targetDirection='down'], /* Target below */
+read|hyperform > a[href^='#'][read|targetDirection='down'][cog|link]
+{
+    cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
+}
+read|bitform   > a[href^='#']:not([read|targetDirection]), /* Target missing */
+read|hyperform > a[href^='#']:not([read|targetDirection])[cog|link]
+{
+    cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
+}
+
+
+
+/* ---  R e f e r e n t i a l   j o i n t e r --  B i t f o r m   p r e s e n t e r  -------------------
+ */
+
+read|bitform > a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
     text-decoration: none; /* Defeat any browser default (Chrome).  Underlines are confusing here.
@@ -383,7 +414,7 @@ read|forelinker > a
 }
 
 
-read|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
+read|bitform > a > preview[class~='singleCharacterContent'] /* [C] */
 {
     display: inline-block; /* Enables *min-width* */
     min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
@@ -392,20 +423,20 @@ read|forelinker > a > preview[class~='singleCharacterContent'] /* [C] */
 
 
 *:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|hasShortName]) >
-read|forelinker > a > br
+read|bitform > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
       then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
 *:not([read|hasPreviewString]):not([read|imaging='absent']) >
-read|forelinker > a > verticalTruncator
+read|bitform > a > verticalTruncator
 {
     margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
 }
 
 
-read|forelinker > a                       > verticalTruncator
+read|bitform > a                       > verticalTruncator
 {
     padding-left: 1em; /* Extra click surface + indentation beneath overlying preview text; VT_PAD_L */
     padding-right: 4em; /* Extra click surface */
@@ -413,56 +444,30 @@ read|forelinker > a                       > verticalTruncator
 }
 
 
-read|forelinker > a:hover                 > verticalTruncator,
-read|forelinker > a[read|showsBreadcrumb] > verticalTruncator
+read|bitform > a:hover                 > verticalTruncator,
+read|bitform > a[read|showsBreadcrumb] > verticalTruncator
 {
     color: var(--hyperlink-color); /* [FIB] */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-read|forelinker > a                       > verticalTruncator > span
+read|bitform > a                       > verticalTruncator > span
 {
     animation-duration: 3s;
     outline-offset: 0.3em;
 }
 html[read|animatedShow]
-read|forelinker > a[read|showsBreadcrumb] > verticalTruncator > span
+read|bitform > a[read|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: fadingCrumb; /* As a breadcrumb locator */
-}
-
-
-/* - - -  directional cueing   - - - - -
- */
-read|forelinker/*bitform*/ > a:not([href^='#']), /* With a target reference in interdocument form */
-read|a       /*hyperform*/ > a:not([href^='#'])[cog|link]
-{
-    cursor: url('trigger_cursor/target_out.svg') 13 2, pointer;
-}
-
-
-read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='up'], /* Intradocument, target above */
-read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='up'][cog|link]
-{
-    cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
-}
-read|forelinker/*bitform*/ > a[href^='#'][read|targetDirection='down'], /* Target below */
-read|a       /*hyperform*/ > a[href^='#'][read|targetDirection='down'][cog|link]
-{
-    cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
-}
-read|forelinker/*bitform*/ > a[href^='#']:not([read|targetDirection]), /* Target missing */
-read|a       /*hyperform*/ > a[href^='#']:not([read|targetDirection])[cog|link]
-{
-    cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
 }
 
 
 /* - - -  neon   - - - - - - - - - - - -
  */
 html[read|lighting='neon'] *[read|imaging]:not(step|*) > eSTag > eQName > eName,
-html[read|lighting='neon'] *[read|imaging] > read|forelinker > a > preview
+html[read|lighting='neon'] *[read|imaging] > read|bitform > a > preview
 {
     color: hsl( var(--subjointImage-hue), 30%, 50% );
 }
@@ -474,18 +479,18 @@ html[read|lighting='neon'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
 }
 
 
-html[read|lighting='neon'] *[read|isBroken] > read|forelinker > a > preview
+html[read|lighting='neon'] *[read|isBroken] > read|bitform > a > preview
 {
     color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
 }
 
 
-html[read|lighting='neon'] read|forelinker > a                       > verticalTruncator
+html[read|lighting='neon'] read|bitform > a                       > verticalTruncator
 {
     opacity: 0.4;
 }
-html[read|lighting='neon'] read|forelinker > a:hover                 > verticalTruncator,
-html[read|lighting='neon'] read|forelinker > a[read|showsBreadcrumb] > verticalTruncator
+html[read|lighting='neon'] read|bitform > a:hover                 > verticalTruncator,
+html[read|lighting='neon'] read|bitform > a[read|showsBreadcrumb] > verticalTruncator
 {
     opacity: 1;
 }
@@ -494,7 +499,7 @@ html[read|lighting='neon'] read|forelinker > a[read|showsBreadcrumb] > verticalT
 /* - - -  paper  - - - - - - - - - - - -
  */
 html[read|lighting='paper'] *[read|imaging] > eSTag > eQName > eName,
-html[read|lighting='paper'] *[read|imaging] > read|forelinker > a > preview
+html[read|lighting='paper'] *[read|imaging] > read|bitform > a > preview
 {
     color: hsl( var(--subjointImage-hue), 100%, 30% );
 }
@@ -506,18 +511,18 @@ html[read|lighting='paper'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
 }
 
 
-html[read|lighting='paper'] *[read|isBroken] > read|forelinker > a > preview
+html[read|lighting='paper'] *[read|isBroken] > read|bitform > a > preview
 {
     color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
 }
 
 
-html[read|lighting='paper'] read|forelinker > a                       > verticalTruncator
+html[read|lighting='paper'] read|bitform > a                       > verticalTruncator
 {
     opacity: 0.2;
 }
-html[read|lighting='paper'] read|forelinker > a:hover                 > verticalTruncator,
-html[read|lighting='paper'] read|forelinker > a[read|showsBreadcrumb] > verticalTruncator
+html[read|lighting='paper'] read|bitform > a:hover                 > verticalTruncator,
+html[read|lighting='paper'] read|bitform > a[read|showsBreadcrumb] > verticalTruncator
 {
     opacity: 1;
 }
