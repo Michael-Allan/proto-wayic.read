@@ -773,6 +773,28 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** @param sbj (Element) A subjoining waybit.
+      * @param sbjID (string) The subjoining waybit's *id* attribute value.
+      * @param sbjDocLoc (string) The location of the subjoint document in normal URL form.
+      * @param leaderReader (LeaderReader) The leader reader to use, if necessary.
+      *
+      * @return (string) The subjoint preview string, or an empty string if there is none.
+      */
+    function makeSubjointPreviewString( sbj, sbjID, sbjDocLoc, leaderReader )
+    {
+        if( sbjID === 'resolve' && sbjDocLoc === ROOT_DOCUMENT_LOCATION ) return '';
+          // Giving no preview string to commitment jointers.  Their special presentation and easy
+          // familiarity to users reduce the need for any description here on the surjoint side.
+          // So the subjoining waybit, which is the resolve waybit, may freely describe itself as such,
+          // e.g. referring to its particular function or presentation on the *sub*joint side.  Such a
+          // description would be inappropriate to replicate in a preview string on the surjoint side.
+
+        leaderReader.read( sbj );
+        return leaderReader.leader;
+    }
+
+
+
     const MALFORMED_PARAMETER = 'Malformed parameter';
 
 
@@ -828,6 +850,15 @@ window.wayic_read_readable = ( function()
       *     @see https://www.w3.org/TR/css-values/#rem
       */
     const REM = emLength( document.documentElement );
+
+
+
+    /** The location of the way root document (string) in normal URL form.
+      *
+      *     @see http://reluk.ca/project/wayic/cast/way_root_document
+      *     @see URIs#normalized
+      */
+    const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
 
 
 
@@ -981,7 +1012,7 @@ window.wayic_read_readable = ( function()
 
           ////////////////////////////////////////////////////////////////////////////  PROPER WAYSCRIPT
 
-            const isDeclaredEmpty = !t.hasChildNodes(); // Tested before inserting any markup
+            const isDeclaredEmpty = !t.hasChildNodes(); // Captured now, before inserting any markup
             const partTransform = new PartTransformC( t );
             if( isBit )
             {
@@ -1048,10 +1079,10 @@ window.wayic_read_readable = ( function()
                 const a = bitform.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 link.hrefTo( a );
                 const sbjWhereabouts = TargetWhereabouts.fromJointer( t, link );
-                let subjointPreviewString;
-                jointing:
+                const sbjDocLocN = sbjWhereabouts.documentLocationN;
+                let previewString;
+                subjoint:
                 {
-                    const sbjDocLocN = sbjWhereabouts.documentLocationN;
                     if( sbjDocLocN.length > 0 ) // Then *t* refers to a separate document
                     {
                         const registration = SurjointFinisher.registerBitformJointer( t,
@@ -1060,35 +1091,35 @@ window.wayic_read_readable = ( function()
                         if( image === null )
                         {
                             partTransform.imaging = 'absent';
-                            subjointPreviewString = '⌚'; // Unicode 231a (watch) = pending symbol
+                            previewString = '⌚'; // Unicode 231a (watch) = pending symbol
                         }
                         else
                         {
                             partTransform.imaging = 'present';
-                            subjointPreviewString = image.leader;
+                            previewString = image.previewString;
                             configureForSubjoint( tNS, tN, linkV, image, partTransform );
                         }
-                        break jointing;
+                        break subjoint;
                     }
 
                     const direction = sbjWhereabouts.direction;
                     if( direction === null ) // Then the joint is broken
                     {
-                        subjointPreviewString = BREAK_SYMBOL;
+                        previewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
-                        break jointing;
+                        break subjoint;
                     }
 
                     // The subjoining waybit is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
                     const sbj = sbjWhereabouts.target;
                     configureForSubjoint( tNS, tN, linkV, sbj, partTransform );
-                    LeaderReader.read( sbj );
-                    subjointPreviewString = LeaderReader.leader;
+                    previewString = makeSubjointPreviewString( sbj, link.subjointID, sbjDocLocN,
+                      LeaderReader );
                 }
                 const preview = a.appendChild( document.createElementNS( NS_READ, 'preview' ));
-                preview.appendChild( document.createTextNode( subjointPreviewString ));
-                configureForSubjointPreview( t, preview, subjointPreviewString );
+                preview.appendChild( document.createTextNode( previewString ));
+                configureForSubjointPreview( t, preview, previewString );
                 a.appendChild( document.createElementNS( NS_HTML, 'br' ));
                 a.appendChild( document.createElementNS( NS_READ, 'verticalTruncator' ))
                  .appendChild( document.createElementNS( NS_HTML, 'span' ))
@@ -3022,18 +3053,18 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a SubjointImage.
           *
-          *     @see #leader
           *     @see #localName
           *     @see #namespaceURI
+          *     @see #previewString
           */
-        constructor( leader, localName, namespaceURI )
+        constructor( localName, namespaceURI, previewString )
         {
-            if( leader === undefined || leader === null
-             || !localName/*[UN]*/ || !namespaceURI/*[UN]*/ ) throw MALFORMED_PARAMETER;
+            if( !localName/*[UN]*/ || !namespaceURI/*[UN]*/
+             || previewString === undefined || previewString === null ) throw MALFORMED_PARAMETER;
 
-            this._leader = leader;
             this._localName = localName;
             this._namespaceURI = namespaceURI;
+            this._previewString = previewString;
         }
 
 
@@ -3046,16 +3077,10 @@ window.wayic_read_readable = ( function()
         {
             if( other === null ) return false;
 
-            return this._leader === other.leader
+            return this._previewString === other.previewString
               && this._localName === other.localName
               && this._namespaceURI === other.namespaceURI;
         }
-
-
-
-        /** @see LeaderReader#leader
-          */
-        get leader() { return this._leader; }
 
 
 
@@ -3068,6 +3093,14 @@ window.wayic_read_readable = ( function()
         /** @see Element#namespaceURI
           */
         get namespaceURI() { return this._namespaceURI; }
+
+
+
+        /** The subjoint preview string, or an empty string if there is none.
+          *
+          *     @see #makeSubjointPreviewString
+          */
+        get previewString() { return this._previewString; }
 
 
     }
@@ -3098,7 +3131,7 @@ window.wayic_read_readable = ( function()
             if( s !== null )
             {
                 const o = JSON.parse( s ); // Yields object form (o) of original image stored
-                try { return new SubjointImage( o._leader, o._localName, o._namespaceURI ); }
+                try { return new SubjointImage( o._localName, o._namespaceURI, o._previewString ); }
 
                 catch( x )
                 {
@@ -3230,7 +3263,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Tells this finisher of a separate document joined to the present document
+        /** Tells this finisher of a separate document joined directly to the present document
           * by a non-bitform jointer.
           *
           *     @param loc (string) The location of the subjoint document in normal URL form.
@@ -3370,12 +3403,12 @@ window.wayic_read_readable = ( function()
                                 continue;
                             }
 
-                            LeaderReader.read( sbj );
-                            const leader = LeaderReader.leader;
+                            const previewString = makeSubjointPreviewString( sbj, id, sbjDocLoc,
+                              LeaderReader );
                             const jN = jointer.localName;
                             const jNResolved = jN === ELEMENT_NAME_UNCHANGED? sbj.localName: jN;
                             const jNS = jointer.namespaceURI;
-                            const image = new SubjointImage( leader, jNResolved, jNS );
+                            const image = new SubjointImage( jNResolved, jNS, previewString );
                             if( image.equals( /*imageWas*/jReg.subjointImage ))
                             {
                               // Affirm the presentation as is
@@ -3389,7 +3422,7 @@ window.wayic_read_readable = ( function()
                             const part2 = new PartTransformC2( jointer );
                             configureForSubjoint( jNS, jN, linkV, sbj, part2 );
                             part2.run();
-                            setSubjointPreview( jointer, leader );
+                            setSubjointPreview( jointer, previewString );
 
                           // Update the image cache
                           // ----------------------
@@ -3450,9 +3483,10 @@ window.wayic_read_readable = ( function()
 
                                   // Pre-cache the image, or re-cache it  † [SIC]
                                   // -------------------
-                                    LeaderReader.read( sbj );
+                                    const previewString = makeSubjointPreviewString( sbj, id, sbjDocLoc,
+                                      LeaderReader );
                                     SubjointImageCache.write( sbjDocLoc + '#' + id,
-                                      new SubjointImage( LeaderReader.leader, jointer.localName, jNS ));
+                                      new SubjointImage( jointer.localName, jNS, previewString ));
                                     // † Any re-caching here is only a side effect, not needed
                                 }
                             });
@@ -3717,15 +3751,6 @@ window.wayic_read_readable = ( function()
          // console.debug( legsOpen.length + '\t\tleg ' + legID ); // TEST
               // Spacing matters here, cf. shutLeg
         }
-
-
-
-        /** The location of the way root document (string) in normal URL form.
-          *
-          *     @see http://reluk.ca/project/wayic/cast/way_root_document
-          *     @see URIs#normalized
-          */
-        const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
 
 
 
