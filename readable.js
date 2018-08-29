@@ -57,7 +57,7 @@
   *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
   *     [travelDelta]    · Travel distance in session history to reach the present entry
   *                        from the last entry of ours that was shown: -N, 0 or N
-  *                        (backward by N entries, reload, or forward by N entries).  [OUR]
+  *                        (backward by N entries, reload, or forward by N entries). [OUR]
   *     [targetDirection] · (only if an element is window targeted) Direction to the targeted element
   *                         (target) from its hyperlink trigger.
   *         Value  Meaning
@@ -108,7 +108,7 @@
   *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
   *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
-  *                         Appears at most on one element.  [BA, FIB]
+  *                         Appears at most on one element. [BA, FIB]
   *     [targetDirection] · Direction to the target (‘up’ or ‘down’) if the link is
   *                         an intradocument link and unbroken (its target exists).
   *
@@ -123,8 +123,8 @@
   *   * (as a) Bitform referential jointer
   *   ------------------------------------
   *     [hasPreviewString] · Has a non-empty subjoint preview string?  [BA]
-  *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on
-  *                          a cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
+  *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on a
+  *                          cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
   *     [isBroken] · Refers to a non-existent subjoining waybit, forming a broken joint?  [BA]
   *     [cog:link] ·
   *
@@ -142,11 +142,8 @@
   *
   *   * (as a) Subjoining waybit
   *   ----------------------------
-  *     [hasSubjoiningPotential] · Iff this attribute is absent, then the answer is ‘no’;
-  *                                else its value is either ‘window targeted’ or ‘window untargeted’.
-  *                                [FT in readable.css]
-  *     [:id]            ·
-  *     [isOrphan]        · Is potentially subjoining, yet referenced by no referential jointer?
+  *     [isSubjoining]   · Either ‘window targeted’ or ‘window untargeted’. [FT in readable.css]
+  *     [:id]             ·
   *     [showsBreadcrumb] · (q.v. under § html:a)
   *
   *     eSTag               ∙ (q.v. under § Wayscript element)
@@ -255,7 +252,7 @@ window.wayic_read_readable = ( function()
       // Processes launched, view may deflect in atypical cases
       // ------------------
         DocumentCachePersistor.start();
-        AlterdocScanner.start();
+        AlldocScanner.start();
         SurjointFinisher.start();
         WayTracer.start();
     };
@@ -1031,7 +1028,7 @@ window.wayic_read_readable = ( function()
           // ================
           // Bitform jointing by element *t*
           // ================
-            const lidV = ( ()=> // Element identifier, non-null if *t* is a potential subjoining waybit
+            const idV = ( ()=> // Element identifier, non-null if *t* is a potential subjoining waybit
             {
                 if( !isBit ) return null;
 
@@ -1054,10 +1051,9 @@ window.wayic_read_readable = ( function()
             })();
             jointer: if( linkV !== null )
             {
-                if( lidV !== null )
+                if( idV !== null )
                 {
-                    tsk( 'A bitform referential jointer with both *id* and *link* attributes: '
-                      + a2s('id',lidV) );
+                    tsk( 'A waybit with both *id* and *link* attributes: ' + a2s('id',idV) );
                     break jointer;
                 }
 
@@ -1164,29 +1160,7 @@ window.wayic_read_readable = ( function()
             }
 
             partTransform.run();
-            if( lidV !== null ) // Then *t* is potentially subjoining
-            {
-                t.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
-                  lidV === Hyperlinkage.windowTargetedID()? 'window targeted':'window untargeted' );
-                t.setAttributeNS( NS_READ, 'isOrphan', 'isOrphan' ); // Till proven otherwise
-                const eSTag = partTransform.eSTag;
-
-              // Inway
-              // -----
-                const inway = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
-                inway.setAttribute( 'class', 'inway' );
-                inway.appendChild( Approaches.newApproach() );
-                const icon = inway.appendChild( document.createElementNS( NS_READ, 'hall' ))
-                                  .appendChild( document.createElementNS( NS_READ, 'icon' ));
-                icon.appendChild( document.createElementNS( NS_HTML, 'span' ))
-                    .appendChild( document.createTextNode( '│' ));
-                      // Unicode 2502 (box drawings light vertical)
-                icon.appendChild( document.createElementNS( NS_READ, 'bullseye' ));
-                Inways.layWhen( inway, eSTag );
-
-              // -----
-                SelfLinkingControl.addControls( eSTag );
-            }
+            if( idV !== null ) SelfHyperlinking.addControls( partTransform.eSTag );
         }
     }
 
@@ -1298,10 +1272,10 @@ window.wayic_read_readable = ( function()
 /// ====================================================================================================
 
 
-   //   A l t e r d o c   S c a n n e r
+   //   A l l d o c   S c a n n e r
 
 
-    /** A scanner of related documents.  It discovers related documents, scans them for references
+    /** A scanner of the present document and all related documents.  It scans each for references
       * to the present document, and updates the form of the present document based on the results.
       * It finishes the presentation of referential joints on the subjoint side (figure right).
       *
@@ -1332,10 +1306,10 @@ window.wayic_read_readable = ( function()
       *
       *     @see SurjointFinisher, it finishes joints on the surjoint side (figure left).
       */
-    const AlterdocScanner = ( function()
+    const AlldocScanner = ( function()
     {
 
-        const expo = {}; // The public interface of AlterdocScanner
+        const expo = {}; // The public interface of AlldocScanner
 
 
 
@@ -1352,24 +1326,6 @@ window.wayic_read_readable = ( function()
 
 
        // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        /** Notes the fact of an unbroken intradocument joint.
-          *
-          *     @param sbj (Element) The joint's subjoining waybit, located within the present document.
-          */
-        function noteJoint( sbj )
-        {
-            if( sbj.interlinkScene ) return; // Already noted
-
-            sbj.interlinkScene = true;
-            const span = asElementNamed( 'span', sbj.firstChild/*eSTag*/
-              .lastChild/*inway*/.lastChild/*hall*/.firstChild/*icon*/.firstChild );
-            const iconicText = span.firstChild;
-            iconicText.replaceData( 0, iconicText.length, '\u{1f78b}' ); // Unicode 1f78b (round target)
-            sbj.removeAttributeNS( NS_READ, 'isOrphan' );
-        }
-
 
 
         /** @param doc (Document) The document to scan, which might be the present document.
@@ -1396,8 +1352,28 @@ window.wayic_read_readable = ( function()
                 sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
                 if( sbjDocLoc !== DOCUMENT_LOCATION ) continue;
 
-                const sbj = document.getElementById( link.subjointID );
-                if( sbj !== null) noteJoint( sbj );
+                const sbjID = link.subjointID;
+                const sbj = document.getElementById( sbjID );
+                if( sbj === null) continue;
+
+              // Finish presentation of referential joint on subjoint side
+              // -------------------
+                if( sbj.interlinkScene ) continue; // Already finished
+
+                sbj.interlinkScene = true;
+                sbj.setAttributeNS( NS_READ, 'isSubjoining',
+                  sbjID === Hyperlinkage.windowTargetedID()? 'window targeted':'window untargeted' );
+                const eSTag = asElementNamed( 'eSTag', sbj.firstChild );
+                const inway = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
+                inway.setAttribute( 'class', 'inway' );
+                inway.appendChild( Approaches.newApproach() );
+                const icon = inway.appendChild( document.createElementNS( NS_READ, 'hall' ))
+                                  .appendChild( document.createElementNS( NS_READ, 'icon' ));
+                icon.appendChild( document.createElementNS( NS_HTML, 'span' ))
+                    .appendChild( document.createTextNode( '\u{1f78b}' ));
+                      // Unicode 1f78b (round target)
+                icon.appendChild( document.createElementNS( NS_READ, 'bullseye' ));
+                Inways.layWhen( inway, eSTag );
             }
         }
 
@@ -2277,9 +2253,9 @@ window.wayic_read_readable = ( function()
             {
                 if( windowTargetedElement === null ) return;
 
-                if( windowTargetedElement.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
+                if( windowTargetedElement.hasAttributeNS( NS_READ, 'isSubjoining' ))
                 {
-                    windowTargetedElement.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
+                    windowTargetedElement.setAttributeNS( NS_READ, 'isSubjoining',
                       'window untargeted' );
                 }
                 windowTargetedElement = null;
@@ -2291,14 +2267,14 @@ window.wayic_read_readable = ( function()
                 if( windowTargetedElement === e ) return;
 
                 if( windowTargetedElement !== null
-                 && windowTargetedElement.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
+                 && windowTargetedElement.hasAttributeNS( NS_READ, 'isSubjoining' ))
                 {
-                    windowTargetedElement.setAttributeNS( NS_READ, 'hasSubjoiningPotential',
+                    windowTargetedElement.setAttributeNS( NS_READ, 'isSubjoining',
                       'window untargeted' );
                 }
-                if( e.hasAttributeNS( NS_READ, 'hasSubjoiningPotential' ))
+                if( e.hasAttributeNS( NS_READ, 'isSubjoining' ))
                 {
-                    e.setAttributeNS( NS_READ, 'hasSubjoiningPotential', 'window targeted' );
+                    e.setAttributeNS( NS_READ, 'isSubjoining', 'window targeted' );
                 }
                 windowTargetedElement = e;
             }
@@ -2945,19 +2921,19 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   S e l f   L i n k i n g   C o n t r o l
+   //   S e l f   H y p e r l i n k i n g
 
 
-    /** Window targeting and scene switching for self hyperlinked subjoining waybits.
+    /** Window targeting for self hyperlinked waybits.
       */
-    const SelfLinkingControl = ( function()
+    const SelfHyperlinking = ( function()
     {
 
-        const expo = {}; // The public interface of SelfLinkingControl
+        const expo = {}; // The public interface of SelfHyperlinking
 
 
 
-        /** Adds controls to a subjoining waybit.
+        /** Adds controls to a waybit.
           *
           *     @param eSTag (Element) The start tag of the waybit.
           */
@@ -2972,6 +2948,8 @@ window.wayic_read_readable = ( function()
           */
         function hearClick/* event handler */( click )
         {
+            // ◉ : Parts below marked ◉ apply only where the clicked waybit is subjoining
+
             const eSTag = click.currentTarget; // Where listening
             const eClicked = click.target;    // What got clicked
 
@@ -2980,14 +2958,14 @@ window.wayic_read_readable = ( function()
           // =====================
             if( eClicked === eSTag ) return; // Start tag element itself, as opposed to a descendant
 
-            const eClickedNS = eClicked.namespaceURI;
+            const eClickedNS = eClicked.namespaceURI; // ◉
             if( eClicked.parentNode === eSTag && eClicked.localName === 'div'
              && eClickedNS === NS_HTML ) return; // Inway element itself, as opposed to a descendant
 
           // ================
-          // Inway *approach* clicked?  Function is scene switching
+          // Inway *approach* clicked?  Function is scene switching  ◉
           // ================
-            const bit = eSTag.parentNode; // Subjoining waybit
+            const bit = eSTag.parentNode; // Waybit
             const windowTargetedElement = Hyperlinkage.windowTargetedElement();
             if( eClickedNS === NS_SVG ) // inway approach
             {
@@ -3003,7 +2981,7 @@ window.wayic_read_readable = ( function()
             }
 
           // ==============================
-          // Inway *hall* or start tag name clicked:  Function is self hyperlinking
+          // Start tag name or inway *hall* (◉) clicked:  Function is self hyperlinking
           // ==============================
             const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
@@ -3253,7 +3231,7 @@ window.wayic_read_readable = ( function()
       * It pre-caches any images that will be needed by directly subjoint documents (all forms of joint)
       * should the user travel to them. [SIC]
       *
-      *     @see AlterdocScanner, it finishes joints on the subjoint side (figure right).
+      *     @see AlldocScanner, it finishes joints on the subjoint side (figure right).
       *     @see SubjointImage
       */
     const SurjointFinisher = ( function()
@@ -3397,7 +3375,8 @@ window.wayic_read_readable = ( function()
                             {
                               // Flag the joint as broken
                               // ------------------------
-                                tsk( 'Broken joint: No such *id* in that document: ' + a2s('link',linkV) );
+                                tsk( 'Broken joint: No such *id* in that document: '
+                                  + a2s('link',linkV) );
                                 setSubjointPreview( jointer, BREAK_SYMBOL );
                                 jointer.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
                                 continue;

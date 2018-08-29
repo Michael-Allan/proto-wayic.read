@@ -481,7 +481,7 @@ html[read|lighting='neon'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
 
 html[read|lighting='neon'] *[read|isBroken] > read|bitform > a > preview
 {
-    color: hsl( 0/*red*/, 80%, 80% ); /* BRIGHT_BREAK */
+    color: hsl( 0/*red*/, 80%, 80% );
 }
 
 
@@ -567,7 +567,8 @@ read|eSTag
 }
 
 
-read|eSTag > eQName[read|isAnonymous] > eName /* Transformed to a mere bullet by readable.jss */
+*:not([id]) read|eSTag > eQName[read|isAnonymous] > eQName /* Transformed by readable.jss
+  to a mere bullet for anonymity, yet not styled with a cursor for (§) self-hyperlinking. */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
@@ -695,16 +696,16 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 
 
-/* ---  S u b j o i n e d   w a y b i t  ---------------------------------------------------------------
+/* ---  S u b j o i n i n g   w a y b i t  -------------------------------------------------------------
  */
 
-[read|hasSubjoiningPotential] > eSTag
+[read|isSubjoining] > eSTag
 {
     position: relative; /* [ECB] */
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway
+[read|isSubjoining] > eSTag > .inway
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -712,25 +713,25 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
+[read|isSubjoining] > eSTag > .inway > svg.approach
 {
     position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach > .edging
+[read|isSubjoining] > eSTag > .inway > svg.approach > .edging
 {
     fill: currentColor;
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > svg.approach > path
+[read|isSubjoining] > eSTag > .inway > svg.approach > path
 {
     stroke: currentColor;
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > hall
+[read|isSubjoining] > eSTag > .inway > hall
 {
     position: absolute;
     top: 0; right: 0;
@@ -740,32 +741,32 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 
 [read|isWaybit]
-[read|hasSubjoiningPotential] > eSTag > .inway > hall /* When it is an underbit */
+[read|isSubjoining] > eSTag > .inway > hall /* When it is an underbit */
 {
     width: 3.5em; /* Wider to better separate from suprabutting content */
 }
 
 
 [read|isWaybit] cog|group >
-[read|hasSubjoiningPotential] > eSTag > .inway > hall /* When also it is a *group* child */
+[read|isSubjoining] > eSTag > .inway > hall /* When also it is a *group* child */
 {
     width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon
+[read|isSubjoining] > eSTag > .inway > hall > icon
 {
     position: relative; /* [ECB] */
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon > span
+[read|isSubjoining] > eSTag > .inway > hall > icon > span
 {
     position: relative; /* Enabling *z-index* change */
 }
 
 
-[read|hasSubjoiningPotential] > eSTag > .inway > hall > icon > bullseye
+[read|isSubjoining] > eSTag > .inway > hall > icon > bullseye
 {
     width: 0; /* Declares no inner content, rather a horizontal position for outer shadowing */
     margin-left: auto;   /* Centered horizontally in the icon,           */
@@ -777,7 +778,7 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|hasSubjoiningPotential]:not([read|isOrphan]) > eSTag > .inway > hall > icon > bullseye
+[read|isSubjoining] > eSTag > .inway > hall > icon > bullseye
 {
     height: 0; /* Declares no inner content, rather a vertical position for outer shadowing */
     margin-top: auto;     /* Centered vertically in the icon,             */
@@ -790,74 +791,40 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|hasSubjoiningPotential][     read|isOrphan]  > eSTag > .inway > hall > icon > bullseye
-{
-    top: 0; height: 100%;
-}
-
-
 /* - - -  neon   - - - - - - - - - - - -
  */
-html[read|lighting='neon'] [read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
+html[read|lighting='neon'] [read|isSubjoining] > eSTag > .inway > svg.approach
 {
     opacity: 0.50;
 }
 
 
-html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway .edging
-{
-    fill:   hsl( 0, 80%, 80% ); /* = BRIGHT_BREAK */
-}
-html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway path
-{
-    stroke: hsl( 0, 80%, 80% );
-}
-html[read|lighting='neon'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway > hall > icon
-{
-    color:  hsl( 0, 80%, 80% );
-}
-
-
 /* - - -  paper  - - - - - - - - - - - -
  */
-html[read|lighting='paper'] [read|hasSubjoiningPotential] > eSTag > .inway > svg.approach
+html[read|lighting='paper'] [read|isSubjoining] > eSTag > .inway > svg.approach
 {
     opacity: 0.30;
 }
 
 
-html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway .edging
-{
-    fill:   hsl( 0, 100%, 40% ); /* = DARK_BREAK */
-}
-html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway path
-{
-    stroke: hsl( 0, 100%, 40% );
-}
-html[read|lighting='paper'] [read|hasSubjoiningPotential][read|isOrphan] > eSTag > .inway > hall > icon
-{
-    color:  hsl( 0, 100%, 40% );
-}
 
-
-
-/* ---  S u b j o i n e d   w a y b i t  --  W i n d o w - t a r g e t e d  ----------------------------
+/* ---  S u b j o i n i n g   w a y b i t  --  W i n d o w - t a r g e t e d  --------------------------
  */
-[read|hasSubjoiningPotential]                     > eSTag > .inway > svg.approach
+[read|isSubjoining]                           > eSTag > .inway > svg.approach
 {
     animation-duration: calc( var(--inflightDuration) + var(--inflightImpactPropagation) * 2 );
     animation-timing-function: step-start;
     display: none;
 }
-[read|hasSubjoiningPotential='window targeted']   > eSTag > .inway > svg.approach
+[read|isSubjoining='window targeted']         > eSTag > .inway > svg.approach
 {
     display: unset; /* Allowing it to show */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach
 {
     animation-name: inflightInwayApproach; /* As a travel target locator */
 }
@@ -871,22 +838,22 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-[read|hasSubjoiningPotential]                     > eSTag > .inway > hall > icon > span
+[read|isSubjoining]                           > eSTag > .inway > hall > icon > span
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: calc( var(--inflightDurationBelow) + var(--inflightImpactPropagation) );
     animation-timing-function: step-start;
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
 {
     animation-name: inflightTarget; /* As a travel target locator */
 }
@@ -900,19 +867,19 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|hasSubjoiningPotential]                     > eSTag > .inway > hall > icon > bullseye
+[read|isSubjoining]                           > eSTag > .inway > hall > icon > bullseye
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: var(--inflightDurationBelow);
     animation-timing-function: /*constants*/step-start,
                              /*perspective*/linear; /* A linear function of distance */
-    opacity: 0.2; /* Dimming the missile while retaining its basic colour, e.g. in the case of orphan.
+    opacity: 0.2; /* Dimming the missile while retaining its basic colour.
       The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
 }
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|hasSubjoiningPotential='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
 {
     animation-name: inflightMissile_constants, /* As travel target locators */
                     inflightMissile_perspective;
@@ -968,30 +935,17 @@ html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='self'] /* ∴ l
 
 
 
-/* ---  S u b j o i n e d   w a y b i t  --  S e l f - h y p e r l i n k i n g  ------------------------
+/* ---  S u b j o i n i n g   w a y b i t  --  S e l f - h y p e r l i n k i n g  ----------------------
  */
 
-[read|hasSubjoiningPotential] > eSTag > .inway > hall,
-[read|hasSubjoiningPotential] > eSTag > eQName
+[read|isSubjoining] > eSTag > .inway > hall
 {
     cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
-      Has click function, as per readable.js SelfLinkingControl handleClick. */
+      Has click function via readable.js SelfHyperlinking handleClick. */
 }
 
 
-[read|hasSubjoiningPotential]                       > eSTag > eQName
-{
-    animation-duration: 3s;
-    outline-offset: 0.3em;
-}
-html[read|animatedShow]
-[read|hasSubjoiningPotential][read|showsBreadcrumb] > eSTag > eQName
-{
-    animation-name: fadingCrumb; /* As a breadcrumb locator */
-}
-
-
-[read|hasSubjoiningPotential] > eSTag:hover > .inway > hall > icon > span
+[read|isSubjoining] > eSTag:hover > .inway > hall > icon > span
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
@@ -1005,19 +959,19 @@ html[read|lighting='neon']
 }
 
 
-html[read|lighting='neon']  [read|hasSubjoiningPotential]                   > eSTag
+html[read|lighting='neon']  [read|isSubjoining]                   > eSTag
 > .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='neon']  [read|hasSubjoiningPotential]                   > eSTag:hover
+html[read|lighting='neon']  [read|isSubjoining]                   > eSTag:hover
 > .inway icon > span
 {
     opacity: 0.7;
 }
-html[read|lighting='neon']  [read|hasSubjoiningPotential='window targeted'] > eSTag
+html[read|lighting='neon']  [read|isSubjoining='window targeted'] > eSTag
 > .inway icon > span,
-html[read|lighting='neon']  [read|hasSubjoiningPotential='window targeted'] > eSTag:hover
+html[read|lighting='neon']  [read|isSubjoining='window targeted'] > eSTag:hover
 > .inway icon > span                                   /* [FT] */
 {
     opacity: 1;
@@ -1032,19 +986,19 @@ html[read|lighting='paper']
 }
 
 
-html[read|lighting='paper'] [read|hasSubjoiningPotential]                   > eSTag
+html[read|lighting='paper'] [read|isSubjoining]                   > eSTag
 > .inway icon > span
 {
     opacity: var(--iconicOpacity);
 }
-html[read|lighting='paper'] [read|hasSubjoiningPotential]                   > eSTag:hover
+html[read|lighting='paper'] [read|isSubjoining]                   > eSTag:hover
 > .inway icon > span
 {
     opacity: 0.5;
 }
-html[read|lighting='paper'] [read|hasSubjoiningPotential='window targeted'] > eSTag
+html[read|lighting='paper'] [read|isSubjoining='window targeted'] > eSTag
 > .inway icon > span,
-html[read|lighting='paper'] [read|hasSubjoiningPotential='window targeted'] > eSTag:hover
+html[read|lighting='paper'] [read|isSubjoining='window targeted'] > eSTag:hover
 > .inway icon > span                                   /* [FT] */
 {
     opacity: 1;
@@ -1088,6 +1042,26 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
 {
     filter: contrast(1.4);
     font-weight: bold;
+}
+
+
+
+/* ---  W a y b i t  --  S e l f - h y p e r l i n k i n g  --------------------------------------------
+ */
+
+[id]                       > eSTag > eQName
+{
+    animation-duration: 3s;
+    cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
+      Has click function via readable.js SelfHyperlinking handleClick. */
+    outline-offset: 0.3em;
+}
+
+
+html[read|animatedShow]
+[id][read|showsBreadcrumb] > eSTag > eQName
+{
+    animation-name: fadingCrumb; /* As a breadcrumb locator */
 }
 
 
@@ -1138,15 +1112,15 @@ eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is fo
  *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
  *
- *             [read|hasSubjoiningPotential='window targeted']
+ *             [read|isSubjoining='window targeted']
  *
  *         Instead of the proper form:
  *
- *             [read|hasSubjoiningPotential]:target
+ *             [read|isSubjoining]:target
  *
  *         The proper form was seen to fail on Chrome 65.0.  It failed during relatively fast
  *         (∼1 s interval) back-and-forth travel.  Otherwise no workaround would be necessary
- *         and attribute *hasSubjoiningPotential* would need only a boolean value [BA in readable.js].
+ *         and attribute *isSubjoining* would need only a boolean value [BA in readable.js].
  *
  *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
  *         “general sibling combinator” is really rather particular in its application, in that it
