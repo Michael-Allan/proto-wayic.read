@@ -161,9 +161,9 @@ html|body > read|offWayScreen
 }
 
 
-
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon']
 {
     --textLight: 80%; /* Bright text, yet allowing brighter effects elsewhere */
@@ -179,6 +179,7 @@ html[read|lighting='neon'] > html|body > read|offWayScreen
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper']
 {
     --textLight: 7%; /* Dark text, yet allowing darker effects elsewhere */
@@ -211,6 +212,7 @@ html|a[href]
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon']
 {
     --hyperlink-color: hsl( 190/*∼cyan*/, 100%, 60% );
@@ -219,6 +221,7 @@ html[read|lighting='neon']
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper']
 {
     --hyperlink-color: hsl( 240/*blue*/, 100%, 50% );
@@ -241,6 +244,7 @@ html[read|lighting='paper']
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon']
 {
     --crumbOutlineStyle: dotted;
@@ -249,6 +253,7 @@ html[read|lighting='neon']
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper']
 {
     --crumbOutlineStyle: solid;
@@ -293,6 +298,7 @@ cog|group > eSTag > eQName > ePrefix
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon'] cog|group
 {
     border-color: hsla( 0, 0%, 100%, 0.35 );
@@ -304,6 +310,7 @@ html[read|lighting='neon'] cog|group
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper'] cog|group
 {
     border-color: hsla( 0, 0%, 0%, 0.25 );
@@ -466,6 +473,7 @@ read|bitform > a[read|showsBreadcrumb] > verticalTruncator > span
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon'] *[read|imaging]:not(step|*) > eSTag > eQName > eName,
 html[read|lighting='neon'] *[read|imaging] > read|bitform > a > preview
 {
@@ -498,6 +506,7 @@ html[read|lighting='neon'] read|bitform > a[read|showsBreadcrumb] > verticalTrun
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper'] *[read|imaging] > eSTag > eQName > eName,
 html[read|lighting='paper'] *[read|imaging] > read|bitform > a > preview
 {
@@ -602,6 +611,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|te
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon']
 step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
@@ -611,6 +621,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|te
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper']
 step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
@@ -651,6 +662,7 @@ step|* > eSTag > eQName[read|isAnonymous] > ePrefix:not([read|isAnonymous]) + eN
 
 /* - - -  neon   - - - - - - - - - - - -
  */
+
 html[read|lighting='neon'] step|* > eSTag
 {
      margin-top:    0.20em; /* NEO_ST_MARG_T */
@@ -674,6 +686,7 @@ html[read|lighting='neon'] step|*[read|imaging] > eSTag > eQName
 
 /* - - -  paper  - - - - - - - - - - - -
  */
+
 html[read|lighting='paper'] step|* > eSTag
 {
      margin-top:    0.10em; /* PAP_ST_MARG_T */
@@ -695,7 +708,6 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 
 
 
-
 /* ---  S u b j o i n i n g   w a y b i t  -------------------------------------------------------------
  */
 
@@ -705,7 +717,7 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isSubjoining] > eSTag > .inway
+.inway
 {
     position: absolute; top: 0; /* Further placement deferred to readable.js */
     visibility: hidden; /* Avoiding FOUC.  readable.js reverts this after laying out the content.
@@ -713,118 +725,29 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 }
 
 
-[read|isSubjoining] > eSTag > .inway > svg.approach
-{
-    position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
-}
-
-
-[read|isSubjoining] > eSTag > .inway > svg.approach > .edging
-{
-    fill: currentColor;
-}
-
-
-[read|isSubjoining] > eSTag > .inway > svg.approach > path
-{
-    stroke: currentColor;
-}
-
-
-[read|isSubjoining] > eSTag > .inway > hall
-{
-    position: absolute;
-    top: 0; right: 0;
-    width: 2.0rem; /* HALL_W.  It determines the visual gap between the left-aligned content
-      of the hall and that of the tag name to its right. */
-}
-
-
-[read|isWaybit]
-[read|isSubjoining] > eSTag > .inway > hall /* When it is an underbit */
-{
-    width: 3.5em; /* Wider to better separate from suprabutting content */
-}
-
-
-[read|isWaybit] cog|group >
-[read|isSubjoining] > eSTag > .inway > hall /* When also it is a *group* child */
-{
-    width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
-}
-
-
-[read|isSubjoining] > eSTag > .inway > hall > icon
-{
-    position: relative; /* [ECB] */
-}
-
-
-[read|isSubjoining] > eSTag > .inway > hall > icon > span
-{
-    position: relative; /* Enabling *z-index* change */
-}
-
-
-[read|isSubjoining] > eSTag > .inway > hall > icon > bullseye
-{
-    width: 0; /* Declares no inner content, rather a horizontal position for outer shadowing */
-    margin-left: auto;   /* Centered horizontally in the icon,           */
-    margin-right: auto; /* as enabled by the Janus facing below. */
-    left: 0; right: 0; /* Janus faced to enable horizontal centering by 'auto' margins left and right,
-      https://www.w3.org/TR/css-position-3/#abs-non-replaced-width */
-
-    position: absolute;
-}
-
-
-[read|isSubjoining] > eSTag > .inway > hall > icon > bullseye
-{
-    height: 0; /* Declares no inner content, rather a vertical position for outer shadowing */
-    margin-top: auto;     /* Centered vertically in the icon,             */
-    margin-bottom: auto; /* as enabled by the Janus facing below. */
-    top: 0; bottom: 0; /* Janus faced to enable vertical centering by 'auto' margins top and bottom,
-      https://www.w3.org/TR/css-position-3/#abs-non-replaced-height */
-
-    border: 0.5px/* = BBW */ solid transparent; /* Actualized only to enable effect of border-radius */
-    border-radius: 50%; /* Rounding fully to force the animated shadow into a circular form */
-}
-
-
-/* - - -  neon   - - - - - - - - - - - -
- */
-html[read|lighting='neon'] [read|isSubjoining] > eSTag > .inway > svg.approach
-{
-    opacity: 0.50;
-}
-
-
-/* - - -  paper  - - - - - - - - - - - -
- */
-html[read|lighting='paper'] [read|isSubjoining] > eSTag > .inway > svg.approach
-{
-    opacity: 0.30;
-}
-
-
-
-/* ---  S u b j o i n i n g   w a y b i t  --  W i n d o w - t a r g e t e d  --------------------------
- */
-[read|isSubjoining]                           > eSTag > .inway > svg.approach
+.inway > svg.approach
 {
     animation-duration: calc( var(--inflightDuration) + var(--inflightImpactPropagation) * 2 );
     animation-timing-function: step-start;
     display: none;
+    position: absolute; top: 0; left: 0; /* [HSP] Sizing deferred to readable.js */
 }
-[read|isSubjoining='window targeted']         > eSTag > .inway > svg.approach
+
+
+[read|isSubjoining='window targeted']         > eSTag >
+.inway > svg.approach
 {
     display: unset; /* Allowing it to show */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
+
+
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > svg.approach,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > svg.approach
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > svg.approach
 {
     animation-name: inflightInwayApproach; /* As a travel target locator */
 }
@@ -838,22 +761,121 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
+.inway > svg.approach > .edging
 {
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    fill: currentColor;
 }
 
 
-[read|isSubjoining]                           > eSTag > .inway > hall > icon > span
+.inway > svg.approach > path
+{
+    stroke: currentColor;
+}
+
+
+.inway > hall
+{
+    cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
+      For self-hyperlinking, as per function *handleClick* in readable.js SelfHyperlinking */
+
+    position: absolute;
+    top: 0; right: 0;
+    width: 2.0rem; /* HALL_W.  It determines the visual gap between the left-aligned content
+      of the hall and that of the tag name to its right. */
+}
+
+
+[read|isWaybit]
+[read|isWaybit] > eSTag >  /* When it is an underbit */
+.inway > hall
+{
+    width: 3.5em; /* Wider to better separate from suprabutting content */
+}
+
+
+[read|isWaybit] cog|group >
+[read|isWaybit] > eSTag >  /* When also it is a *group* child */
+.inway > hall
+{
+    width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
+}
+
+
+html
+{
+    --inflightDurationAbove: 0.1s; /* Duration of missile flight from start to flyby,
+        when it passes the user and becomes visible.  This is rest time for the browser,
+        avoiding a balky start to the animation. */
+    --inflightDurationBelow: 0.4s; /* Duration of missile flight from flyby till impact */
+    --inflightDuration: calc( var(--inflightDurationAbove) + var(--inflightDurationBelow) );
+    --inflightImpactPropagation: 0.1s; /* Time till effect of impact first becomes visible */
+}
+
+
+/* - - -  neon   - - - - - - - - - - - -
+ */
+
+html[read|lighting='neon'] .inway > svg.approach
+{
+    opacity: 0.50;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+
+html[read|lighting='paper'] .inway > svg.approach
+{
+    opacity: 0.30;
+}
+
+
+
+/* ---  S u b j o i n i n g   w a y b i t  --  I c o n  ------------------------------------------------
+ */
+
+.inway > hall > icon
+{
+    position: relative; /* [ECB] */
+}
+
+
+.inway > hall > icon > span
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: calc( var(--inflightDurationBelow) + var(--inflightImpactPropagation) );
     animation-timing-function: step-start;
+    opacity: var(--iconicOpacity);
+    position: relative; /* Enabling *z-index* change */
 }
+eSTag:hover > /* For self-hyperlinking */
+.inway > hall > icon > span
+{
+    opacity: var(--iconicOpacity-hover);
+    z-index: 1; /* Raised clear of the *offWayScreen* */
+}
+
+
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > hall > icon > span
+{
+    z-index: 1; /* Raised clear of the *offWayScreen* */
+}
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag       >
+.inway > hall > icon > span,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag:hover >
+.inway > hall > icon > span
+{
+    opacity: var(--iconicOpacity-windowTargeted);
+}
+
+
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > hall > icon > span,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > span
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > hall > icon > span
 {
     animation-name: inflightTarget; /* As a travel target locator */
 }
@@ -867,19 +889,58 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|isSubjoining]                           > eSTag > .inway > hall > icon > bullseye
+/* - - -  neon   - - - - - - - - - - - -
+ */
+
+html[read|lighting='neon']
+{
+    --iconicOpacity: 0.25;
+    --iconicOpacity-hover: 0.70; /* For self-hyperlinking */
+    --iconicOpacity-windowTargeted: 1.00;
+}
+
+
+/* - - -  paper  - - - - - - - - - - - -
+ */
+
+html[read|lighting='paper']
+{
+    --iconicOpacity: 0.15;
+    --iconicOpacity-hover: 0.50; /* For self-hyperlinking */
+    --iconicOpacity-windowTargeted: 1.00;
+}
+
+
+
+/* ---  S u b j o i n i n g   w a y b i t  --  I c o n i c   b u l l s e y e  --------------------------
+ */
+
+.inway > hall > icon > bullseye
 {
     animation-delay: var(--inflightDurationAbove);
     animation-duration: var(--inflightDurationBelow);
     animation-timing-function: /*constants*/step-start,
                              /*perspective*/linear; /* A linear function of distance */
+    border: 0.5px/* = BBW */ solid transparent; /* Actualized only to enable effect of border-radius */
+    border-radius: 50%; /* Rounding fully to force the animated shadow into a circular form */
     opacity: 0.2; /* Dimming the missile while retaining its basic colour.
       The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
+
+    position: absolute;
+    width: 0; height: 0; /* Declares no inner content, rather a position for outer shadowing. */
+    margin: auto; /* Centered in the icon as enabled by the Janus faced positioning below.   */
+    left: 0; right: 0;  /* Janus faced to enable centering by 'auto' margins,               */
+    top: 0; bottom: 0; /* https://www.w3.org/TR/css-position-3/#abs-non-replaced-width     */
 }
+
+
+
 html[read|animatedShow][read|travelDelta='0'] /* Reload */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye,
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > hall > icon > bullseye,
 html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
-[read|isSubjoining='window targeted']/*[FT]*/ > eSTag > .inway > hall > icon > bullseye
+[read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
+.inway > hall > icon > bullseye
 {
     animation-name: inflightMissile_constants, /* As travel target locators */
                     inflightMissile_perspective;
@@ -900,14 +961,9 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
+
 html
 {
-    --inflightDurationAbove: 0.1s; /* Duration of missile flight from start to flyby,
-        when it passes the user and becomes visible.  This is rest time for the browser,
-        avoiding a balky start to the animation. */
-    --inflightDurationBelow: 0.4s; /* Duration of missile flight from flyby till impact */
-    --inflightDuration: calc( var(--inflightDurationAbove) + var(--inflightDurationBelow) );
-    --inflightImpactPropagation: 0.1s; /* Time till effect of impact first becomes visible */
     --inflightSpread: 5rem; /* Apparent size of missile at flight start */
     --triggerX: 0; /* Apparent position of hyperlink trigger relative to bullseye */
     --triggerY: -0.5px; /* [VCB] */
@@ -931,77 +987,6 @@ html:not(/*reload*/[read|travelDelta='0'])[read|targetDirection='self'] /* ∴ l
 {
     --triggerX: calc(  0.6 * var(--inflightSpread) );
     --triggerY: -0.5px; /* [VCB] */
-}
-
-
-
-/* ---  S u b j o i n i n g   w a y b i t  --  S e l f - h y p e r l i n k i n g  ----------------------
- */
-
-[read|isSubjoining] > eSTag > .inway > hall
-{
-    cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
-      Has click function via readable.js SelfHyperlinking handleClick. */
-}
-
-
-[read|isSubjoining] > eSTag:hover > .inway > hall > icon > span
-{
-    z-index: 1; /* Raised clear of the *offWayScreen* */
-}
-
-
-/* - - -  neon   - - - - - - - - - - - -
- */
-html[read|lighting='neon']
-{
-    --iconicOpacity: 0.25;
-}
-
-
-html[read|lighting='neon']  [read|isSubjoining]                   > eSTag
-> .inway icon > span
-{
-    opacity: var(--iconicOpacity);
-}
-html[read|lighting='neon']  [read|isSubjoining]                   > eSTag:hover
-> .inway icon > span
-{
-    opacity: 0.7;
-}
-html[read|lighting='neon']  [read|isSubjoining='window targeted'] > eSTag
-> .inway icon > span,
-html[read|lighting='neon']  [read|isSubjoining='window targeted'] > eSTag:hover
-> .inway icon > span                                   /* [FT] */
-{
-    opacity: 1;
-}
-
-
-/* - - -  paper  - - - - - - - - - - - -
- */
-html[read|lighting='paper']
-{
-    --iconicOpacity: 0.15;
-}
-
-
-html[read|lighting='paper'] [read|isSubjoining]                   > eSTag
-> .inway icon > span
-{
-    opacity: var(--iconicOpacity);
-}
-html[read|lighting='paper'] [read|isSubjoining]                   > eSTag:hover
-> .inway icon > span
-{
-    opacity: 0.5;
-}
-html[read|lighting='paper'] [read|isSubjoining='window targeted'] > eSTag
-> .inway icon > span,
-html[read|lighting='paper'] [read|isSubjoining='window targeted'] > eSTag:hover
-> .inway icon > span                                   /* [FT] */
-{
-    opacity: 1;
 }
 
 
@@ -1114,11 +1099,11 @@ html[read|animatedShow]
  *
  *             [read|isSubjoining='window targeted']
  *
- *         Instead of the proper form:
+ *         Instead of the standard form:
  *
  *             [read|isSubjoining]:target
  *
- *         The proper form was seen to fail on Chrome 65.0.  It failed during relatively fast
+ *         The standard form was seen to fail on Chrome 65.0.  It failed during relatively fast
  *         (∼1 s interval) back-and-forth travel.  Otherwise no workaround would be necessary
  *         and attribute *isSubjoining* would need only a boolean value [BA in readable.js].
  *
