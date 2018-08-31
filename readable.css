@@ -842,8 +842,7 @@ html[read|lighting='paper'] .inway > svg.approach
 
 .inway > hall > icon > span
 {
-    animation-delay: var(--inflightDurationAbove);
-    animation-duration: calc( var(--inflightDurationBelow) + var(--inflightImpactPropagation) );
+    animation-duration: var(--inflightDuration);
     animation-timing-function: step-start;
     opacity: var(--iconicOpacity);
     position: relative; /* Enabling *z-index* change */
