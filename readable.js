@@ -109,8 +109,8 @@
   *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
   *                         Appears at most on one element. [BA, FIB]
-  *     [targetDirection] · Direction to the target (‘up’ or ‘down’) if the link is
-  *                         an intradocument link and unbroken (its target exists).
+  *     [targetDirection] · Direction to the target: one of 'self', ‘up’ or ‘down’ (see § html:html).
+  *                         Present only for a complete (target exists) intradocument hyperlink.
   *
   *
   *   hyperform, presenter of a referential jointer or a generic hyperlink trigger (both take this form)
@@ -125,7 +125,8 @@
   *     [hasPreviewString] · Has a non-empty subjoint preview string?  [BA]
   *     [imaging]          · Indicates a form that might yet change.  Meantime it is either based on a
   *                          cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
-  *     [isBroken] · Refers to a non-existent subjoining waybit, forming a broken joint?  [BA]
+  *     [isBroken] · Forms a broken joint, referring to a subjoining waybit that is either non-existent
+  *                  (yielding an incomplete joint) or itself a jointer (yielding a double joint)?  [BA]
   *     [cog:link] ·
   *
   *     eSTag                  ∙ (q.v. under § Wayscript element)
@@ -156,8 +157,8 @@
   *                 svg:path     ∙ Path
   *             hall             ∙
   *                 icon          ∙ Subjoining waybit icon
-  *                     html:span ∙ Holder of main content
-  *                     bullseye  ∙ Dimensionless point centered on icon
+  *                     html:span ∙ Holder of main iconic content
+  *                     bullseye  ∙ Iconic bullseye, a dimensionless point centered on the icon
   *
   *
   * NOTES  (continued at bottom)
@@ -383,31 +384,36 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Returns a message that the given URI is not in normal form.
-          */
-        expo.message_abnormal = function( uri ) { return 'Not in normal form: ' + uri; };
-
-
-
-        /** Puts the given URI reference through the browser's hyperlink *href* parser,
-          * thus converting any relative path to an absolute path (by resolving it against
-          * the location of the present document) and otherwise normalizing its form.
-          * Returns the normalized form.
+        /** Returns a message (string) that the given URI reference is not in normal form.
           *
-          *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          *     @param ref (string)
+          *     @see #normalized
+          */
+        expo.makeMessage_abnormal = function( ref ) { return 'Not in normal form: ' + ref; };
+          // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+
+
+
+        /** Returns the full form, normalized equivalent of the given URI reference.
+          *
+          *     @param ref (string) The URI reference.
+          *       See https://tools.ietf.org/html/rfc3986#section-4.1, URI-reference
+          *     @return (string)
           */
         expo.normalized = function( ref )
         {
             // Modified from Matt Mastracci.
             // https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript/
+            // Changing?  partly sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
             //
-            // Apparently this cannot be adapted for use with other documents, to normalize their own,
+            // Puts *ref* through the browser's hyperlink *href* parser, resolving it
+            // against the present document location and otherwise normalizing its form.
+            //
+            // Apparently this cannot be adapted for use with other documents to normalize their own,
             // internally encoded references.  At least it fails when an equivalent function is
             // constructed (with parser element, etc.) against another document obtained through the
             // DocumentCache reading facility.  Then the *href* always yields the *undefined* value.
-            //
-            // FIX by moving to the more robust method of wayics.lex.
-            // http://reluk.ca/project/wayic/lex/_/reader.js
+            // FIX by moving to the more robust method of wayics.lex reader.js, (q.v. linked above)
 
             const div = hrefParserDiv;
             div.firstChild.href = ref; // Escaping ref en passant
@@ -736,6 +742,31 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** If *referent* has a *link* attribute of its own, then this function reports *linkV*
+      * as double jointing and returns true; else it reports nothing and returns false.
+      *
+      *     @param linkV (string) The value of a *link* attribute from a jointer.
+      *     @param referent (Element) The referent of the *link* attribute,
+      */
+    function isReportedAsDoubleJointing( linkV, referent )
+    {
+        if( referent.hasAttributeNS( NS_COG, 'link' ))
+        {
+            tsk( 'Double jointing reference, jointer to jointer: ' + a2s('link',linkV) );
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+    /** Whether it appears that the user would be unable to correct faults in this program.
+      */
+    const isUserNonProgrammer = !wasRequestFileSchemed;
+
+
+
     /** Returns the last descendant of the given node, or null if the node is empty.
       *
       *     @see #toLastDescendant
@@ -745,12 +776,6 @@ window.wayic_read_readable = ( function()
         do { node = node.lastChild } while( node.hasChildNodes() );
         return node;
     }
-
-
-
-    /** Whether it appears that the user would be unable to correct faults in this program.
-      */
-    const isUserNonProgrammer = !wasRequestFileSchemed;
 
 
 
@@ -767,6 +792,20 @@ window.wayic_read_readable = ( function()
 
         return sP.Breadcrumbs === undefined;
     })();
+
+
+
+    /** Returns a message (string) that *linkV* yields an incomplete joint because its referent
+      * is nowhere in the indicated document.
+      *
+      *     @param docIndication (string) Either "this document" or "that document" depending on
+      *       which is referred by *linkV*.
+      *     @param linkV (string) The value of a *link* attribute from a jointer.
+      */
+    function makeMessage_incompleteJointTo( docIndication, linkV )
+    {
+        return 'Incomplete joint: No such *id* in ' + docIndication + ': ' + a2s('link',linkV);
+    }
 
 
 
@@ -863,6 +902,18 @@ window.wayic_read_readable = ( function()
       */
     const SESSION_STRINGIFY_SPACING = 1; /* Improving the readability of stored content at little cost,
       given that the session's storage space is practically unbounded. */
+
+
+
+    const TARGET_SELF = 'self';
+
+    const TARGET_UP   = 'up';
+
+    const TARGET_DOWN = 'down';
+
+    const TARGET_IN   = 'in';
+
+    const TARGET_OUT  = 'out';
 
 
 
@@ -970,7 +1021,7 @@ window.wayic_read_readable = ( function()
                     if( linkV !== null )
                     {
                         tsk( 'An *a* element with both *href* and *link* attributes: '
-                          + a2s('href',href) + ', ' + a2s('link',link) );
+                          + a2s('href',href) + ', ' + a2s('link',linkV) );
                     }
                     if( href.startsWith( '/' )) t.setAttribute( 'href', href = CAST_BASE_REF + href );
                       // Translating waycast space → universal space
@@ -985,13 +1036,27 @@ window.wayic_read_readable = ( function()
                         break hyperlinkage;
                     }
 
+                    const whereabouts = TargetWhereabouts.fromJointer( t, link );
+                    const target = whereabouts.target;
+                    if( target === null ) // Then hyperlink target is not in present document
+                    {
+                        const sbjDocLocN = whereabouts.documentLocationN;
+                        if( sbjDocLocN.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocLocN );
+                        // Else jointer *t* yields a broken (because incomplete) intradocument joint
+                    }
+                    else if( isReportedAsDoubleJointing( link.value, target ))
+                    {
+                        t.removeAttributeNS( NS_COG, 'link' ); /* Anulling the broken (because double)
+                          joint declaration to present the would-be jointer *t* instead as a generic
+                          (yet unbroken) hyperlink. */
+                    }
+                    else // Jointer *t* forms an intradocument joint
+                    {
+                        const direction = whereabouts.direction;
+                        console.assert( direction !== null, A );
+                        t.setAttributeNS( NS_READ, 'targetDirection', direction );
+                    }
                     link.hrefTo( t );
-                    const sbjWhereabouts = TargetWhereabouts.fromJointer( t, link );
-                    const direction = sbjWhereabouts.direction;
-                    if( direction !== null ) t.setAttributeNS( NS_READ, 'targetDirection', direction );
-                    const sbjDocLocN = sbjWhereabouts.documentLocationN;
-                    if( sbjDocLocN.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocLocN );
-                      // Else jointer *t* forms an intradocument joint
                 }
 
               // Hyperform
@@ -1051,12 +1116,6 @@ window.wayic_read_readable = ( function()
             })();
             jointer: if( linkV !== null )
             {
-                if( idV !== null )
-                {
-                    tsk( 'A waybit with both *id* and *link* attributes: ' + a2s('id',idV) );
-                    break jointer;
-                }
-
                 if( !isDeclaredEmpty )
                 {
                     tsk( 'A bitform referential jointer with content: ' + a2s('link',linkV) );
@@ -1079,7 +1138,7 @@ window.wayic_read_readable = ( function()
                 let previewString;
                 subjoint:
                 {
-                    if( sbjDocLocN.length > 0 ) // Then *t* refers to a separate document
+                    if( sbjDocLocN.length > 0 ) // Then jointer *t* refers to a separate document
                     {
                         const registration = SurjointFinisher.registerBitformJointer( t,
                           link.subjointID, sbjDocLocN );
@@ -1099,7 +1158,7 @@ window.wayic_read_readable = ( function()
                     }
 
                     const direction = sbjWhereabouts.direction;
-                    if( direction === null ) // Then the joint is broken
+                    if( direction === null ) // Then jointer *t* yields an incomplete joint
                     {
                         previewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
@@ -1109,6 +1168,13 @@ window.wayic_read_readable = ( function()
                     // The subjoining waybit is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
                     const sbj = sbjWhereabouts.target;
+                    if( isReportedAsDoubleJointing( link.value, sbj )) // Then it yields a double joint
+                    {
+                        previewString = BREAK_SYMBOL;
+                        t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
+                        break subjoint;
+                    }
+
                     configureForSubjoint( tNS, tN, linkV, sbj, partTransform );
                     previewString = makeSubjointPreviewString( sbj, link.subjointID, sbjDocLocN,
                       LeaderReader );
@@ -1360,13 +1426,23 @@ window.wayic_read_readable = ( function()
               // -------------------
                 if( sbj.interlinkScene ) continue; // Already finished
 
+                if( sbj.hasAttributeNS( NS_COG, 'link' ) )
+                {
+                    if( doc !== document ) // Else let *isReportedAsDoubleJointing* issue the report
+                    {
+                        console.info( 'Ignoring a double jointing reference to jointer #' + sbjID
+                          + ' by a jointer in document ' + docLoc );
+                    }
+                    continue;
+                }
+
                 sbj.interlinkScene = true;
                 sbj.setAttributeNS( NS_READ, 'isSubjoining',
                   sbjID === Hyperlinkage.windowTargetedID()? 'window targeted':'window untargeted' );
                 const eSTag = asElementNamed( 'eSTag', sbj.firstChild );
                 const inway = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
                 inway.setAttribute( 'class', 'inway' );
-                inway.appendChild( Approaches.newApproach() );
+                inway.appendChild( Approaches.makeApproach() );
                 const icon = inway.appendChild( document.createElementNS( NS_READ, 'hall' ))
                                   .appendChild( document.createElementNS( NS_READ, 'icon' ));
                 icon.appendChild( document.createElementNS( NS_HTML, 'span' ))
@@ -1408,15 +1484,9 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The smallest width in which an *approach* can correctly draw itself.
-          */
-        expo.minimumWidth = function() { return MIN_WIDTH; };
-
-
-
         /** Constructs an inway *approach*.
           */
-        expo.newApproach = function()
+        expo.makeApproach = function()
         {
             const approach = document.createElementNS( NS_SVG, 'svg' );
             approach.setAttribute( 'class', 'approach' );
@@ -1433,6 +1503,12 @@ window.wayic_read_readable = ( function()
             approach.appendChild( document.createElementNS( NS_SVG, 'path' )); // Approach path
             return approach;
         };
+
+
+
+        /** The smallest width in which an *approach* can correctly draw itself.
+          */
+        expo.minimumWidth = function() { return MIN_WIDTH; };
 
 
 
@@ -1704,18 +1780,18 @@ window.wayic_read_readable = ( function()
                     if( windowTargetedElement === null ) return null;
 
                     const previousStop = travelStops[travel-1];
-                    if( previousStop === undefined ) return 'out';
+                    if( previousStop === undefined ) return TARGET_OUT;
 
                     const trigger = previousStop.trigger;
-                    if( trigger === null )  return 'in';
+                    if( trigger === null )  return TARGET_IN;
 
-                    if( trigger === windowTargetedElement ) return 'self';
+                    if( trigger === windowTargetedElement ) return TARGET_SELF;
 
                     const dP = trigger.compareDocumentPosition( windowTargetedElement );
-                    if( dP & DOCUMENT_POSITION_PRECEDING ) return 'up';
+                    if( dP & DOCUMENT_POSITION_PRECEDING ) return TARGET_UP;
 
                     console.assert( dP & DOCUMENT_POSITION_FOLLOWING, A );
-                    return 'down';
+                    return TARGET_DOWN;
                 })();
                 history.replaceState( state, /*no title*/'' );
             }
@@ -1952,7 +2028,7 @@ window.wayic_read_readable = ( function()
           */
         expo.readNowOrLater = function( docLoc, reader )
         {
-            if( URIs.isDetectedAbnormal( docLoc )) throw URIs.message_abnormal( docLoc );
+            if( URIs.isDetectedAbnormal( docLoc )) throw URIs.makeMessage_abnormal( docLoc );
 
             let entry = entryMap.get( docLoc );
             if( entry !== undefined ) // Then the document was already requested
@@ -2720,7 +2796,10 @@ window.wayic_read_readable = ( function()
         /** Sets on the given element an *href* attribute that refers to the same subjoining waybit
           * as this *link* attribute.
           */
-        hrefTo( el ) { el.setAttribute( 'href', this._subjointDocumentLocation + '#' + this._subjointID ); }
+        hrefTo( el )
+        {
+            el.setAttribute( 'href', this._subjointDocumentLocation + '#' + this._subjointID );
+        }
 
 
 
@@ -2741,7 +2820,7 @@ window.wayic_read_readable = ( function()
 
         /** The unparsed string value of the attribute, as declared.
           */
-        get value() { return this._stringValue; }
+        get value() { return this._value; }
 
 
     }
@@ -3133,7 +3212,7 @@ window.wayic_read_readable = ( function()
           */
         expo.write = function( sbjLoc, image )
         {
-            if( URIs.isDetectedAbnormal( sbjLoc )) throw URIs.message_abnormal( sbjLoc );
+            if( URIs.isDetectedAbnormal( sbjLoc )) throw URIs.makeMessage_abnormal( sbjLoc );
 
             if( image === null ) throw NULL_PARAMETER;
 
@@ -3320,7 +3399,7 @@ window.wayic_read_readable = ( function()
                     throw MALFORMED_PARAMETER + ': Fragmented (#) document location: ' + loc;
                 }
 
-                if( URIs.isDetectedAbnormal( loc )) throw URIs.message_abnormal( loc );
+                if( URIs.isDetectedAbnormal( loc )) throw URIs.makeMessage_abnormal( loc );
 
                 if( loc === DOCUMENT_LOCATION ) throw MALFORMED_PARAMETER + ': Not a separate document';
 
@@ -3369,19 +3448,33 @@ window.wayic_read_readable = ( function()
                             const id = jReg.subjointID;
                             const sbj = sbjDoc.getElementById( id );
                             const jointer = jReg.jointer;
-                            const linkV = jointer.getAttributeNS( NS_COG, 'link' ); /* Nominal form as
-                              declared (for reporting only) of normalized form <sbjDocLoc>#<id> */
-                            if( sbj === null )
+                            const linkV = jointer.getAttributeNS( NS_COG, 'link' ); /* Nominal form
+                              as declared (for reporting only) of normalized form <sbjDocLoc>#<id> */
+
+                          // ===============
+                          // Report and mark as broken any invalid jointer
+                          // ===============
+                            const isReported = ( ()=>
                             {
-                              // Flag the joint as broken
-                              // ------------------------
-                                tsk( 'Broken joint: No such *id* in that document: '
-                                  + a2s('link',linkV) );
+                                if( sbj === null ) // Jointer yields an incomplete joint?
+                                {
+                                    tsk( makeMessage_incompleteJointTo('that document',linkV) );
+                                    return true;
+                                }
+
+                                return isReportedAsDoubleJointing( linkV, sbj ); // Or a double joint?
+                            })();
+
+                            if( isReported )
+                            {
                                 setSubjointPreview( jointer, BREAK_SYMBOL );
                                 jointer.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
                                 continue;
                             }
 
+                          // =======================
+                          // Finish the presentation
+                          // =======================
                             const previewString = makeSubjointPreviewString( sbj, id, sbjDocLoc,
                               LeaderReader );
                             const jN = jointer.localName;
@@ -3458,7 +3551,8 @@ window.wayic_read_readable = ( function()
                                 {
                                     const id = link.subjointID;
                                     const sbj = sbjDoc.getElementById( id );
-                                    if( sbj === null ) return; // Broken joint
+                                    if( sbj === null || sbj.hasAttributeNS(NS_COG,'link') ) return;
+                                      // Invalid joint, incomplete or double
 
                                   // Pre-cache the image, or re-cache it  † [SIC]
                                   // -------------------
@@ -3487,11 +3581,6 @@ window.wayic_read_readable = ( function()
    //   T a r g e t   W h e r e a b o u t s
 
 
-        const TARGET_UP   = 'up';
-        const TARGET_DOWN = 'down';
-
-
-
     /** The apparent direction of travel to a hyperlink target for the purpose of user orientation.
       */
     class TargetWhereabouts
@@ -3515,8 +3604,9 @@ window.wayic_read_readable = ( function()
 
         /** The relative direction to the target element if it exists in the present document.
           *
-          *     @return (string) Either TARGET_UP or TARGET_DOWN,
-          *       or null if the target is nominally outside the present document.
+          *     @return (string) Null if the target element is null;
+          *       otherwise one of TARGET_SELF, TARGET_UP or TARGET_DOWN.
+          *     @see #target
           */
         get direction() { return this._direction; }
 
@@ -3564,6 +3654,8 @@ window.wayic_read_readable = ( function()
                 {
                     const direction = ( ()=>
                     {
+                        if( jointer === sbj ) return TARGET_SELF;
+
                         const targetPosition = jointer.compareDocumentPosition( sbj );
                         if( targetPosition & DOCUMENT_POSITION_PRECEDING ) return TARGET_UP;
 
@@ -3574,14 +3666,14 @@ window.wayic_read_readable = ( function()
                 }
             }
 
-            tsk( 'Broken joint: No such *id* in this document: ' + a2s('link',link.value) );
+            tsk( makeMessage_incompleteJointTo('this document',linkV) );
             return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', target );
         }
 
 
 
         /** The target element within the present document, or null if there is none.
-          * This property is null in the case of an extradocument or broken hyperlink.
+          * This property is null in the case of an extradocument or incomplete hyperlink.
           */
         get target() { return this._target; }
 
@@ -3689,7 +3781,7 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether the specified leg is already traced.
           *
-          *     @see #newLegID
+          *     @see #makeLegID
           *     @see #shutLeg
           */
         function isShut( legID ) { return legsShut.includes(legID); }
@@ -3715,13 +3807,13 @@ window.wayic_read_readable = ( function()
           *     @param sbjDocLoc (string) The location of the subjoint document in normal URL form.
           *     @param sbjID (string) The identifier of the subjoining waybit.
           */
-        function newLegID( sbjDocLoc, sbjID ) { return sbjDocLoc + '#' + sbjID; }
+        function makeLegID( sbjDocLoc, sbjID ) { return sbjDocLoc + '#' + sbjID; }
 
 
 
         /** Adds the given leg identifier to legsOpen.
           *
-          *     @see #newLegID
+          *     @see #makeLegID
           *     @see #wasOpened
           */
         function openLeg( legID )
@@ -3737,7 +3829,7 @@ window.wayic_read_readable = ( function()
           *
           *     @see http://reluk.ca/project/wayic/script/way_root_element
           */
-        const ROOT_LEG_ID = newLegID( ROOT_DOCUMENT_LOCATION, 'root' );
+        const ROOT_LEG_ID = makeLegID( ROOT_DOCUMENT_LOCATION, 'root' );
 
 
 
@@ -3746,7 +3838,7 @@ window.wayic_read_readable = ( function()
           *
           *     @throws (string) Error message if legID is missing from legsOpen.
           *
-          *     @see #newLegID
+          *     @see #makeLegID
           *     @see #isShut
           */
         function shutLeg( legID )
@@ -3775,7 +3867,7 @@ window.wayic_read_readable = ( function()
           * May return with any number of its referentially joined legs yet untraced,
           * each slated for a separate tracing.
           *
-          *     @see #newLegID
+          *     @see #makeLegID
           *     @param branch (Element) Base element of the branch that comprises the leg.
           *     @param cacheEntry (DocumentCacheEntry)
           */
@@ -3806,7 +3898,7 @@ window.wayic_read_readable = ( function()
                     let sbjDocLoc = link.subjointDocumentLocation;
                     sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
                     const sbjID = link.subjointID;
-                    const sbjLegID = newLegID( sbjDocLoc, sbjID );
+                    const sbjLegID = makeLegID( sbjDocLoc, sbjID );
                     if( wasOpened( sbjLegID )) break jointer;
 
                     openLeg( sbjLegID );
@@ -3831,8 +3923,18 @@ window.wayic_read_readable = ( function()
                         readDirectly( sbjDocReg, sbjDoc )
                         {
                             const sbj = sbjDoc.getElementById( sbjID );
-                            sbjTrace: if( sbj !== null )
+                            sbjTrace:
                             {
+                                if( sbj === null )
+                                {
+                                    console.info( 'Incomplete joint truncates trace at leg: '
+                                      + sbjLegID ); // In case a report issues from nowhere else
+                                    break sbjTrace; // Invalid joint
+                                }
+
+                                if( sbj.hasAttributeNS( NS_COG, 'link' )) break sbjTrace; /* Invalid
+                                  (double) joint.  Always a report issues from elsewhere in the code. */
+
                               // Shield the subjoint trace work with a scan of ancestors
                               // ------------------------------
                                 for( let a = sbj;; )
@@ -3850,7 +3952,7 @@ window.wayic_read_readable = ( function()
                                         const id = a.getAttribute( 'id' );
                                         if( id === null ) continue;
 
-                                        if( isShut( newLegID( sbjDocLoc, id ))) break sbjTrace;
+                                        if( isShut( makeLegID( sbjDocLoc, id ))) break sbjTrace;
                                           // If only for sake of efficiency, ∵ this subjoint branch is
                                           // covered already (or will be) as part of a larger branch.
                                     }
@@ -3861,7 +3963,6 @@ window.wayic_read_readable = ( function()
                               // -----------------------
                                 traceLeg( sbjLegID, sbj, sbjDocReg );
                             }
-                            else console.warn( 'Broken joint truncates trace at leg: ' + sbjLegID );
                             shutLeg( sbjLegID );
                         }
 
@@ -3884,7 +3985,7 @@ window.wayic_read_readable = ( function()
               // Subjoining waybit, case of
               // -----------------
                 const id = t.getAttribute( 'id' );
-                if( id && isShut(newLegID(docLoc,id)) ) toLastDescendant( traversal ); /* Bypassing
+                if( id && isShut(makeLegID(docLoc,id)) ) toLastDescendant( traversal ); /* Bypassing
                   sub-branch t, if only for efficiency, as already it was traced in a separate leg. */
             }
             while( (t = traversal.nextNode()) !== null );
@@ -3894,7 +3995,7 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether the specified leg was ever opened.
           *
-          *     @see #newLegID
+          *     @see #makeLegID
           *     @see #openLeg
           */
         function wasOpened( legID ) { return legsOpen.includes(legID) || legsShut.includes(legID); }

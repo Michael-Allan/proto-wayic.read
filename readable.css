@@ -392,17 +392,22 @@ read|hyperform > a:not([href^='#'])[cog|link]
 }
 
 
-read|bitform   > a[href^='#'][read|targetDirection='up'], /* Intradocument, target above */
+read|bitform   > a[href^='#'][read|targetDirection='self'], /* Targeting self */
+read|hyperform > a[href^='#'][read|targetDirection='self'][cog|link]
+{
+    cursor: url('trigger_cursor/base.svg') 13 2, pointer;
+}
+read|bitform   > a[href^='#'][read|targetDirection='up'], /* Targeting upward in own document, */
 read|hyperform > a[href^='#'][read|targetDirection='up'][cog|link]
 {
     cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
 }
-read|bitform   > a[href^='#'][read|targetDirection='down'], /* Target below */
+read|bitform   > a[href^='#'][read|targetDirection='down'], /* … or downward, */
 read|hyperform > a[href^='#'][read|targetDirection='down'][cog|link]
 {
     cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
 }
-read|bitform   > a[href^='#']:not([read|targetDirection]), /* Target missing */
+read|bitform   > a[href^='#']:not([read|targetDirection]), /* … or to a missing target. */
 read|hyperform > a[href^='#']:not([read|targetDirection])[cog|link]
 {
     cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
@@ -672,7 +677,7 @@ html[read|lighting='neon'] step|* > eSTag
 }
 
 
-html[read|lighting='neon'] step|*             > eSTag > eQName
+html[read|lighting='neon'] step|*               > eSTag > eQName
 {
                color: hsl(  0, 0%,   0% );
     background-color: hsla( 0, 0%, 100%, 0.45 );
