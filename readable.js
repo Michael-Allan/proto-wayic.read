@@ -347,39 +347,61 @@ window.wayic_read_readable = ( function()
 
         const expo = {}; // The public interface of URIs
 
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
 
 
-        /** Returns the same URI, but without a fragment.
+
+        /** Returns the absolute form of the given URI.
+          *
+          *     @param uri (string)
+          *
+          *     @see Absolute URI, https://tools.ietf.org/html/rfc3986#section-4.3
+          *     @see #defragmented
           */
-        expo.defragmented = function( uri )
+        expo.absolute = function( uri )
         {
-            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
             const c = uri.lastIndexOf( '#' );
-            if( c >= 0 ) uri = uri.slice( 0, c );
+            if( c >= 0 ) uri = uri.slice( 0, c ); // Defragmented
             return uri;
         };
 
 
 
-        /** The pattern of a full URI (as opposed to a URI reference)
-          * which means a URI with a scheme component.
+        /** Returns the same basic URI, but without a fragment.
+          * This function is a convenience, a descriptive alias of *absolute*.
           *
-          *     @see https://tools.ietf.org/html/rfc3986#section-1.1.1
-          *     @see https://tools.ietf.org/html/rfc3986#section-3
-          *     @see https://tools.ietf.org/html/rfc3986#section-3.1
+          *     @param uri (string)
+          */
+        expo.defragmented = function( uri ) { return expo.absolute( uri ); }
+
+
+
+        /** The pattern of a URI as opposed to a relative reference,
+          * which means a URI reference that has a scheme component.
+          *
+          *     @see URI,           https://tools.ietf.org/html/rfc3986#section-3
+          *     @see URI reference, https://tools.ietf.org/html/rfc3986#section-4.1
           */
         expo.FULL_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
 
 
 
         /** Answers whether the given URI is detected to have an abnormal form,
-          * where such detection depends on whether *toEnforceConstraints*.
+          * with any detection depending also on whether *toEnforceConstraints*.
+          *
+          *     @param uri (string)
+          *     @return (boolean)
           *
           *     @see #normalized
           */
         expo.isDetectedAbnormal = function( uri )
         {
-            return toEnforceConstraints && uri !== expo.normalized(uri)
+            if( toEnforceConstraints )
+            {
+                try{ return uri !== expo.normalized(uri) }
+                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if *uri* relative
+            }
+            return false;
         };
 
 
@@ -390,45 +412,38 @@ window.wayic_read_readable = ( function()
           *     @see #normalized
           */
         expo.makeMessage_abnormal = function( ref ) { return 'Not in normal form: ' + ref; };
-          // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
 
 
 
-        /** Returns the full form, normalized equivalent of the given URI reference.
+        /** Returns the normalized URI equivalent of the given URI reference.
+          * See: Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
           *
-          *     @param ref (string) The URI reference.
-          *       See https://tools.ietf.org/html/rfc3986#section-4.1, URI-reference
+          * This is a convenience function.  If you already have an instance of URL,
+          * then a direct call to *normalizedFromURL* will be simpler and more efficient.
+          *
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          *     @param base (string, optional unless *ref* is relative) The base URI.
+          *       See: Establishing a base URI, https://tools.ietf.org/html/rfc3986#section-5.1
+          *
           *     @return (string)
+          *
+          *     @throw Error if *ref* is relative and *base* is undefined.
           */
-        expo.normalized = function( ref )
+        expo.normalized = function( ref, base )
         {
-            // Modified from Matt Mastracci.
-            // https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript/
-            // Changing?  partly sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-            //
-            // Puts *ref* through the browser's hyperlink *href* parser, resolving it
-            // against the present document location and otherwise normalizing its form.
-            //
-            // Apparently this cannot be adapted for use with other documents to normalize their own,
-            // internally encoded references.  At least it fails when an equivalent function is
-            // constructed (with parser element, etc.) against another document obtained through the
-            // DocumentCache reading facility.  Then the *href* always yields the *undefined* value.
-            // FIX by moving to the more robust method of wayics.lex reader.js, (q.v. linked above)
-
-            const div = hrefParserDiv;
-            div.firstChild.href = ref; // Escaping ref en passant
-            div.innerHTML = div.innerHTML; // Reparsing it
-            return div.firstChild.href;
+            return expo.normalizedFromURL( new URL( ref, base )); // [UAU]
         };
 
 
 
-       // - P r i v a t e ------------------------------------------------------------------------------
-
-
-        const hrefParserDiv = document.createElementNS( NS_HTML, 'div' );
-
-          hrefParserDiv.innerHTML = '<a/>';
+        /** Returns the normalized URI equivalent of the given instance of URL.
+          *
+          *     @param iURL (URL) An instance of URL from the URL API. [UAU]
+          *       https://url.spec.whatwg.org/
+          *     @return (string) The normalized URI equivalent.
+          */
+        expo.normalizedFromURL = function( iURL ) { return iURL.href; };
 
 
 
@@ -477,23 +492,26 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The location of the waycast (string) in normal URL form, and with a trailing slash '/'.
+    /** The location of the waycast root directory in normal URL form (string),
+      * and with a trailing slash '/'.
       *
+      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
       *     @see URIs#normalized
       */
-    let CAST_BASE_LOCATION; // Init below, thence constant
+    let CAST_ROOT_LOCATION; // Initialized below, thence constant
 
 
 
-    /** The nominal location of the waycast (string) in the form of a URI reference without a trailing
-      * slash '/'.  Minimally it is formed as either an empty string '' (absolute reference),
-      * or a single dot '.' (relative), such that appending a slash always yield a valid reference.
+    /** The nominal location of the waycast root directory in the form of a URI reference (string)
+      * without a trailing slash '/'.  Minimally it is either an empty string '' (absolute reference),
+      * or a single dot '.' (relative), such that appending a slash always yields a valid reference.
       * Otherwise it is taken directly from the waycast reference in the *src* attribute
       * of the *script* element that loads the waycaster's personal configuration script.
       *
+      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
       *     @see Personalized configuration, http://reluk.ca/project/wayic/cast/doc.task
       */
-    const CAST_BASE_REF = ( ()=>
+    const CAST_ROOT_REF = ( ()=>
     {
         const configFileName = 'way.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
@@ -520,9 +538,9 @@ window.wayic_read_readable = ( function()
 
 
         {
-            let loc = URIs.normalized( CAST_BASE_REF );
+            let loc = URIs.normalized( CAST_ROOT_REF, /*base*/location.toString() );
             if( !loc.endsWith('/') ) loc = loc + '/';
-            CAST_BASE_LOCATION = loc;
+            CAST_ROOT_LOCATION = loc;
         }
 
 
@@ -598,8 +616,7 @@ window.wayic_read_readable = ( function()
     const DOCUMENT_LOCATION = ( ()=>
     {
         // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-        let loc = location.toString(); // [WDL]
-        if( location.hash ) loc = URIs.defragmented( loc );
+        const loc = URIs.defragmented( location.toString() ); // [WDL]
         return URIs.normalized( loc ); // To be certain
     })();
 
@@ -894,7 +911,7 @@ window.wayic_read_readable = ( function()
       *     @see http://reluk.ca/project/wayic/cast/way_root_document
       *     @see URIs#normalized
       */
-    const ROOT_DOCUMENT_LOCATION = CAST_BASE_LOCATION + 'way.xht';
+    const ROOT_DOCUMENT_LOCATION = CAST_ROOT_LOCATION + 'way.xht';
 
 
 
@@ -1023,7 +1040,7 @@ window.wayic_read_readable = ( function()
                         tsk( 'An *a* element with both *href* and *link* attributes: '
                           + a2s('href',href) + ', ' + a2s('link',linkV) );
                     }
-                    if( href.startsWith( '/' )) t.setAttribute( 'href', href = CAST_BASE_REF + href );
+                    if( href.startsWith( '/' )) t.setAttribute( 'href', href = CAST_ROOT_REF + href );
                       // Translating waycast space → universal space
                 }
                 else if( linkV !== null ) // Then *t* is a hyperform referential jointer
@@ -1037,7 +1054,7 @@ window.wayic_read_readable = ( function()
                     }
 
                     const whereabouts = TargetWhereabouts.fromJointer( t, link );
-                    const target = whereabouts.target;
+                    const target = whereabouts.element;
                     if( target === null ) // Then hyperlink target is not in present document
                     {
                         const sbjDocLocN = whereabouts.documentLocationN;
@@ -1167,7 +1184,7 @@ window.wayic_read_readable = ( function()
 
                     // The subjoining waybit is within the present document
                     a.setAttributeNS( NS_READ, 'targetDirection', direction );
-                    const sbj = sbjWhereabouts.target;
+                    const sbj = sbjWhereabouts.element;
                     if( isReportedAsDoubleJointing( link.value, sbj )) // Then it yields a double joint
                     {
                         previewString = BREAK_SYMBOL;
@@ -1415,7 +1432,7 @@ window.wayic_read_readable = ( function()
                 // No need here to fend against other types of malformed link declaration.
                 // Rather take it as the wayscribe intended.
                 let sbjDocLoc = link.subjointDocumentLocation;
-                sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
+                sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc,/*base*/docLoc): docLoc;
                 if( sbjDocLoc !== DOCUMENT_LOCATION ) continue;
 
                 const sbjID = link.subjointID;
@@ -2775,14 +2792,15 @@ window.wayic_read_readable = ( function()
             }
             if( loc.length > 0 )
             {
-                if( loc.charAt(0) === '/'
-                  && /*not a network-path reference*/(loc.length === 1 || loc.charAt(1) !== '/') ) // [NPR]
+                if( loc.charAt(0) === '/' // ↓ [NPR]
+                  && /*not a network-path reference*/(loc.length === 1 || loc.charAt(1) !== '/') )
                 {
-                    loc = CAST_BASE_REF + loc; // Waycast space → universal space
+                    loc = CAST_ROOT_REF + loc; // Waycast space → universal space
                 }
                 else if( !URIs.FULL_PATTERN.test( loc ))
                 {
-                    throw "Leading component must be either a URI scheme, or the waycast base '/': "
+                    throw MALFORMED_PARAMETER
+                      + ": begins with neither a scheme component, nor the waycast root directory '/': "
                       + a2s('link',value);
                 }
 
@@ -2803,8 +2821,8 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The location of the subjoint document as a URL string, or the empty string if the *link*
-          * attribute encodes a *same-document reference*.
+        /** The location of the subjoint document as a URI reference (string),
+          * or the empty string if the *link* attribute encodes a *same-document reference*.
           *
           *     @see https://tools.ietf.org/html/rfc3986#section-4.4
           */
@@ -3541,7 +3559,7 @@ window.wayic_read_readable = ( function()
                             if( sbjDocLoc.length === 0 ) continue;
                               // Needs no caching, intradocument joint
 
-                            sbjDocLoc = URIs.normalized( sbjDocLoc );
+                            sbjDocLoc = URIs.normalized( sbjDocLoc, /*base*/srjDocLoc );
                             if( sbjDocLoc === srjDocLoc ) continue;
                               // Needs no caching, intradocument joint
 
@@ -3581,7 +3599,8 @@ window.wayic_read_readable = ( function()
    //   T a r g e t   W h e r e a b o u t s
 
 
-    /** The apparent direction of travel to a hyperlink target for the purpose of user orientation.
+    /** The apparent direction of travel (from the present document) to a hyperlink target
+      * for the purpose of user orientation.
       */
     class TargetWhereabouts
     {
@@ -3591,13 +3610,13 @@ window.wayic_read_readable = ( function()
           *
           *     @see #direction
           *     @see #documentLocationN
-          *     @see #target
+          *     @see #element
           */
-        constructor( direction, documentLocationN, target )
+        constructor( direction, documentLocationN, element )
         {
             this._direction = direction;
             this._documentLocationN = documentLocationN;
-            this._target = target;
+            this._element = element;
         }
 
 
@@ -3606,43 +3625,50 @@ window.wayic_read_readable = ( function()
           *
           *     @return (string) Null if the target element is null;
           *       otherwise one of TARGET_SELF, TARGET_UP or TARGET_DOWN.
-          *     @see #target
+          *     @see #element
           */
         get direction() { return this._direction; }
 
 
 
         /** The nominal location of the target document as a URL string in normal form,
-          * or the empty string if the target is nominally in the present document.
+          * or the empty string if the target element is nominally in the present document.
           */
         get documentLocationN() { return this._documentLocationN; }
 
 
 
+        /** The target element within the present document, or null if there is none.
+          * This property is null in the case of an extradocument or incomplete hyperlink.
+          */
+        get element() { return this._element; }
+
+
 
         /** Constructs a TargetWhereabouts from a referential jointer.
           *
-          *     @param jointer (Element) The referential jointer.
+          *     @param jointer (Element) A referential jointer located in the present document.
           *     @param link (LinkAttribute) The parsed *link* attribute of the jointer.
           */
         static fromJointer( jointer, link )
         {
+            if( jointer.ownerDocument !== document ) throw MALFORMED_PARAMETER;
+
             const docLoc = link.subjointDocumentLocation;
             if( docLoc.length > 0 )
             {
-                const docLocN = URIs.normalized( docLoc );
+                const docLocN = URIs.normalized( docLoc, /*base*/DOCUMENT_LOCATION );
                 if( docLocN !== DOCUMENT_LOCATION ) // Then the target is outside the present document
                 {
-                    return new TargetWhereabouts( /*direction*/null, URIs.normalized(docLoc),
-                      /*target*/null );
+                    return new TargetWhereabouts( /*direction*/null, docLocN, /*element*/null );
                 }
             }
 
-            // The target is nominally within the present document
-            const target = document.getElementById( link.subjointID );
-            if( target !== null )
+            // The target element is nominally within the present document
+            const element = document.getElementById( link.subjointID );
+            if( element !== null )
             {
-                return fromLink( jointer, target );
+                return fromLink( jointer, element );
 
                 /** Constructs a TargetWhereabouts from a jointer and subjoining waybit,
                   * both located in the present document.
@@ -3652,6 +3678,10 @@ window.wayic_read_readable = ( function()
                   */
                 function fromLink( jointer, sbj )
                 {
+                 // if( jointer.ownerDocument !== document )
+                 //      || sbj.ownerDocument !== document ) throw MALFORMED_PARAMETER;
+                 /// Already adequately guarded above
+
                     const direction = ( ()=>
                     {
                         if( jointer === sbj ) return TARGET_SELF;
@@ -3667,15 +3697,8 @@ window.wayic_read_readable = ( function()
             }
 
             tsk( makeMessage_incompleteJointTo('this document',linkV) );
-            return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', target );
+            return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', element );
         }
-
-
-
-        /** The target element within the present document, or null if there is none.
-          * This property is null in the case of an extradocument or incomplete hyperlink.
-          */
-        get target() { return this._target; }
 
 
     }
@@ -3896,7 +3919,8 @@ window.wayic_read_readable = ( function()
                     // No need here to fend against other types of malformed referential jointer.
                     // Rather take it as the wayscribe intended, so extend the trace.
                     let sbjDocLoc = link.subjointDocumentLocation;
-                    sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc): docLoc;
+                    sbjDocLoc = sbjDocLoc.length > 0?
+                      URIs.normalized(sbjDocLoc,/*base*/docLoc): docLoc;
                     const sbjID = link.subjointID;
                     const sbjLegID = makeLegID( sbjDocLoc, sbjID );
                     if( wasOpened( sbjLegID )) break jointer;
@@ -4078,6 +4102,10 @@ window.wayic_read_readable = ( function()
   *
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
+  *
+  *  [UAU]  The URL API for all URIs?  Yes, the URL API applies to URIs in general.  "In practice
+  *         a single algorithm is used for both".  It might equally have been called the "URI API".
+  *         https://url.spec.whatwg.org/#goals
   *
   *  [UN] · Either *undefined* or null in value.
   *
