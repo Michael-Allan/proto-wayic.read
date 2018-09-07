@@ -76,18 +76,18 @@
  *
  *   Requests by ‘file’ scheme
  *   -------------------------
- *     When the user requests a way declaration document from a ‘file’ scheme URL.
+ *     When the user requests a way declaration document from a ‘file’ scheme URI.
  *
  *     Alert reporting
  *     ---------------
- *       When the user requests a way declaration document from a ‘file’ scheme URL,
+ *       When the user requests a way declaration document from a ‘file’ scheme URI,
  *       this transformer assumes that the user is the author of that document.  Then,
  *       in addition to console reporting, it opens an *alert* window to report malformed content
  *       or any other problem that an author might be able to remedy.
  *
  *     Limitations
  *     -----------
- *       When the user requests a way declaration document from a ‘file’ scheme URL,
+ *       When the user requests a way declaration document from a ‘file’ scheme URI,
  *       intracast, interdocument referential jointers may fail to resolve their references. [EFL]
  *       In that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
  *       and generally the transformation will be incomplete and the way definition harder to view.
@@ -96,7 +96,7 @@
  *       A workaround for Chrome is its ‘--allow-file-access-from-files’ option. [AFA]
  *
  *       A workaround for Firefox is to first request the way root document
- *       from the base directory of the waycast.  Then follow the links from there. [SPF]
+ *       from the waycast root directory.  Then follow the links from there. [SPF]
  *       Travel by other means (e.g. bookmark or address bar) will break the workaround.
  *       Travel by any means to the directory index, which for file scheme the browser itself generates,
  *       will also break the workaround.
@@ -386,29 +386,29 @@ read|hyperform       > read|triggerMark
  */
 
 read|bitform   > a:not([href^='#']), /* With a target reference in interdocument form */
-read|hyperform > a:not([href^='#'])[cog|link]
+read|hyperform > a:not([href^='#'])[cog|join]
 {
     cursor: url('trigger_cursor/target_out.svg') 13 2, pointer; /* As a directional cue */
 }
 
 
 read|bitform   > a[href^='#'][read|targetDirection='self'], /* Targeting self */
-read|hyperform > a[href^='#'][read|targetDirection='self'][cog|link]
+read|hyperform > a[href^='#'][read|targetDirection='self'][cog|join]
 {
     cursor: url('trigger_cursor/base.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#'][read|targetDirection='up'], /* Targeting upward in own document, */
-read|hyperform > a[href^='#'][read|targetDirection='up'][cog|link]
+read|hyperform > a[href^='#'][read|targetDirection='up'][cog|join]
 {
     cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#'][read|targetDirection='down'], /* … or downward, */
-read|hyperform > a[href^='#'][read|targetDirection='down'][cog|link]
+read|hyperform > a[href^='#'][read|targetDirection='down'][cog|join]
 {
     cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#']:not([read|targetDirection]), /* … or to a missing target. */
-read|hyperform > a[href^='#']:not([read|targetDirection])[cog|link]
+read|hyperform > a[href^='#']:not([read|targetDirection])[cog|join]
 {
     cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
 }
@@ -486,7 +486,7 @@ html[read|lighting='neon'] *[read|imaging] > read|bitform > a > preview
 }
 
 
-html[read|lighting='neon'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
+html[read|lighting='neon'] *[cog|join$='/way.xht#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
@@ -519,7 +519,7 @@ html[read|lighting='paper'] *[read|imaging] > read|bitform > a > preview
 }
 
 
-html[read|lighting='paper'] *[cog|link$='/#resolve'] > eSTag > eQName > eName
+html[read|lighting='paper'] *[cog|join$='/way.xht#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
@@ -1086,8 +1086,8 @@ html[read|animatedShow]
  *  [C]  · Class selectors.  These fail for NS_READ elements under Chrome (59).  Instead select
  *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
  *
- *  [CVU]  Cursor variables with URL values.  Unable to use a CSS variable here because Chrome (59)
- *         wrongly resolves the relative URL against the document rather than the style sheet.
+ *  [CVU]  Cursor variables with URI values.  Unable to use a CSS variable here because Chrome (59)
+ *         wrongly resolves the relative URI against the document rather than the style sheet.
  *
  *  [ECB]  Here establishing the containing block for absolutely positioned descendants.
  *          https://www.w3.org/TR/css-position-3/#cb
@@ -1095,7 +1095,7 @@ html[read|animatedShow]
  *  [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
  *         across all relative (intracast) hyperlinks, that is, and throughout the local waycast.
  *         They will not extend across *intercast* referential joints.  Though the original document
- *         was requested from a ‘file’ scheme URL, still its *intercast* references will resolve
+ *         was requested from a ‘file’ scheme URI, still its *intercast* references will resolve
  *         because waycasts are served with a response header of ‘Access-Control-Allow-Origin: *’.
  *         http://reluk.ca/project/wayic/intercast § Design constraints § waycast publication
  *
