@@ -107,9 +107,9 @@
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
 @namespace read 'data:,wayic.read';
-@namespace  cog 'data:,wayscript.cog';
+@namespace  way 'data:,wayscript';
 @namespace step 'data:,wayscript.bit.step'; /*
-              ↗ 'data:,wayscript.bit' covers waybits *simply*.  They have no styling of their own;
+              ↗ 'data:,wayscript.bit' covers waybits proper.  They have no styling of their own;
                    rather they share the styling of waybits in general. */
 @namespace svg 'http://www.w3.org/2000/svg';
 
@@ -264,7 +264,7 @@ html[read|lighting='paper']
 /* ---  G r o u p  -------------------------------------------------------------------------------------
  */
 
-cog|group
+way|group
 {
     border-radius: 0.5em;
     border-width: 0.1em;
@@ -275,13 +275,13 @@ cog|group
 }
 
 
-cog|group cog|group /* Nested groups */
+way|group way|group /* Nested groups */
 {
     margin-right: 0.7em; /* Space between adjacent, vertical border lines to better show the nesting */
 }
 
 
-cog|group > eSTag
+way|group > eSTag
 {
     font-style: italic;
     opacity: 0.6;
@@ -290,7 +290,7 @@ cog|group > eSTag
 }
 
 
-cog|group > eSTag > eQName > ePrefix
+way|group > eSTag > eQName > ePrefix
 {
     display: none; /* Assuming that it is uninformative */
 }
@@ -299,7 +299,7 @@ cog|group > eSTag > eQName > ePrefix
 /* - - -  neon   - - - - - - - - - - - -
  */
 
-html[read|lighting='neon'] cog|group
+html[read|lighting='neon'] way|group
 {
     border-color: hsla( 0, 0%, 100%, 0.35 );
     border-style: dashed;
@@ -311,7 +311,7 @@ html[read|lighting='neon'] cog|group
 /* - - -  paper  - - - - - - - - - - - -
  */
 
-html[read|lighting='paper'] cog|group
+html[read|lighting='paper'] way|group
 {
     border-color: hsla( 0, 0%, 0%, 0.25 );
     border-style: solid none none solid; /* TRBL */
@@ -386,29 +386,29 @@ read|hyperform       > read|triggerMark
  */
 
 read|bitform   > a:not([href^='#']), /* With a target reference in interdocument form */
-read|hyperform > a:not([href^='#'])[cog|join]
+read|hyperform > a:not([href^='#'])[way|join]
 {
     cursor: url('trigger_cursor/target_out.svg') 13 2, pointer; /* As a directional cue */
 }
 
 
 read|bitform   > a[href^='#'][read|targetDirection='self'], /* Targeting self */
-read|hyperform > a[href^='#'][read|targetDirection='self'][cog|join]
+read|hyperform > a[href^='#'][read|targetDirection='self'][way|join]
 {
     cursor: url('trigger_cursor/base.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#'][read|targetDirection='up'], /* Targeting upward in own document, */
-read|hyperform > a[href^='#'][read|targetDirection='up'][cog|join]
+read|hyperform > a[href^='#'][read|targetDirection='up'][way|join]
 {
     cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#'][read|targetDirection='down'], /* … or downward, */
-read|hyperform > a[href^='#'][read|targetDirection='down'][cog|join]
+read|hyperform > a[href^='#'][read|targetDirection='down'][way|join]
 {
     cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
 }
 read|bitform   > a[href^='#']:not([read|targetDirection]), /* … or to a missing target. */
-read|hyperform > a[href^='#']:not([read|targetDirection])[cog|join]
+read|hyperform > a[href^='#']:not([read|targetDirection])[way|join]
 {
     cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
 }
@@ -486,7 +486,7 @@ html[read|lighting='neon'] *[read|imaging] > read|bitform > a > preview
 }
 
 
-html[read|lighting='neon'] *[cog|join$='/way.xht#resolve'] > eSTag > eQName > eName
+html[read|lighting='neon'] *[way|join$='/way.xht#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  36/*orange*/, 100%, 50% );
 }
@@ -519,7 +519,7 @@ html[read|lighting='paper'] *[read|imaging] > read|bitform > a > preview
 }
 
 
-html[read|lighting='paper'] *[cog|join$='/way.xht#resolve'] > eSTag > eQName > eName
+html[read|lighting='paper'] *[way|join$='/way.xht#resolve'] > eSTag > eQName > eName
 {
     color: hsl(  0/*red*/, 100%, 35% );
 }
@@ -798,7 +798,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 }
 
 
-[read|isWaybit] cog|group >
+[read|isWaybit] way|group >
 [read|isWaybit] > eSTag >  /* When also it is a *group* child */
 .inway > hall
 {

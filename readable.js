@@ -39,7 +39,7 @@
   *   This program introduces its own markup to the document as outlined in the subsections below.
   *   Key to these outlines:
   *
-  *       *          ∙ Any element in any namespace
+  *       *          ∙ Any element in any XML namespace
   *       foo         ∙ Element ‘foo’ in namespace ‘data:,wayic.read’ *
   *       ns:foo       ∙ Element ‘foo’ in a given namespace †
   *           [attrib]   · Attribute of the element in namespace ‘data:,wayic.read’ *
@@ -89,14 +89,15 @@
   *   --------------------------
   *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
   *     [hasShortName]      · Has a visible name no longer than three characters?
-  *     [isProperWayscript] · Is under a namespace whose identifier starts with ‘data:,wayscript.’?
-  *     [isWaybit]          · Is a waybit?
+  *     [isProperWayscript] · Is an element of wayscript proper?
+  *                           http://reluk.ca/project/wayic/script/wayscript#proper_wayscript
+  *     [isWaybit]         · Is a waybit?
   *
   *     eSTag       ∙ Start tag of an element, reproducing content that would otherwise be invisible
   *                   except in the wayscript source.
   *         eQName              ∙ Qualified name of the element. [QN]
   *             [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
-  *             ePrefix           ∙ Namespace prefix, if any.
+  *             ePrefix           ∙ XML namespace prefix, if any.
   *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
   *             eName             ∙ Local part of the name.
   *
@@ -116,7 +117,7 @@
   *   hyperform, presenter of a referential jointer or a generic hyperlink trigger (both take this form)
   *   ---------
   *     html:a         ∙ (§ q.v.)
-  *         [cog:join] · (only if element *a* is a referential jointer)
+  *         [way:join] · (only if element *a* is a referential jointer)
   *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
   *
   *
@@ -127,7 +128,7 @@
   *                          cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
   *     [isBroken] · Forms a broken joint, referring to a subjoining waybit that is either non-existent
   *                  (yielding an incomplete joint) or itself a jointer (yielding a double joint)?  [BA]
-  *     [cog:join] ·
+  *     [way:join] ·
   *
   *     eSTag                  ∙ (q.v. under § Wayscript element)
   *     textAligner             ∙ (only if element is a step)
@@ -277,12 +278,6 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The XML namespace of markup specific to this project.
-      */
-    const NS_READ = 'data:,wayic.read';
-
-
-
     /** A copy of the statelet root for the present load of the document as captured at load time,
       * just prior to any initialization or modification of it.  Its value may be null.
       */
@@ -290,15 +285,26 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The leading string that is common to all XML namespaces of wayscript.
-      * Each namespace begins with this string, and ends by appending to it a unique subnamespace.
-      *
-      *     @see #SUB_NS_BIT
-      *     @see #SUB_NS_COG
-      *     @see #SUB_NS_STEP
+    /** Identifier of the XML namespace of HTML.
       */
-    const NS_WAYSCRIPT_DOT = 'data:,wayscript.';
-    const NS_WAYSCRIPT_DOT_LENGTH = NS_WAYSCRIPT_DOT.length;
+    const NS_HTML = 'http://www.w3.org/1999/xhtml';
+
+
+
+    /** Identifier of the XML namespace of wayic.read markup.
+      */
+    const NS_READ = 'data:,wayic.read';
+
+
+
+    /** Identifier of the top para-namespace of wayscript proper.
+      *
+      *     @see #TOP_ID_BIT
+      *     @see #TOP_ID_STEP
+      *
+      *     @see § Namespacing § hierarchy, http://reluk.ca/project/wayic/script/doc.task
+      */
+    const PARA_NS_WAY = 'data:,wayscript.';
 
 
 
@@ -306,31 +312,21 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The subnamespace of markup specific to waybits simply, excluding other waybits (such as steps).
+    /** The top sub-identifier of a waybit proper.
       *
-      *     @see #NS_WAYSCRIPT_DOT
       *     @see #NS_BIT
+      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
       */
-    const SUB_NS_BIT = 'bit';
+    const TOP_ID_BIT = 'bit';
 
 
 
-    /** The subnamespace of markup specific to cogs.
+    /** The top sub-identifier of a step.
       *
-      *     @see #NS_WAYSCRIPT_DOT
-      *     @see #NS_COG
+      *     @see #NS_STEP
+      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
       */
-    const SUB_NS_COG = 'cog';
-
-
-
-    const SUB_NS_STEP = 'bit.step';
-
-
-
-    /** The XML namespace of HTML.
-      */
-    const NS_HTML = 'http://www.w3.org/1999/xhtml';
+    const TOP_ID_STEP = 'bit.step';
 
 
 
@@ -560,7 +556,7 @@ window.wayic_read_readable = ( function()
 
     /** Configures a bitform referential jointer for a given, actual subjoining waybit.
       *
-      *     @param jtrNS (string) The namespace of the jointer.
+      *     @param jtrNS (string) The XML namespace of the jointer.
       *     @param jtrN (string) The local part of the jointer's name.
       *     @param joinV (string) The value of the jointer's *join* attribute.
       *     @param sbj (Element | SubjointImage) The subjoining waybit, or its cached image.
@@ -742,28 +738,31 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether *ns* is a namespace of waybits.  That means either NS_BIT itself
-      * or another namespace that starts with NS_BIT and a dot separator.
-      * The only other defined at present is NS_STEP.
+    /** Answers whether *ns* identifies a namespace of waybits.
       *
-      *     @param ns (string)
+      *     @param ns (string) An XML namespace identifier.
       */
     function isBitNS( ns )
     {
-        const nsBitLen = NS_BIT.length;
-        return ns.startsWith(NS_BIT) && (ns.length === nsBitLen || ns.charAt(nsBitLen) === '.');
+        const n = ns.length;
+        const nBit = NS_BIT.length;
+        return ( n === nBit || n > nBit && ns.charAt(nBit) === '.' ) && ns.startsWith( NS_BIT );
     }
 
 
 
-    /** Answers whether *subNS* is a subnamespace of waybits.  That means either 'bit' itself
-      * or another subnamespace that starts with 'bit.'.
+    /** Answers whether *subID* is a top sub-identifier that identifies a namespace of waybits.
       *
-      *     @param subNS (string) A wayscript namespace without the leading NS_WAYSCRIPT_DOT.
+      *     @param subID (string) A sub-identifier.
+      *
+      *     @see § Namespacing § sub-identifier, http://reluk.ca/project/wayic/script/doc.task
       */
-    function isBitSubNS( subNS )
+    function isBitTopID( subID )
     {
-        return subNS.startsWith(SUB_NS_BIT) && (subNS.length === 3 || subNS.charAt(3) === '.');
+        const n = subID.length;
+        const nBit = TOP_ID_BIT.length;
+        return ( n === nBit || n > nBit && subID.charAt(nBit) === '.' )
+          && subID.startsWith( TOP_ID_BIT );
     }
 
 
@@ -792,7 +791,7 @@ window.wayic_read_readable = ( function()
       */
     function isReportedAsDoubleJointing( joinV, referent )
     {
-        if( referent.hasAttributeNS( NS_COG, 'join' ))
+        if( referent.hasAttributeNS( NS_WAY, 'join' ))
         {
             tsk( 'Double jointing reference, jointer to jointer: ' + a2s('join',joinV) );
             return true;
@@ -895,25 +894,25 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The XML namespace of waybits simply, excluding subspaced waybits such as steps.
+    /** Identifier of the XML namespace of waybits proper.
       */
-    const NS_BIT  = NS_WAYSCRIPT_DOT + SUB_NS_BIT;
+    const NS_BIT = PARA_NS_WAY + TOP_ID_BIT;
 
 
 
-    /** The XML namespace of markup specific to cogs.
+    /** Identifier of the XML namespace of steps.
       */
-    const NS_COG  = NS_WAYSCRIPT_DOT + SUB_NS_COG;
+    const NS_STEP = PARA_NS_WAY + TOP_ID_STEP;
 
 
 
-    /** The XML namespace of steps.
+    /** Identifier of the XML top namespace of wayscript proper.
       */
-    const NS_STEP = NS_WAYSCRIPT_DOT + SUB_NS_STEP;
+    const NS_WAY = 'data:,wayscript';
 
 
 
-    /** The XML namespace of SVG.
+    /** Identifier of the XML namespace of SVG.
       */
     const NS_SVG = 'http://www.w3.org/2000/svg';
 
@@ -998,6 +997,32 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** Returns the top sub-identifier of *ns*; or the empty string if *ns* has no sub-identifier
+      * because it identifies the top namespace of wayscript; or null if *ns* has no sub-identifier
+      * because it identifies a namespace outside of wayscript proper.
+      *
+      *     @param ns (string) An XML namespace identifier.
+      *
+      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
+      */
+    function topID( ns )
+    {
+        const nT = NS_WAY.length;
+        const n = ns.length;
+        if( n < nT ) return null;
+
+        if( n === nT ) return ns === NS_WAY? '': null;
+        // else n > nT
+
+        if( ns.charAt(nT) !== '.' ) return null;
+
+        if( ns.startsWith( NS_WAY )) return ns.slice( nT + 1 );
+
+        return null;
+    }
+
+
+
     /** Tranforms the present document.
       */
     function transform()
@@ -1030,33 +1055,31 @@ window.wayic_read_readable = ( function()
           // ============
           // General form of element *t*
           // ============
-            const tNS = t.namespaceURI;
             const tN = t.localName;
-            let isBit, isHTML, isProperWayscript;
-            let tSubNS; // Wayscript subnamespace, or null if element *t* is not wayscript
-            if( tNS.startsWith( NS_WAYSCRIPT_DOT )) // Then element *t* is wayscript
+            const tNS = t.namespaceURI;
+            const tTopID = topID( tNS );
+            let isProperHTML, isProperWayscript, isBit;
+            if( tTopID === null )
             {
-                isHTML = false;
+                isProperHTML = tNS === NS_HTML;
+                isProperWayscript = isBit = false;
+            }
+            else
+            {
+                isProperHTML = false;
                 isProperWayscript = true;
                 t.setAttributeNS( NS_READ, 'isProperWayscript', 'isProperWayscript' );
-                tSubNS = tNS.slice( NS_WAYSCRIPT_DOT_LENGTH );
-                isBit = isBitSubNS( tSubNS );
-            }
-            else // Element *t* is non-wayscript
-            {
-                isHTML = tNS === NS_HTML;
-                isBit = isProperWayscript = false;
-                tSubNS = null;
+                isBit = isBitTopID( tTopID );
             }
 
 
           // ============
           // Hyperlinkage by element *t*
           // ============
-            hyperlinkage: if( isHTML && tN === 'a' )
+            hyperlinkage: if( isProperHTML && tN === 'a' )
             {
                 let href = t.getAttribute( 'href' );
-                const joinV = t.getAttributeNS( NS_COG, 'join' );
+                const joinV = t.getAttributeNS( NS_WAY, 'join' );
                 let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentLocationN
                 if( href !== null ) // Then *t* is a generic hyperlink
                 {
@@ -1092,7 +1115,7 @@ window.wayic_read_readable = ( function()
                     }
                     else if( isReportedAsDoubleJointing( sbjRef.joinV, target ))
                     {
-                        t.removeAttributeNS( NS_COG, 'join' ); /* Anulling the broken (because double)
+                        t.removeAttributeNS( NS_WAY, 'join' ); /* Anulling the broken (because double)
                           joint declaration to present the would-be jointer *t* instead as a generic
                           (yet unbroken) hyperlink. */
                     }
@@ -1128,7 +1151,7 @@ window.wayic_read_readable = ( function()
                 if( toEnforceConstraints && tN.startsWith('_')
                  && tN !== ELEMENT_NAME_NONE
                  && tN !== ELEMENT_NAME_UNCHANGED ) tsk( 'A waybit with a reserved name: ' + tN );
-                if( tSubNS === SUB_NS_STEP )
+                if( tTopID === TOP_ID_STEP )
                 {
                     const textAligner = document.createElementNS( NS_READ, 'textAligner' );
                     t.insertBefore( textAligner, t.firstChild );
@@ -1150,7 +1173,7 @@ window.wayic_read_readable = ( function()
             })();
             const joinV = ( ()=> // Subjoining waybit reference, non-null if *t* is a jointer
             {
-                let v = t.getAttributeNS( NS_COG, 'join' );
+                let v = t.getAttributeNS( NS_WAY, 'join' );
                 if( v === null ) return null;
 
                 if( !isBit )
@@ -1239,7 +1262,7 @@ window.wayic_read_readable = ( function()
          // =========
          // Start tag of element *t*
          // =========
-            if( tSubNS === SUB_NS_COG && tN === 'group' )
+            if( tTopID === /*top NS*/'' && tN === 'group' )
             {
                 if( t.getAttribute('rel') !== 'in' )
                 {
@@ -1317,8 +1340,8 @@ window.wayic_read_readable = ( function()
       */
     function willDisplayInLine( element )
     {
-        const elementNS = element.namespaceURI;
-        if( elementNS.startsWith( NS_WAYSCRIPT_DOT )) return false; // No wayscript element is inlined
+        const ns = element.namespaceURI;
+        if( topID(ns) !== null ) return false; // Never is a proper wayscript element inlined
 
         const styleDeclarations = getComputedStyle( element );
         const displayStyle = styleDeclarations.getPropertyValue( 'display' );
@@ -1329,7 +1352,7 @@ window.wayic_read_readable = ( function()
             // Work around it.  Apparent browser bug (Chrome 59).  "All longhand proper-
             // ties that are supported CSS properties" must be reported, ∴ length should
             // be > 0.  https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
-            if( elementNS === NS_HTML && willDisplayInLine_likely(element) ) return true;
+            if( ns === NS_HTML && willDisplayInLine_likely(element) ) return true;
         }
 
         return false;
@@ -1453,7 +1476,7 @@ window.wayic_read_readable = ( function()
                 const t = traversal.nextNode();
                 if( t === null ) break;
 
-                const joinV = t.getAttributeNS( NS_COG, 'join' );
+                const joinV = t.getAttributeNS( NS_WAY, 'join' );
                 if( joinV === null ) continue;
 
                 let sbjRef;
@@ -1474,7 +1497,7 @@ window.wayic_read_readable = ( function()
               // -------------------
                 if( sbj.surjointScene ) continue; // Already finished
 
-                if( sbj.hasAttributeNS( NS_COG, 'join' ) )
+                if( sbj.hasAttributeNS( NS_WAY, 'join' ) )
                 {
                     if( doc !== document ) // Else let *isReportedAsDoubleJointing* issue the report
                     {
@@ -3088,10 +3111,10 @@ window.wayic_read_readable = ( function()
         {
             this._joinV = joinV;
             {
-                const importV = jointer.getAttributeNS( NS_COG, 'import' );
+                const importV = jointer.getAttributeNS( NS_WAY, 'import' );
                 if( importV !== null ) throw 'Attribute not yet supported: ' + a2s('import',importV);
 
-                const offsetV = jointer.getAttributeNS( NS_COG, 'offset' );
+                const offsetV = jointer.getAttributeNS( NS_WAY, 'offset' );
                 if( offsetV !== null ) throw 'Attribute not yet supported: ' + a2s('offset',offsetV);
             }
 
@@ -3509,7 +3532,7 @@ window.wayic_read_readable = ( function()
                             const id = jReg.subjointID;
                             const sbj = sbjDoc.getElementById( id );
                             const jointer = jReg.jointer;
-                            const joinV = jointer.getAttributeNS( NS_COG, 'join' ); /* Nominal form
+                            const joinV = jointer.getAttributeNS( NS_WAY, 'join' ); /* Nominal form
                               as declared of normal form <sbjDocLoc>#<id>.  Used for reporting only. */
 
                           // ===============
@@ -3586,7 +3609,7 @@ window.wayic_read_readable = ( function()
                             const jointer = traversal.nextNode();
                             if( jointer === null ) break;
 
-                            const joinV = jointer.getAttributeNS( NS_COG, 'join' );
+                            const joinV = jointer.getAttributeNS( NS_WAY, 'join' );
                             if( joinV === null ) continue; // Needs no image, is not an actual jointer
 
                             const jNS = jointer.namespaceURI;
@@ -3612,7 +3635,7 @@ window.wayic_read_readable = ( function()
                                 {
                                     const id = sbjRef.subjointID;
                                     const sbj = sbjDoc.getElementById( id );
-                                    if( sbj === null || sbj.hasAttributeNS(NS_COG,'join') ) return;
+                                    if( sbj === null || sbj.hasAttributeNS(NS_WAY,'join') ) return;
                                       // Invalid joint, incomplete or double
 
                                   // Pre-cache the image, or re-cache it  † [SIC]
@@ -3957,7 +3980,7 @@ window.wayic_read_readable = ( function()
             {
               // Jointer, case of
               // -------
-                const joinV = t.getAttributeNS( NS_COG, 'join' );
+                const joinV = t.getAttributeNS( NS_WAY, 'join' );
                 jointer: if( joinV !== null )
                 {
                     let sbjRef;
@@ -4004,7 +4027,7 @@ window.wayic_read_readable = ( function()
                                     break sbjTrace; // Invalid joint
                                 }
 
-                                if( sbj.hasAttributeNS( NS_COG, 'join' )) break sbjTrace; /* Invalid
+                                if( sbj.hasAttributeNS( NS_WAY, 'join' )) break sbjTrace; /* Invalid
                                   (double) joint.  Always a report issues from elsewhere in the code. */
 
                               // Shield the subjoint trace work with a scan of ancestors
