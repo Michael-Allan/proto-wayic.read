@@ -1162,15 +1162,6 @@ window.wayic_read_readable = ( function()
           // ================
           // Bitform jointing by element *t*
           // ================
-            const idV = ( ()=> // Element identifier, non-null if *t* is a potential subjoining waybit
-            {
-                if( !isBit ) return null;
-
-                const v = t.getAttribute( 'id' );
-                if( v && testIdentification(t,v) ) return v;
-
-                return null;
-            })();
             const joinV = ( ()=> // Subjoining waybit reference, non-null if *t* is a jointer
             {
                 let v = t.getAttributeNS( NS_WAY, 'join' );
@@ -1295,7 +1286,14 @@ window.wayic_read_readable = ( function()
             }
 
             partTransform.run();
-            if( idV !== null ) SelfHyperlinking.addControls( partTransform.eSTag );
+            if( isBit )
+            {
+                const idV = t.getAttribute( 'id' );
+                if( idV !== null && testIdentification( t, idV ))
+                {
+                    SelfHyperlinking.addControls( partTransform.eSTag );
+                }
+            }
         }
     }
 
@@ -3091,10 +3089,10 @@ window.wayic_read_readable = ( function()
    //   S u b j o i n i n g   W a y b i t   R e f e r e n c e
 
 
-    /** A direct form, subjoining waybit reference.
+    /** A direct mode, subjoining waybit reference.
       *
-      *     @see Subjoining waybit reference § join attribute § direct form,
-      *       http://reluk.ca/project/wayic/cast/doc.task
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § Subjoining waybit reference, and
+      *       § Offset capable referencing § refinement attribution § direct mode.
       */
     class SubjoiningWaybitReference
     {
