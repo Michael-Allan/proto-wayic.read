@@ -932,8 +932,8 @@ html[read|lighting='paper']
 
     position: absolute;
     width: 0; height: 0; /* Declares no inner content, rather a position for outer shadowing. */
-    margin: auto; /* Centered in the icon as enabled by the Janus faced positioning below.   */
-    left: 0; right: 0;  /* Janus faced to enable centering by 'auto' margins,               */
+    margin: auto; /* Centred in the icon as enabled by the Janus faced positioning below.   */
+    left: 0; right: 0;  /* Janus faced to enable centring by 'auto' margins,               */
     top: 0; bottom: 0; /* https://www.w3.org/TR/css-position-3/#abs-non-replaced-width     */
 }
 
@@ -1134,7 +1134,7 @@ html[read|animatedShow]
  *         if the parent directory of the originating file is an ancestor directory of the target file.”
  *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  *
- *  [VCB]  Vertical centering on bullseye.  Here deflecting Y offset by -BBW for a better centering.
+ *  [VCB]  Vertical centring on bullseye.  Here deflecting Y offset by -BBW for a better centring.
  *         Unicode 1f78b round target.  Droid Sans/Chrome, Georgia/Firefox.
  */
 

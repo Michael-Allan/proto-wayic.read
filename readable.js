@@ -159,7 +159,7 @@
   *             hall             ∙
   *                 icon          ∙ Subjoining waybit icon
   *                     html:span ∙ Holder of main iconic content
-  *                     bullseye  ∙ Iconic bullseye, a dimensionless point centered on the icon
+  *                     bullseye  ∙ Iconic bullseye, a dimensionless point centred on the icon
   *
   *
   * NOTES  (continued at bottom)
@@ -1596,7 +1596,7 @@ window.wayic_read_readable = ( function()
 
           // Draw the approach path
           // ----------------------
-            const midY = height / 2; // Vertically centered
+            const midY = height / 2; // Vertically centred
             {
                 const path = asElementNamed( 'path', approach.lastChild );
                 const endX = width - width / 4;
