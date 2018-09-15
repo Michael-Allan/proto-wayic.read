@@ -3039,9 +3039,10 @@ window.wayic_read_readable = ( function()
 
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
-                const pp = u.searchParams;
-                pp.set( 'sc', 'srj' );
-                pp.set( 'join', bit.getAttribute('id') );
+                const pp = u.searchParams; /* Anticipating implementation of ./project.task
+                  § Bidirectional traversal of referential joints § scene selection model */
+                pp.set( 'scn', 'srj' );
+                pp.set( 'rfn', bit.getAttribute('id') );
              // history.replaceState( history./*duplicate of*/state, /*no title*/'', u.href ); // TEST
                 return;
             }
