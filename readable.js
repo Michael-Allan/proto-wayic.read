@@ -347,47 +347,75 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Returns the absolute form of the given URI.
+        /** Returns the absolute form of the given URI reference; without a fragment, that is.
           *
-          *     @param uri (string)
+          *     @param ref (string)
           *
           *     @see Absolute URI, https://tools.ietf.org/html/rfc3986#section-4.3
           *     @see #defragmented
           */
-        expo.absolute = function( uri )
+        expo.absolute = function( ref )
         {
-            const c = uri.lastIndexOf( '#' );
-            if( c >= 0 ) uri = uri.slice( 0, c ); // Defragmented
-            return uri;
+            const c = ref.lastIndexOf( '#' );
+            if( c >= 0 ) ref = ref.slice( 0, c ); // Defragmented
+            return ref;
         };
 
 
 
-        /** Returns the same basic URI, but without a fragment.
+        /** Returns the same basic URI reference, but without a fragment.
           * This function is a convenience, a descriptive alias of *absolute*.
           *
-          *     @param uri (string)
+          *     @param ref (string)
           */
-        expo.defragmented = function( uri ) { return expo.absolute( uri ); }
+        expo.defragmented = function( ref ) { return expo.absolute( ref ); }
 
 
 
-        /** Answers whether the given URI is detected to have an abnormal form,
+        /** The pattern of a URI reference that contains a dot segment.
+          *
+          *     @see dot-segment, https://tools.ietf.org/html/rfc3986#section-3.3
+          */
+        expo.DOT_SEGMENTED_PATTERN = new RegExp( '^(?:[^?#]*/)?\\.\\.?(?:/|$)' );
+          //                                       -- PS -- / -- DS --
+          // PS = Preceding segments.  Necessarily they contain no query (?) or fragment (#) delimiter,
+          //      because that would terminate the path.
+          // DS = Dot segment.
+
+
+
+        /** Answers whether the given URI reference is detected to have an abnormal form,
           * with any detection depending also on whether *toEnforceConstraints*.
           *
-          *     @param uri (string)
+          *     @param ref (string)
           *     @return (boolean)
           *
           *     @see #normalized
           */
-        expo.isDetectedAbnormal = function( uri )
+        expo.isDetectedAbnormal = function( ref )
         {
             if( toEnforceConstraints )
             {
-                try{ return uri !== expo.normalized(uri) }
-                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if *uri* relative
+                try{ return ref !== expo.normalized(ref) }
+                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if *ref* relative
             }
             return false;
+        };
+
+
+
+        /** Answers whether the given URI reference is a relative reference with an absolute path.
+          *
+          *     @param ref (string)
+          *
+          *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
+          *     @see path-absolute,      https://tools.ietf.org/html/rfc3986#section-3.3
+          */
+        expo.isRelative_pathAbsolute = function( ref )
+        {
+            const n = ref.length;
+            return n > 0 && ref.charAt(0) === '/'
+              && /*not a network-path reference*/(n === 1 || ref.charAt(1) !== '/') // [NPR]
         };
 
 
@@ -434,6 +462,16 @@ window.wayic_read_readable = ( function()
 
 
 
+        /** The pattern of a schemed URI reference, one that includes a scheme component,
+          * which would make it a URI as opposed to a relative reference.
+          *
+          *     @see URI,           https://tools.ietf.org/html/rfc3986#section-3
+          *     @see URI reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          */
+        expo.SCHEMED_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
+
+
+
         return expo;
 
     }() );
@@ -453,6 +491,9 @@ window.wayic_read_readable = ( function()
 
 
     /** Transforms an attribute declaration to a string.
+      *
+      *     @param name (string) The formal name of the attribute.
+      *     @param value (string) The actual value of the attribute.
       */
     function a2s( name, value ) { return name + "='" + value + "'"; }
 
@@ -767,22 +808,6 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether the given URI reference is a relative reference with an absolute path.
-      *
-      *     @param ref (string)
-      *
-      *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
-      *     @see path-absolute,      https://tools.ietf.org/html/rfc3986#section-3.3
-      */
-    function isRelative_pathAbsolute( ref )
-    {
-        const n = ref.length;
-        return n > 0 && ref.charAt(0) === '/'
-          && /*not a network-path reference*/(n === 1 || ref.charAt(1) !== '/') // [NPR]
-    }
-
-
-
     /** If *referent* has a *join* attribute of its own, then this function reports *joinV*
       * as double jointing and returns true; else it reports nothing and returns false.
       *
@@ -846,6 +871,19 @@ window.wayic_read_readable = ( function()
     function makeMessage_incompleteJointTo( docIndication, joinV )
     {
         return 'Incomplete joint: No such *id* in ' + docIndication + ': ' + a2s('join',joinV);
+    }
+
+
+
+    /** Returns a message (string) that the given wayscript attribute violates a formal constraint.
+      *
+      *     @param name (string) The formal name of the attribute.
+      *     @param value (string) The actual value of the attribute.
+      *     @param violation (string) Terse description of the violation type.
+      */
+    function makeMessage_malformedAttribute( name, value, violation )
+    {
+        return 'Malformed wayscript attribute: ' + violation + ': ' + a2s(name,value);;
     }
 
 
@@ -1088,11 +1126,14 @@ window.wayic_read_readable = ( function()
                         tsk( 'An *a* element with both *href* and *join* attributes: '
                           + a2s('href',href) + ', ' + a2s('join',joinV) );
                     }
-                    if( isRelative_pathAbsolute( href ))
-                    {
-                        t.setAttribute( 'href', href = CAST_ROOT_REF + href ); /* Translating
-                          waycast context → default context, as per wayic.script § HTML attribution
-                          § href attribute.  http://reluk.ca/project/wayic/script/doc.xht */
+                    if( !URIs.SCHEMED_PATTERN.test( href )) // Then *href* is not a URI,
+                    {                                      // but rather a formally infracast reference.
+                        const rep = FormallyInfracastReferencing.malformationReport( href,
+                          /*toTestScheme*/false/*already tested in guard above*/ );
+                        if( rep !== null ) tsk( makeMessage_malformedAttribute('href', href, rep) );
+
+                        const ref = FormallyInfracastReferencing.removedFromWaycastContext( href );
+                        if( href !== ref ) t.setAttribute( 'href', href = ref );
                     }
                 }
                 else if( joinV !== null ) // Then *t* is a hyperform referential jointer
@@ -1125,7 +1166,7 @@ window.wayic_read_readable = ( function()
                         console.assert( direction !== null, A );
                         t.setAttributeNS( NS_READ, 'targetDirection', direction );
                     }
-                    sbjRef.hrefTo( t );
+                    href = sbjRef.hrefTo( t );
                 }
 
               // Hyperform
@@ -1134,8 +1175,8 @@ window.wayic_read_readable = ( function()
                 t.parentNode.insertBefore( hyperform, t );
                 hyperform.appendChild( t );
                 const mark = hyperform.appendChild( document.createElementNS( NS_READ, 'triggerMark' ));
-                mark.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk).
-                  // It needs no superscript styling, the font takes care of it.
+                mark.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
+                  // It needs no superscript styling, the font takes care of it
             }
 
             if( !isProperWayscript ) continue tt;
@@ -2362,6 +2403,70 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
+   //   F o r m a l l y   I n f r a c a s t   R e f e r e n c i n g
+
+
+    /** Dealing with formally infracast references.
+      *
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § Formally infracast reference
+      */
+    const FormallyInfracastReferencing = ( function()
+    {
+
+        const expo = {}; // The public interface of FormallyInfracastReferencing
+
+
+
+        /** Tests the given URI reference against the formal constraints
+          * of formally infracast referencing and returns a report of any violation it finds.
+          *
+          *     @param ref (string) A URI reference.
+          *     @param toTestScheme (boolean, optional) Whether to test for the presence
+          *       of a scheme component.  The default value is true.
+          *
+          *     @return (string) The malformation report, or null if no malformation was found.
+          */
+        expo.malformationReport = function( ref, toTestScheme = true )
+        {
+            if( toTestScheme && URIs.SCHEMED_PATTERN.test( ref ))
+            {
+                return 'Not formally infracast; not relative, contains a scheme component';
+            }
+
+            if( URIs.DOT_SEGMENTED_PATTERN.test( ref ))
+            {
+                return 'Not formally infracast, contains a dot segment';
+            }
+
+            return null;
+        };
+
+
+
+        /** Translates the given (formally infracast) reference from its native waycast context
+          * to the context of the present document, and returns the result.
+          *
+          *     @param ref (string) A formally infracast reference.
+          *     @return (string) An equivalent reference in document context,
+          *       which might be the same reference.
+          *
+          *     @see http://reluk.ca/project/wayic/cast/waycast_context
+          */
+        expo.removedFromWaycastContext = function( ref )
+        {
+            if( URIs.isRelative_pathAbsolute( ref )) ref = CAST_ROOT_REF + ref;
+            return ref;
+        };
+
+
+
+        return expo;
+
+    }() );
+
+
+
+   // ==================================================================================================
    //   H y p e r l i n k a g e
 
 
@@ -3129,13 +3234,10 @@ window.wayic_read_readable = ( function()
             }
             if( sbjDocLoc.length > 0 )
             {
-                if( !isRelative_pathAbsolute( sbjDocLoc ))
-                {
-                    throw MALFORMED_PARAMETER + ": Not a waycast self-bounded reference: "
-                      + a2s('join',joinV);
-                }
+                const r = FormallyInfracastReferencing.malformationReport( sbjDocLoc );
+                if( r !== null ) throw makeMessage_malformedAttribute( 'join', joinV, r );
 
-                sbjDocLoc = CAST_ROOT_REF + sbjDocLoc; // Translating waycast context → default context
+                sbjDocLoc = FormallyInfracastReferencing.removedFromWaycastContext( sbjDocLoc );
             }
             this._subjointDocumentLocation = sbjDocLoc;
         }
@@ -3144,10 +3246,14 @@ window.wayic_read_readable = ( function()
 
         /** Sets on the given element an *href* attribute that refers to the same subjoining waybit
           * as does this reference.
+          *
+          *     @return (string) The value of the attribute as set.
           */
         hrefTo( element )
         {
-            element.setAttribute( 'href', this._subjointDocumentLocation + '#' + this._subjointID );
+            const href = this._subjointDocumentLocation + '#' + this._subjointID;
+            element.setAttribute( 'href', href );
+            return href;
         }
 
 
