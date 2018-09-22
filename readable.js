@@ -530,17 +530,18 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The location of the waycast root directory (string) as a relative path reference, but without
+    /** The location of the waycast root directory (string) as a relative-path reference, but without
       * a trailing slash '/'.  Minimally it is a single dot '.'; otherwise it is taken directly from
       * the waycast reference in the *src* attribute of the *script* element that loads the waycaster's
       * personal configuration script.  Appending a slash in either case will yield a valid reference.
       *
       *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
+      *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
       *     @see Personalized configuration, http://reluk.ca/project/wayic/cast/doc.task
       */
     const CAST_ROOT_REF = ( ()=>
     {
-        const configFileName = 'way.js';
+        const configFileName = 'way_declaration_document.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
         for( let t = traversal.lastChild(); t !== null; t = traversal.previousSibling() )
         {
@@ -562,9 +563,9 @@ window.wayic_read_readable = ( function()
                         {
                             const rSlash = ref.indexOf( '/' );
                             console.assert( rSlash >= 0, A ); // Given the above, there must be one
-                            if( rColon < rSlash ) break form; /* In a relative path reference,
+                            if( rColon < rSlash ) break form; /* In a relative-path reference,
                               the 'first path segment cannot contain a colon (":") character'.
-                              https://tools.ietf.org/html/rfc3986#section-3.3 */
+                              https://tools.ietf.org/html/rfc3986#section-4.2, -3.3 */
                         }
 
                         while( ref.charAt(--rN) === '/' ) ref = ref.slice( 0, rN ); /* Removing
@@ -572,7 +573,7 @@ window.wayic_read_readable = ( function()
                         return ref;
                     }
 
-                    throw 'Not a relative path reference: ' + a2s( 'src', ref );
+                    throw 'Not a relative-path reference: ' + a2s( 'src', ref );
                 }
             }
         }
@@ -3264,10 +3265,10 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The location of the subjoint document (string) as a relative path reference, which is
+        /** The location of the subjoint document (string) as a relative-path reference, which is
           * the empty string if the *join* attribute is a fragment-only, same-document reference.
           *
-          *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2
+          *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           *     @see Same-document reference, https://tools.ietf.org/html/rfc3986#section-4.4
           */
         get subjointDocumentLocation() { return this._subjointDocumentLocation; }

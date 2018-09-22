@@ -5,14 +5,14 @@
  *
  * INSTALLATION
  * ------------
- *   See also http://reluk.ca/project/wayic/cast/doc.task § Personal configuration.
+ *   See also http://reluk.ca/project/wayic/cast/doc.task § Configuration of the waycast.
  *   For a working example of an installation, see:
  *
- *       * http://reluk.ca/project/waycast/way.css
- *       * http://reluk.ca/project/waycast/way.js
+ *       * http://reluk.ca/project/waycast/way_declaration_document.css
+ *       * http://reluk.ca/project/waycast/way_declaration_document.js
  *
  *
- *   Personal style sheet, way.css
+ *   Personal style sheet, way_declaration_document.css
  *   --------------------
  *     Atop the style sheet, insert this:
  *
@@ -23,7 +23,7 @@
  *         @import 'http://reluk.ca/project/wayic/read/pre_note.css';
  *
  *
- *   Personal configuration program, way.js
+ *   Personal configuration program, way_declaration_document.js
  *   ------------------------------
  *     There insert the equivalent of this:
  *
