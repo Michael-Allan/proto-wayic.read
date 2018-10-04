@@ -429,44 +429,51 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Returns the normal form of the given URI reference.
-          * See: Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
+        /** Returns the normal form of the given URI reference,
+          * which is generally adequate to compare references for equivalence.
           *
           * This is a convenience function.  If you already have an instance of URL,
-          * then a direct call to *normalizedFromURL* will be simpler and more efficient.
+          * then a direct call to *normalizedU* will be simpler and more efficient.
           *
           *     @param ref (string) A URI reference.
           *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *     @param base (string, optional unless *ref* is relative) The base URI.
           *       See: Establishing a base URI, https://tools.ietf.org/html/rfc3986#section-5.1
           *
-          *     @return (string)
-          *
           *     @throw Error if *ref* is relative and *base* is undefined.
+          *
+          *     @return (string)
+          *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
           */
         expo.normalized = function( ref, base )
         {
-            return expo.normalizedFromURL( new URL( ref, base )); // [UAU]
+            return expo.normalizedU( new URL( ref, base )); // [UAU]
         };
 
 
 
-        /** Transforms the given instance of *URL* to a URI in normal form.
-          * See: Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
+        /** Returns the normal form of the given URI reference,
+          * which is generally adequate to compare references for equivalence.
           *
-          *     @param iURL (URL) An instance of *URL* from the URL API. [UAU]
+          *     @param refU (URL) An instance of *URL* from the URL API. [UAU]
           *       https://url.spec.whatwg.org/
+          *
           *     @return (string)
+          *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
           */
-        expo.normalizedFromURL = function( iURL ) { return iURL.href; };
+        expo.normalizedU = function( refU ) { return refU.href; };
+          // URL.href is the same "serialization" by which the URL API determines equivalence.
+          // https://url.spec.whatwg.org/#dom-url-href
+          // https://url.spec.whatwg.org/#url-equivalence
 
 
 
         /** The pattern of a schemed URI reference, one that includes a scheme component,
           * which would make it a URI as opposed to a relative reference.
           *
-          *     @see URI,           https://tools.ietf.org/html/rfc3986#section-3
-          *     @see URI reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          *     @see URI reference,      https://tools.ietf.org/html/rfc3986#section-4.1
+          *     @see URI,                https://tools.ietf.org/html/rfc3986#section-3
+          *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
           */
         expo.SCHEMED_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
 
@@ -490,10 +497,12 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Transforms an attribute declaration to a string.
+    /** Transforms the given attribute declaration to a string.
       *
       *     @param name (string) The formal name of the attribute.
       *     @param value (string) The actual value of the attribute.
+      *
+      *     @see #qp2s
       */
     function a2s( name, value ) { return name + "='" + value + "'"; }
 
@@ -520,16 +529,6 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The location of the waycast root directory (string) in normal URI form,
-      * and with a trailing slash '/'.
-      *
-      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
-      *     @see URIs#normalized
-      */
-    let CAST_ROOT_LOCATION; // Initialized below, thence constant
-
-
-
     /** The location of the waycast root directory (string) as a relative-path reference, but without
       * a trailing slash '/'.  Minimally it is a single dot '.'; otherwise it is taken directly from
       * the waycast reference in the *src* attribute of the *script* element that loads the waycaster's
@@ -539,7 +538,7 @@ window.wayic_read_readable = ( function()
       *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
       *     @see Personalized configuration, http://reluk.ca/project/wayic/cast/doc.task
       */
-    const CAST_ROOT_REF = ( ()=>
+    const CAST_ROOT_PATH = ( ()=>
     {
         const configFileName = 'way_declaration_document.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
@@ -573,7 +572,7 @@ window.wayic_read_readable = ( function()
                         return ref;
                     }
 
-                    throw 'Not a relative-path reference: ' + a2s( 'src', ref );
+                    throw 'Not a relative-path reference (' + a2s('src',ref) + ')';
                 }
             }
         }
@@ -584,11 +583,18 @@ window.wayic_read_readable = ( function()
 
 
 
-        {
-            let loc = URIs.normalized( CAST_ROOT_REF, /*base*/location.toString() );
-            if( !loc.endsWith('/') ) loc = loc + '/';
-            CAST_ROOT_LOCATION = loc;
-        }
+    /** The location of the waycast root directory (string) in normal URI form,
+      * and with a trailing slash '/'.
+      *
+      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
+      *     @see URIs#normalized
+      */
+    const CAST_ROOT_URI = ( ()=>
+    {
+        let uri = URIs.normalized( CAST_ROOT_PATH, /*base*/location.toString() );
+        if( !uri.endsWith('/') ) uri = uri + '/';
+        return uri;
+    })();
 
 
 
@@ -611,7 +617,7 @@ window.wayic_read_readable = ( function()
         if( jtrNS !== sbjNS )
         {
             tsk( 'Jointer namespace (' + jtrNS + ') differs from subjoining waybit namespace ('
-              + sbjNS + ') for referential jointer: ' + a2s('join',joinV) );
+              + sbjNS + ') for referential jointer ' + a2s('join',joinV) );
         }
         if( jtrN === ELEMENT_NAME_UNCHANGED ) transform.localPartOverride = sbjN;
           // Transforming to the same name as the subjoining waybit
@@ -656,19 +662,6 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The location of present document (string) in normal URI form.
-      *
-      *     @see URIs#normalized
-      */
-    const DOCUMENT_LOCATION = ( ()=>
-    {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-        const loc = URIs.defragmented( location.toString() ); // [WDL]
-        return URIs.normalized( loc ); // To be certain
-    })();
-
-
-
     const DOCUMENT_NODE = Node.DOCUMENT_NODE;
 
 
@@ -679,6 +672,19 @@ window.wayic_read_readable = ( function()
 
 
     const DOCUMENT_SCENE_ID = NS_READ + '.document_scene';
+
+
+
+    /** The location of present document (string) in normal URI form.
+      *
+      *     @see URIs#normalized
+      */
+    const DOCUMENT_URI = ( ()=>
+    {
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        const ref = URIs.defragmented( location.toString() ); // [WDL]
+        return URIs.normalized( ref ); // To be certain
+    })();
 
 
 
@@ -793,18 +799,18 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether *subID* is a top sub-identifier that identifies a namespace of waybits.
+    /** Answers whether *subId* is a top sub-identifier that identifies a namespace of waybits.
       *
-      *     @param subID (string) A sub-identifier.
+      *     @param subId (string) A sub-identifier.
       *
       *     @see § Namespacing § sub-identifier, http://reluk.ca/project/wayic/script/doc.task
       */
-    function isBitTopID( subID )
+    function isBitTopId( subId )
     {
-        const n = subID.length;
+        const n = subId.length;
         const nBit = TOP_ID_BIT.length;
-        return ( n === nBit || n > nBit && subID.charAt(nBit) === '.' )
-          && subID.startsWith( TOP_ID_BIT );
+        return ( n === nBit || n > nBit && subId.charAt(nBit) === '.' )
+          && subId.startsWith( TOP_ID_BIT );
     }
 
 
@@ -819,7 +825,7 @@ window.wayic_read_readable = ( function()
     {
         if( referent.hasAttributeNS( NS_WAY, 'join' ))
         {
-            tsk( 'Double jointing reference, jointer to jointer: ' + a2s('join',joinV) );
+            tsk( 'Double jointing reference, jointer to jointer, ' + a2s('join',joinV) );
             return true;
         }
 
@@ -871,7 +877,7 @@ window.wayic_read_readable = ( function()
       */
     function makeMessage_incompleteJointTo( docIndication, joinV )
     {
-        return 'Incomplete joint: No such *id* in ' + docIndication + ': ' + a2s('join',joinV);
+        return 'Incomplete joint: No such *id* in ' + docIndication + ' (' + a2s('join',joinV) + ')';
     }
 
 
@@ -884,21 +890,21 @@ window.wayic_read_readable = ( function()
       */
     function makeMessage_malformedAttribute( name, value, violation )
     {
-        return 'Malformed wayscript attribute: ' + violation + ': ' + a2s(name,value);;
+        return 'Malformed wayscript attribute (' + a2s(name,value) + '): ' + violation;
     }
 
 
 
     /** @param sbj (Element) A subjoining waybit.
-      * @param sbjID (string) The subjoining waybit's *id* attribute value.
-      * @param sbjDocLoc (string) The location of the subjoint document in normal URI form.
+      * @param sbjId (string) The subjoining waybit's *id* attribute value.
+      * @param sbjDocUri (string) The location of the subjoint document in normal URI form.
       * @param leaderReader (LeaderReader) The leader reader to use, if necessary.
       *
       * @return (string) The subjoint preview string, or an empty string if there is none.
       */
-    function makeSubjointPreviewString( sbj, sbjID, sbjDocLoc, leaderReader )
+    function makeSubjointPreviewString( sbj, sbjId, sbjDocUri, leaderReader )
     {
-        if( sbjID === 'resolve' && sbjDocLoc === ROOT_DOCUMENT_LOCATION ) return '';
+        if( sbjId === 'resolve' && sbjDocUri === ROOT_DOCUMENT_URI ) return '';
           // Giving no preview string to commitment jointers.  Their special presentation and easy
           // familiarity to users reduce the need for any description here on the surjoint side.
           // So the subjoining waybit, which is the resolve waybit, may freely describe itself as such,
@@ -961,6 +967,17 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** Transforms the given query parameter declaration to a string.
+      *
+      *     @param name (string) The formal name of the query parameter.
+      *     @param value (string) The actual value of the query parameter.
+      *
+      *     @see #a2s
+      */
+    function qp2s( name, value ) { return name + '=' + value; }
+
+
+
     /** The CSS *rem* length.
       *
       *     @see https://www.w3.org/TR/css-values/#rem
@@ -974,7 +991,7 @@ window.wayic_read_readable = ( function()
       *     @see http://reluk.ca/project/wayic/cast/way_root_document
       *     @see URIs#normalized
       */
-    const ROOT_DOCUMENT_LOCATION = CAST_ROOT_LOCATION + 'way.xht';
+    const ROOT_DOCUMENT_URI = CAST_ROOT_URI + 'way.xht';
 
 
 
@@ -1016,7 +1033,7 @@ window.wayic_read_readable = ( function()
         e.setAttribute( 'id', id );
         if( eOther === null ) return true;
 
-        tsk( 'Duplicate *id* declaration, value not unique: ' + a2s('id',id), doc );
+        tsk( 'Duplicate *id* declaration, value not unique, ' + a2s('id',id), doc );
         return false;
     }
 
@@ -1044,7 +1061,7 @@ window.wayic_read_readable = ( function()
       *
       *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
       */
-    function topID( ns )
+    function topId( ns )
     {
         const nT = NS_WAY.length;
         const n = ns.length;
@@ -1096,9 +1113,9 @@ window.wayic_read_readable = ( function()
           // ============
             const tN = t.localName;
             const tNS = t.namespaceURI;
-            const tTopID = topID( tNS );
+            const tTopId = topId( tNS );
             let isProperHTML, isProperWayscript, isBit;
-            if( tTopID === null )
+            if( tTopId === null )
             {
                 isProperHTML = tNS === NS_HTML;
                 isProperWayscript = isBit = false;
@@ -1108,7 +1125,7 @@ window.wayic_read_readable = ( function()
                 isProperHTML = false;
                 isProperWayscript = true;
                 t.setAttributeNS( NS_READ, 'isProperWayscript', 'isProperWayscript' );
-                isBit = isBitTopID( tTopID );
+                isBit = isBitTopId( tTopId );
             }
 
 
@@ -1119,7 +1136,7 @@ window.wayic_read_readable = ( function()
             {
                 let href = t.getAttribute( 'href' );
                 const joinV = t.getAttributeNS( NS_WAY, 'join' );
-                let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentLocationN
+                let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentUri
                 if( href !== null ) // Then *t* is a generic hyperlink
                 {
                     if( joinV !== null )
@@ -1128,19 +1145,19 @@ window.wayic_read_readable = ( function()
                           + a2s('href',href) + ', ' + a2s('join',joinV) );
                     }
                     if( !URIs.SCHEMED_PATTERN.test( href )) // Then *href* is not a URI,
-                    {                                      // but rather a formally infracast reference.
-                        const rep = FormallyInfracastReferencing.malformationReport( href,
-                          /*toTestScheme*/false/*already tested in guard above*/ );
+                    {                                      // but rather a formally intracast reference.
+                        const rep = FormallyIntracastReferencing.malformationReportD( href,
+                          DOCUMENT_URI, /*toTestScheme*/false/*already tested in guard above*/ );
                         if( rep !== null ) tsk( makeMessage_malformedAttribute('href', href, rep) );
 
-                        const ref = FormallyInfracastReferencing.removedFromWaycastContext( href );
+                        const ref = FormallyIntracastReferencing.removedFromWaycastContext( href );
                         if( href !== ref ) t.setAttribute( 'href', href = ref );
                     }
                 }
                 else if( joinV !== null ) // Then *t* is a hyperform referential jointer
                 {
                     let sbjRef;
-                    try { sbjRef = new SubjoiningWaybitReference( /*jointer*/t, joinV ); }
+                    try { sbjRef = new SubjoiningWaybitReference( DOCUMENT_URI, /*jointer*/t, joinV ); }
                     catch( unparseable )
                     {
                         tsk( unparseable );
@@ -1151,8 +1168,8 @@ window.wayic_read_readable = ( function()
                     const target = whereabouts.element;
                     if( target === null ) // Then hyperlink target is not in present document
                     {
-                        const sbjDocLocN = whereabouts.documentLocationN;
-                        if( sbjDocLocN.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocLocN );
+                        const sbjDocUri = whereabouts.documentUri;
+                        if( sbjDocUri.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocUri );
                         // Else jointer *t* yields a broken (because incomplete) intradocument joint
                     }
                     else if( isReportedAsDoubleJointing( sbjRef.joinV, target ))
@@ -1193,7 +1210,7 @@ window.wayic_read_readable = ( function()
                 if( toEnforceConstraints && tN.startsWith('_')
                  && tN !== ELEMENT_NAME_NONE
                  && tN !== ELEMENT_NAME_UNCHANGED ) tsk( 'A waybit with a reserved name: ' + tN );
-                if( tTopID === TOP_ID_STEP )
+                if( tTopId === TOP_ID_STEP )
                 {
                     const textAligner = document.createElementNS( NS_READ, 'textAligner' );
                     t.insertBefore( textAligner, t.firstChild );
@@ -1211,7 +1228,7 @@ window.wayic_read_readable = ( function()
 
                 if( !isBit )
                 {
-                    tsk( 'A non-waybit element with a *join* attribute: ' + a2s('join',v) );
+                    tsk( 'A non-waybit element with a *join* attribute, ' + a2s('join',v) );
                     v = null;
                 }
                 return v;
@@ -1220,12 +1237,12 @@ window.wayic_read_readable = ( function()
             {
                 if( !isDeclaredEmpty )
                 {
-                    tsk( 'A bitform referential jointer with content: ' + a2s('join',joinV) );
+                    tsk( 'A bitform referential jointer with content, ' + a2s('join',joinV) );
                     break jointer;
                 }
 
                 let sbjRef;
-                try { sbjRef = new SubjoiningWaybitReference( /*jointer*/t, joinV ); }
+                try { sbjRef = new SubjoiningWaybitReference( DOCUMENT_URI, /*jointer*/t, joinV ); }
                 catch( unparseable )
                 {
                     tsk( unparseable );
@@ -1236,14 +1253,14 @@ window.wayic_read_readable = ( function()
                 const a = bitform.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 sbjRef.hrefTo( a );
                 const sbjWhereabouts = TargetWhereabouts.fromJointer( t, sbjRef );
-                const sbjDocLocN = sbjWhereabouts.documentLocationN;
+                const sbjDocUri = sbjWhereabouts.documentUri;
                 let previewString;
                 subjoint:
                 {
-                    if( sbjDocLocN.length > 0 ) // Then jointer *t* refers to a separate document
+                    if( sbjDocUri.length > 0 ) // Then jointer *t* refers to a separate document
                     {
                         const registration = SurjointFinisher.registerBitformJointer( t,
-                          sbjRef.subjointID, sbjDocLocN );
+                          sbjRef.subjointId, sbjDocUri );
                         const image = registration.subjointImage;
                         if( image === null )
                         {
@@ -1278,7 +1295,7 @@ window.wayic_read_readable = ( function()
                     }
 
                     configureForSubjoint( tNS, tN, joinV, sbj, partTransform );
-                    previewString = makeSubjointPreviewString( sbj, sbjRef.subjointID, sbjDocLocN,
+                    previewString = makeSubjointPreviewString( sbj, sbjRef.subjointId, sbjDocUri,
                       LeaderReader );
                 }
                 const preview = a.appendChild( document.createElementNS( NS_READ, 'preview' ));
@@ -1295,7 +1312,7 @@ window.wayic_read_readable = ( function()
          // =========
          // Start tag of element *t*
          // =========
-            if( tTopID === /*top NS*/'' && tN === 'group' )
+            if( tTopId === /*top NS*/'' && tN === 'group' )
             {
                 if( t.getAttribute('rel') !== 'in' )
                 {
@@ -1345,7 +1362,7 @@ window.wayic_read_readable = ( function()
       * that a user with write access to the present document might be able to correct.
       *
       *     @param report (string)
-      *     @param doc (Document) The document in which the violation or fault occurs.
+      *     @param doc (Document, optional) The document in which the violation or fault occurs.
       *       Typically this parameter is left undefined.  Otherwise a value that is unequal
       *       to the present document will defeat the function call, causing no report to be sent.
       */
@@ -1381,7 +1398,7 @@ window.wayic_read_readable = ( function()
     function willDisplayInLine( element )
     {
         const ns = element.namespaceURI;
-        if( topID(ns) !== null ) return false; // Never is a proper wayscript element inlined
+        if( topId(ns) !== null ) return false; // Never is a proper wayscript element inlined
 
         const styleDeclarations = getComputedStyle( element );
         const displayStyle = styleDeclarations.getPropertyValue( 'display' );
@@ -1494,7 +1511,7 @@ window.wayic_read_readable = ( function()
         {
             DocumentCachePersistor.addOmnireader( new class extends DocumentReader
             {
-                read( cacheEntry, doc ) { scan( doc, cacheEntry.location ); }
+                read( cacheEntry, doc ) { scan( doc, cacheEntry.uri ); }
             });
         };
 
@@ -1504,11 +1521,11 @@ window.wayic_read_readable = ( function()
 
 
         /** @param doc (Document) The document to scan, which might be the present document.
-          * @param docLoc (string) The location of the document in normal form.
+          * @param docUri (string) The location of the document in normal URI form.
           *
           *     @see URIs#normalized
           */
-        function scan( doc, docLoc )
+        function scan( doc, docUri )
         {
             const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
             for( traversal.nextNode()/*onto the document node itself*/;; )
@@ -1520,17 +1537,20 @@ window.wayic_read_readable = ( function()
                 if( joinV === null ) continue;
 
                 let sbjRef;
-                try { sbjRef = new SubjoiningWaybitReference( /*jointer*/t, joinV ); }
+                try
+                {
+                    sbjRef = new SubjoiningWaybitReference( /*srjDocUri*/docUri, /*jointer*/t, joinV );
+                }
                 catch( unparseable ) { continue; }
 
                 // No need here to fend against other types of malformed reference.
                 // Rather take it as the wayscribe intended.
-                let sbjDocLoc = sbjRef.subjointDocumentLocation;
-                sbjDocLoc = sbjDocLoc.length > 0? URIs.normalized(sbjDocLoc,/*base*/docLoc): docLoc;
-                if( sbjDocLoc !== DOCUMENT_LOCATION ) continue;
+                let sbjDocPath = sbjRef.subjointDocumentPath;
+                sbjDocPath = sbjDocPath.length > 0? URIs.normalized(sbjDocPath,/*base*/docUri): docUri;
+                if( sbjDocPath !== DOCUMENT_URI ) continue;
 
-                const sbjID = sbjRef.subjointID;
-                const sbj = document.getElementById( sbjID );
+                const sbjId = sbjRef.subjointId;
+                const sbj = document.getElementById( sbjId );
                 if( sbj === null) continue;
 
               // Finish presentation of referential joint on subjoint side
@@ -1541,15 +1561,15 @@ window.wayic_read_readable = ( function()
                 {
                     if( doc !== document ) // Else let *isReportedAsDoubleJointing* issue the report
                     {
-                        console.info( 'Ignoring a double jointing reference to jointer #' + sbjID
-                          + ' by a jointer in document ' + docLoc );
+                        console.info( 'Ignoring a double jointing reference to jointer #' + sbjId
+                          + ' by a jointer in document ' + docUri );
                     }
                     continue;
                 }
 
                 sbj.surjointScene = true;
                 sbj.setAttributeNS( NS_READ, 'isSubjoining',
-                  sbjID === Hyperlinkage.windowTargetedID()? 'window targeted':'window untargeted' );
+                  sbjId === Hyperlinkage.windowTargetedId()? 'window targeted':'window untargeted' );
                 const eSTag = asElementNamed( 'eSTag', sbj.firstChild );
                 const inway = eSTag.appendChild( document.createElementNS( NS_HTML, 'div' ));
                 inway.setAttribute( 'class', 'inway' );
@@ -2049,14 +2069,14 @@ window.wayic_read_readable = ( function()
 
             /** Constructs a DocumentCacheEntry.
               *
-              *     @see #document
-              *     @see #location
-              *     @see #readers
+              *     @param document (Document, see #document)
+              *     @param uri (string, see #uri)
+              *     @param readers (Array of DocumentReader, see #readers)
               */
-            constructor( document, location, readers )
+            constructor( document, uri, readers )
             {
                 this._document = document;
-                this._location = location;
+                this._uri = uri;
                 this._readers = readers;
             }
 
@@ -2076,7 +2096,7 @@ window.wayic_read_readable = ( function()
               *     @return (string)
               *     @see URIs#normalized
               */
-            get location() { return this._location; }
+            get uri() { return this._uri; }
 
 
 
@@ -2132,16 +2152,16 @@ window.wayic_read_readable = ( function()
           * Otherwise this function starts a storage process and returns.  If the process eventually
           * succeeds, then it calls reader.read.  Regardless it ends by calling reader.close.
           *
-          *     @param docLoc (string) The document location in normal URI form.
+          *     @param docUri (string) The document location in normal URI form.
           *     @param reader (DocumentReader)
           *
           *     @see URIs#normalized
           */
-        expo.readNowOrLater = function( docLoc, reader )
+        expo.readNowOrLater = function( docUri, reader )
         {
-            if( URIs.isDetectedAbnormal( docLoc )) throw URIs.makeMessage_abnormal( docLoc );
+            if( URIs.isDetectedAbnormal( docUri )) throw URIs.makeMessage_abnormal( docUri );
 
-            let entry = entryMap.get( docLoc );
+            let entry = entryMap.get( docUri );
             if( entry !== undefined ) // Then the document was already requested
             {
                 const readers = entry.readers;
@@ -2151,33 +2171,33 @@ window.wayic_read_readable = ( function()
             }
 
             const readers = [];
-            entry = new DocumentCacheEntry( /*document*/null, docLoc, readers );
+            entry = new DocumentCacheEntry( /*document*/null, docUri, readers );
             readers.push( reader );
-            entryMap.set( docLoc, entry );
+            entryMap.set( docUri, entry );
 
           // ===================
           // Configure a request for the document
           // ===================
             const req = new XMLHttpRequest();
-            req.open( 'GET', docLoc, /*async*/true ); // Misnomer; opens nothing, only sets config
+            req.open( 'GET', docUri, /*async*/true ); // Misnomer; opens nothing, only sets config
          // req.overrideMimeType( 'application/xhtml+xml' );
          /// Still it parses to an XMLDocument (Firefox 52), unlike the present document
             req.responseType = 'document';
-            req.timeout = docLoc.startsWith('file:')? 2000: 8000; // ms
+            req.timeout = docUri.startsWith('file:')? 2000: 8000; // ms
 
           // ===========
           // Stand ready to catch the response
           // ===========
             req.onabort = ( _event/*ignored*/ ) =>
             {
-                console.warn( 'Document request aborted: ' + docLoc );
+                console.warn( 'Document request aborted: ' + docUri );
             };
             req.onerror = ( _event/*ignored*/ ) =>
             {
                 // Parameter *_event* is a ProgressEvent, at least on Firefox,
                 // which contains no useful information on the specific cause of the error.
 
-                console.warn( 'Document request failed: ' + docLoc );
+                console.warn( 'Document request failed: ' + docUri );
             };
             req.onload = ( event ) =>
             {
@@ -2216,7 +2236,7 @@ window.wayic_read_readable = ( function()
             };
             req.ontimeout = ( e ) =>
             {
-                console.warn( 'Document request timed out: ' + docLoc );
+                console.warn( 'Document request timed out: ' + docUri );
             };
 
           // ================
@@ -2252,8 +2272,8 @@ window.wayic_read_readable = ( function()
 
 
 
-        entryMap.set( DOCUMENT_LOCATION, // Storing the present document
-          new DocumentCacheEntry( document, DOCUMENT_LOCATION, /*readers*/null ));
+        entryMap.set( DOCUMENT_URI, // Storing the present document
+          new DocumentCacheEntry( document, DOCUMENT_URI, /*readers*/null ));
         return expo;
 
     }() );
@@ -2307,15 +2327,15 @@ window.wayic_read_readable = ( function()
 
               // Re-cache the recalled documents
               // --------
-                for( const loc of locations )
+                for( const uri of locations )
                 {
-                    if( !isPresentDocumentMemorized && loc === DOCUMENT_LOCATION )
+                    if( !isPresentDocumentMemorized && uri === DOCUMENT_URI )
                     {
                         isPresentDocumentMemorized = true;
                         continue; // Always the present document is already cached
                     }
 
-                    DocumentCache.readNowOrLater( loc, DOCUMENT_READER_NULL ); // Re-caching it
+                    DocumentCache.readNowOrLater( uri, DOCUMENT_READER_NULL ); // Re-caching it
                 }
             }
 
@@ -2343,7 +2363,7 @@ window.wayic_read_readable = ( function()
                 const locations = [];
                 for( const cacheEntry of DocumentCache.entries() )
                 {
-                    if( cacheEntry.document !== null ) locations.push( cacheEntry.location );
+                    if( cacheEntry.document !== null ) locations.push( cacheEntry.uri );
                 }
                 sessionStorage.setItem( SS_KEY_locations,
                   JSON.stringify( locations, /*replacer*/null, SESSION_STRINGIFY_SPACING ));
@@ -2404,60 +2424,107 @@ window.wayic_read_readable = ( function()
 
 
    // ==================================================================================================
-   //   F o r m a l l y   I n f r a c a s t   R e f e r e n c i n g
+   //   F o r m a l l y   I n t r a c a s t   R e f e r e n c i n g
 
 
-    /** Dealing with formally infracast references.
+    /** Dealing with formally intracast references.
       *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § Formally infracast reference
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § Formally intracast reference
       */
-    const FormallyInfracastReferencing = ( function()
+    const FormallyIntracastReferencing = ( function()
     {
 
-        const expo = {}; // The public interface of FormallyInfracastReferencing
+        const expo = {}; // The public interface of FormallyIntracastReferencing
 
 
 
-        /** Tests the given URI reference against the formal constraints
-          * of formally infracast referencing and returns a report of any violation it finds.
+        /** Tests the form of the given URI reference against the constraints
+          * of formally intracast referencing and returns a report of any violation it finds.
+          *
+          * This is a convenience function.  If you already have an equivalent reference
+          * in parsed form (refU), then a direct call to *malformationReportU* will be more efficient.
           *
           *     @param ref (string) A URI reference.
+          *     @param refDocUri (string) The location of the referring document,
+          *       the one containing the reference, in URI form.
           *     @param toTestScheme (boolean, optional) Whether to test for the presence
           *       of a scheme component.  The default value is true.
           *
-          *     @return (string) The malformation report, or null if no malformation was found.
+          *     @return (string) The violation report, or null if no violation was found.
+          *
+          *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          *     @see URI,           https://tools.ietf.org/html/rfc3986#section-3
           */
-        expo.malformationReport = function( ref, toTestScheme = true )
+        expo.malformationReportD = function( ref, refDocUri, toTestScheme = true )
         {
-            if( toTestScheme && URIs.SCHEMED_PATTERN.test( ref ))
-            {
-                return 'Not formally infracast; not relative, contains a scheme component';
-            }
-
-            if( URIs.DOT_SEGMENTED_PATTERN.test( ref ))
-            {
-                return 'Not formally infracast, contains a dot segment';
-            }
-
-            return null;
+            return malformationReport( ref, new URL(ref, /*base*/refDocUri), toTestScheme );
         };
 
 
 
-        /** Translates the given (formally infracast) reference from its native waycast context
+        /** Tests the form of the given URI reference against the constraints
+          * of formally intracast referencing and returns a report of any violation it finds.
+          *
+          *     @param ref (string) A URI reference.
+          *     @param refU (URL) The same or equivalent reference in parsed form. [UAU]
+          *     @param toTestScheme (boolean, optional) Whether to test for the presence
+          *       of a scheme component.  The default value is true.
+          *
+          *     @return (string) The violation report, or null if no violation was found.
+          *
+          *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          */
+        expo.malformationReportU = function( ref, refU, toTestScheme = true )
+        {
+            return malformationReport( ref, refU, toTestScheme );
+        };
+
+
+
+        /** Translates the given, formally intracast reference from its native waycast context
           * to the context of the present document, and returns the result.
           *
-          *     @param ref (string) A formally infracast reference.
+          *     @param ref (string) A formally intracast reference.
+          *
           *     @return (string) An equivalent reference in document context,
-          *       which might be the same reference.
+          *       formed as a relative-path reference, possibly equal to the given *ref*.
           *
           *     @see http://reluk.ca/project/wayic/cast/waycast_context
+          *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           */
         expo.removedFromWaycastContext = function( ref )
         {
-            if( URIs.isRelative_pathAbsolute( ref )) ref = CAST_ROOT_REF + ref;
+            if( URIs.isRelative_pathAbsolute( ref )) ref = CAST_ROOT_PATH + ref;
             return ref;
         };
+
+
+
+       // - P r i v a t e ------------------------------------------------------------------------------
+
+
+        function malformationReport( ref, refU, toTestScheme )
+        {
+            if( toTestScheme && URIs.SCHEMED_PATTERN.test( ref )) // Not refU, it is always schemed
+            {
+                return 'Not formally intracast; not a relative URI, has a scheme component';
+            }
+
+            if( URIs.DOT_SEGMENTED_PATTERN.test( ref )) // Not refU, it might be normalized free of dots
+            {
+                return 'Not formally intracast, contains a dot segment';
+            }
+
+            // Any of these tests might be done on string form *ref*, as opposed to parsed form *refU*.
+            // Yet testing the parsed form has advantages in clarity and robustness.
+            const pp = refU.searchParams;
+            if( pp.has( 'import' ))
+            {
+                return 'Import parameter not yet supported (' + qp2s('import',pp.get('import')) + ')';
+            }
+
+            return null;
+        }
 
 
 
@@ -2539,10 +2606,10 @@ window.wayic_read_readable = ( function()
           *     @return (string)
           *     @see http://reluk.ca/project/wayic/web/target
           */
-        expo.windowTargetedID = function() { return windowTargetedID; };
+        expo.windowTargetedId = function() { return windowTargetedId; };
 
 
-            let windowTargetedID = null;
+            let windowTargetedId = null;
 
 
 
@@ -2556,18 +2623,18 @@ window.wayic_read_readable = ( function()
             const hash = location.hash; // [WDL]
             if( hash.length <= 1 )
             {
-                if( windowTargetedID !== null ) // Otherwise this call is redundant †
+                if( windowTargetedId !== null ) // Otherwise this call is redundant †
                 {
-                    windowTargetedID = null;
+                    windowTargetedId = null;
                     clearWindowTargetedElement();
                 }
                 return;
             }
 
             const id = hash.slice( 1 );
-            if( windowTargetedID === id ) return; // This call is redundant †
+            if( windowTargetedId === id ) return; // This call is redundant †
 
-            windowTargetedID = id;
+            windowTargetedId = id;
             const e = document.getElementById( id );
             if( e === null ) clearWindowTargetedElement();
             else setWindowTargetedElement( e );
@@ -2934,15 +3001,13 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a PartTransformC.
           *
-          *     @see #element
+          *     @param element (Element) The proper wayscript element to transform.
           */
         constructor( element )
         {
 
            // - i n p u t - / - c o n f i g u r a t i o n - - - - - - - - - - - - - - - - - - - - - - -
 
-            /** The wayscript element to transform.
-              */
             this.element = element;
 
 
@@ -3071,7 +3136,7 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a PartTransformC2, first removing the markup of the earlier PartTransformC.
           *
-          *     @see PartTransformC#element
+          *     @param element (Element) The element transformed in the earlier PartTransformC.
           */
         constructor( element )
         {
@@ -3207,40 +3272,39 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a SubjoiningWaybitReference from a referential jointer.
           *
-          *     @param jointer (Element) A referential jointer.
-          *     @see #joinV
+          *     @param srjDocUri (string) The location of the surjoint document,
+          *       the one containing the referential jointer, in URI form.
+          *     @param jointer (Element) The referential jointer.
+          *     @param joinV (string, see #joinV)
           *
           *     @throws (string) Error message if the reference declaration is malformed.
           */
-        constructor( jointer, joinV )
+        constructor( srjDocUri, jointer, joinV )
         {
             this._joinV = joinV;
             {
-                const importV = jointer.getAttributeNS( NS_WAY, 'import' );
-                if( importV !== null ) throw 'Attribute not yet supported: ' + a2s('import',importV);
-
                 const offsetV = jointer.getAttributeNS( NS_WAY, 'offset' );
-                if( offsetV !== null ) throw 'Attribute not yet supported: ' + a2s('offset',offsetV);
-            }
-
-            let sbjDocLoc = URIs.defragmented( joinV ); // Document location
-            {
-                const fragment = joinV.slice( sbjDocLoc.length + 1 );
-                if( fragment === '' )
+                if( offsetV !== null )
                 {
-                    throw "Missing fragment sign '#': " + a2s('join',joinV);
+                    throw 'Attribute not yet supported (' + a2s('offset',offsetV) + ')';
                 }
-
-                this._subjointID = fragment;
             }
-            if( sbjDocLoc.length > 0 )
+
+            let sbjDocRef = URIs.defragmented( joinV );
             {
-                const r = FormallyInfracastReferencing.malformationReport( sbjDocLoc );
+                const fragment = joinV.slice( sbjDocRef.length + 1 );
+                if( fragment === '' ) throw "Missing fragment sign '#' (" + a2s('join',joinV) + ')';
+
+                this._subjointId = fragment;
+            }
+            if( sbjDocRef.length > 0 )
+            {
+                const r = FormallyIntracastReferencing.malformationReportD( sbjDocRef, srjDocUri );
                 if( r !== null ) throw makeMessage_malformedAttribute( 'join', joinV, r );
 
-                sbjDocLoc = FormallyInfracastReferencing.removedFromWaycastContext( sbjDocLoc );
+                sbjDocRef = FormallyIntracastReferencing.removedFromWaycastContext( sbjDocRef );
             }
-            this._subjointDocumentLocation = sbjDocLoc;
+            this._subjointDocumentPath = sbjDocRef;
         }
 
 
@@ -3252,7 +3316,7 @@ window.wayic_read_readable = ( function()
           */
         hrefTo( element )
         {
-            const href = this._subjointDocumentLocation + '#' + this._subjointID;
+            const href = this._subjointDocumentPath + '#' + this._subjointId;
             element.setAttribute( 'href', href );
             return href;
         }
@@ -3271,13 +3335,13 @@ window.wayic_read_readable = ( function()
           *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           *     @see Same-document reference, https://tools.ietf.org/html/rfc3986#section-4.4
           */
-        get subjointDocumentLocation() { return this._subjointDocumentLocation; }
+        get subjointDocumentPath() { return this._subjointDocumentPath; }
 
 
 
         /** The identifier of the subjoining waybit.
           */
-        get subjointID() { return this._subjointID; }
+        get subjointId() { return this._subjointId; }
 
 
     }
@@ -3296,9 +3360,9 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a SubjointImage.
           *
-          *     @see #localName
-          *     @see #namespaceURI
-          *     @see #previewString
+          *     @param localName    (see Element#localName)
+          *     @param namespaceURI (see Element#namespaceURI)
+          *     @param previewString (string, see #previewString)
           */
         constructor( localName, namespaceURI, previewString )
         {
@@ -3363,14 +3427,14 @@ window.wayic_read_readable = ( function()
 
         /** Retrieves the image of the indicated subjoining waybit.
           *
-          *     @param sbjLoc (string) The location of the subjoining waybit in normal URI form.
+          *     @param sbjUri (string) The location of the subjoining waybit in normal URI form.
           *     @return (SubjointImage) The cached image, or null if none is cached.
           *
           *     @see URIs#normalized
           */
-        expo.read = function( sbjLoc )
+        expo.read = function( sbjUri )
         {
-            const s = sessionStorage.getItem( SS_KEY_PREFIX + sbjLoc );
+            const s = sessionStorage.getItem( SS_KEY_PREFIX + sbjUri );
             if( s !== null )
             {
                 const o = JSON.parse( s ); // Yields object form (o) of original image stored
@@ -3391,18 +3455,18 @@ window.wayic_read_readable = ( function()
 
         /** Stores the image of the indicated subjoining waybit.
           *
-          *     @param sbjLoc (string) The location of the subjoining waybit in normal URI form.
+          *     @param sbjUri (string) The location of the subjoining waybit in normal URI form.
           *     @param image (SubjointImage)
           *
           *     @see URIs#normalized
           */
-        expo.write = function( sbjLoc, image )
+        expo.write = function( sbjUri, image )
         {
-            if( URIs.isDetectedAbnormal( sbjLoc )) throw URIs.makeMessage_abnormal( sbjLoc );
+            if( URIs.isDetectedAbnormal( sbjUri )) throw URIs.makeMessage_abnormal( sbjUri );
 
             if( image === null ) throw NULL_PARAMETER;
 
-            sessionStorage.setItem( SS_KEY_PREFIX + sbjLoc,
+            sessionStorage.setItem( SS_KEY_PREFIX + sbjUri,
               JSON.stringify( image, /*replacer*/null, SESSION_STRINGIFY_SPACING ));
         };
 
@@ -3433,18 +3497,18 @@ window.wayic_read_readable = ( function()
 
                 /** Constructs an SurjointFinisher_Registration.
                   *
-                  *     @see #jointer
-                  *     @see #subjointID
-                  *     @param subjointDocLoc (string) The location of the subjoint document
+                  *     @param jointer (Element, see #jointer)
+                  *     @param subjointId (string, see #subjointId)
+                  *     @param subjointDocUri (string) The location of the subjoint document
                   *       in normal URI form.
                   *
                   *     @see URIs#normalized
                   */
-                constructor( jointer, subjointID, subjointDocLoc )
+                constructor( jointer, subjointId, subjointDocUri )
                 {
                     this._jointer = jointer;
-                    this._subjointID = subjointID;
-                    this._subjointImage = SubjointImageCache.read( subjointDocLoc + '#' + subjointID );
+                    this._subjointId = subjointId;
+                    this._subjointImage = SubjointImageCache.read( subjointDocUri + '#' + subjointId );
                 }
 
 
@@ -3461,7 +3525,7 @@ window.wayic_read_readable = ( function()
 
                 /** The identifier of the subjoining waybit (string) within the subjoint document.
                   */
-                get subjointID() { return this._subjointID; }
+                get subjointId() { return this._subjointId; }
 
             }
 
@@ -3511,30 +3575,30 @@ window.wayic_read_readable = ( function()
         /** Tells this finisher of a separate document joined directly to the present document
           * by a non-bitform jointer.
           *
-          *     @param loc (string) The location of the subjoint document in normal URI form.
+          *     @param uri (string) The location of the subjoint document in normal URI form.
           *
           *     @see #registerBitformJointer
           *     @see URIs#normalized
           */
-        expo.noteSubjoiningDocument = function( loc ) { registerSubjoiningDocument( loc ); };
+        expo.noteSubjoiningDocument = function( uri ) { registerSubjoiningDocument( uri ); };
 
 
 
         /** Registers an unresolved, interdocument bitform joint and returns the registration.
           *
           *     @param jointer (Element) A bitform jointer that joins across documents.
-          *     @param subjointID (string) The identifier of the subjoining waybit
+          *     @param subjointId (string) The identifier of the subjoining waybit
           *       within the subjoint document.
-          *     @param subjointDocLoc (string) The location of the subjoint document in normal URI form.
+          *     @param subjointDocUri (string) The location of the subjoint document in normal URI form.
           *
           *     @return (SurjointFinisher_Registration)
           *
           *     @see URIs#normalized
           */
-        expo.registerBitformJointer = function( jointer, subjointID, subjointDocLoc )
+        expo.registerBitformJointer = function( jointer, subjointId, subjointDocUri )
         {
-            const reg = new SurjointFinisher_Registration( jointer, subjointID, subjointDocLoc );
-            const regList = registerSubjoiningDocument( subjointDocLoc );
+            const reg = new SurjointFinisher_Registration( jointer, subjointId, subjointDocUri );
+            const regList = registerSubjoiningDocument( subjointDocUri );
             regList.push( reg );
             return reg;
         };
@@ -3560,7 +3624,7 @@ window.wayic_read_readable = ( function()
           * in normal URI form) of a directly subjoint document.  The value is a registration list
           * (Array of SurjointFinisher_Registration), one for each bitform jointer (if any)
           * of the present document that refers to the keyed document.  The keys cover
-          * all referentially subjoining documents regardless of how their joints are formed,
+          * all referentially subjoint documents regardless of how their joints are formed,
           * while the values' registration lists cover only bitform jointers.
           *
           *     @see URIs#normalized
@@ -3573,28 +3637,28 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** @param loc (string) The location of the subjoining (directly subjoint) document
+        /** @param uri (string) The location of the subjoining (directly subjoint) document
           *   in normal URI form.
           * @return (Array of SurjointFinisher_Registration)
           *
           * @see URIs#normalized
           */
-        function registerSubjoiningDocument( loc )
+        function registerSubjoiningDocument( uri )
         {
-            let regList = jointRegistry.get( loc );
+            let regList = jointRegistry.get( uri );
             if( regList === undefined )
             {
-                if( loc.length !== URIs.defragmented(loc).length )
+                if( uri.length !== URIs.defragmented(uri).length )
                 {
-                    throw MALFORMED_PARAMETER + ': Fragmented (#) document location: ' + loc;
+                    throw MALFORMED_PARAMETER + ': Fragmented (#) document location: ' + uri;
                 }
 
-                if( URIs.isDetectedAbnormal( loc )) throw URIs.makeMessage_abnormal( loc );
+                if( URIs.isDetectedAbnormal( uri )) throw URIs.makeMessage_abnormal( uri );
 
-                if( loc === DOCUMENT_LOCATION ) throw MALFORMED_PARAMETER + ': Not a separate document';
+                if( uri === DOCUMENT_URI ) throw MALFORMED_PARAMETER + ': Not a separate document';
 
                 regList = [];
-                jointRegistry.set( loc, regList );
+                jointRegistry.set( uri, regList );
             }
             return regList;
         }
@@ -3621,8 +3685,8 @@ window.wayic_read_readable = ( function()
                 const jRegList = entry[1];
                 if( jRegList.length === 0 ) continue; // No bitform joints into this document
 
-                const sbjDocLoc = entry[0];
-                DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
+                const sbjDocUri = entry[0];
+                DocumentCache.readNowOrLater( sbjDocUri, new class extends DocumentReader
                 {
                     close( cacheEntry )
                     {
@@ -3635,11 +3699,11 @@ window.wayic_read_readable = ( function()
                     {
                         for( const jReg of jRegList )
                         {
-                            const id = jReg.subjointID;
+                            const id = jReg.subjointId;
                             const sbj = sbjDoc.getElementById( id );
                             const jointer = jReg.jointer;
                             const joinV = jointer.getAttributeNS( NS_WAY, 'join' ); /* Nominal form
-                              as declared of normal form <sbjDocLoc>#<id>.  Used for reporting only. */
+                              as declared of normal form <sbjDocUri>#<id>.  Used for reporting only. */
 
                           // ===============
                           // Report and mark as broken any invalid jointer
@@ -3665,7 +3729,7 @@ window.wayic_read_readable = ( function()
                           // =======================
                           // Finish the presentation
                           // =======================
-                            const previewString = makeSubjointPreviewString( sbj, id, sbjDocLoc,
+                            const previewString = makeSubjointPreviewString( sbj, id, sbjDocUri,
                               LeaderReader );
                             const jN = jointer.localName;
                             const jNResolved = jN === ELEMENT_NAME_UNCHANGED? sbj.localName: jN;
@@ -3688,7 +3752,7 @@ window.wayic_read_readable = ( function()
 
                           // Update the image cache
                           // ----------------------
-                            SubjointImageCache.write( sbjDocLoc + '#' + id, image );
+                            SubjointImageCache.write( sbjDocUri + '#' + id, image );
                         }
                     }
                 });
@@ -3702,10 +3766,10 @@ window.wayic_read_readable = ( function()
           */
         function start2_subjoiningDocuments( jointRegistry )
         {
-            // Now call each subjoining document *surjoint*, and image *its* subjoining waybits:
-            for( const srjDocLoc of jointRegistry.keys() )
+            // Now call each subjoint document *surjoint*, and image *its* subjoining waybits:
+            for( const srjDocUri of jointRegistry.keys() )
             {
-                DocumentCache.readNowOrLater( srjDocLoc, new class extends DocumentReader
+                DocumentCache.readNowOrLater( srjDocUri, new class extends DocumentReader
                 {
                     read( _cacheEntry/*ignored*/, srjDoc )
                     {
@@ -3722,33 +3786,33 @@ window.wayic_read_readable = ( function()
                             if( !isBitNS( jNS )) continue; // Needs no image, is not bitform
 
                             let sbjRef;
-                            try { sbjRef = new SubjoiningWaybitReference( jointer, joinV ); }
+                            try { sbjRef = new SubjoiningWaybitReference( srjDocUri, jointer, joinV ); }
                             catch( unparseable ) { continue; }
 
                             // No need here to fend against other types of malformed reference;
                             // no harm in caching a superfluous image.
-                            let sbjDocLoc = sbjRef.subjointDocumentLocation;
-                            if( sbjDocLoc.length === 0 ) continue;
+                            let sbjDocPath = sbjRef.subjointDocumentPath;
+                            if( sbjDocPath.length === 0 ) continue;
                               // Needs no caching, intradocument joint
 
-                            sbjDocLoc = URIs.normalized( sbjDocLoc, /*base*/srjDocLoc );
-                            if( sbjDocLoc === srjDocLoc ) continue;
+                            sbjDocPath = URIs.normalized( sbjDocPath, /*base*/srjDocUri );
+                            if( sbjDocPath === srjDocUri ) continue;
                               // Needs no caching, intradocument joint
 
-                            DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
+                            DocumentCache.readNowOrLater( sbjDocPath, new class extends DocumentReader
                             {
                                 read( _cacheEntry/*ignored*/, sbjDoc )
                                 {
-                                    const id = sbjRef.subjointID;
+                                    const id = sbjRef.subjointId;
                                     const sbj = sbjDoc.getElementById( id );
                                     if( sbj === null || sbj.hasAttributeNS(NS_WAY,'join') ) return;
                                       // Invalid joint, incomplete or double
 
                                   // Pre-cache the image, or re-cache it  † [SIC]
                                   // -------------------
-                                    const previewString = makeSubjointPreviewString( sbj, id, sbjDocLoc,
+                                    const previewString = makeSubjointPreviewString( sbj, id, sbjDocPath,
                                       LeaderReader );
-                                    SubjointImageCache.write( sbjDocLoc + '#' + id,
+                                    SubjointImageCache.write( sbjDocPath + '#' + id,
                                       new SubjointImage( jointer.localName, jNS, previewString ));
                                     // † Any re-caching here is only a side effect, not needed
                                 }
@@ -3780,14 +3844,14 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a TargetWhereabouts.
           *
-          *     @see #direction
-          *     @see #documentLocationN
-          *     @see #element
+          *     @param direction (string, see #direction)
+          *     @param documentUri (string, see #documentUri)
+          *     @param element (Element, see #element)
           */
-        constructor( direction, documentLocationN, element )
+        constructor( direction, documentUri, element )
         {
             this._direction = direction;
-            this._documentLocationN = documentLocationN;
+            this._documentUri = documentUri;
             this._element = element;
         }
 
@@ -3803,12 +3867,12 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The nominal location of the target document as a URI string in normal form,
+        /** The nominal location of the target document as a URI (string) in normal form,
           * or the empty string if the target element is nominally in the present document.
           *
           *     @see URIs#normalized
           */
-        get documentLocationN() { return this._documentLocationN; }
+        get documentUri() { return this._documentUri; }
 
 
 
@@ -3829,18 +3893,18 @@ window.wayic_read_readable = ( function()
         {
             if( jointer.ownerDocument !== document ) throw MALFORMED_PARAMETER;
 
-            const docLoc = sbjRef.subjointDocumentLocation;
-            if( docLoc.length > 0 )
+            const docPath = sbjRef.subjointDocumentPath;
+            if( docPath.length > 0 )
             {
-                const docLocN = URIs.normalized( docLoc, /*base*/DOCUMENT_LOCATION );
-                if( docLocN !== DOCUMENT_LOCATION ) // Then the target is outside the present document
+                const docUri = URIs.normalized( docPath, /*base*/DOCUMENT_URI );
+                if( docUri !== DOCUMENT_URI ) // Then the target is outside the present document
                 {
-                    return new TargetWhereabouts( /*direction*/null, docLocN, /*element*/null );
+                    return new TargetWhereabouts( /*direction*/null, docUri, /*element*/null );
                 }
             }
 
             // The target element is nominally within the present document
-            const element = document.getElementById( sbjRef.subjointID );
+            const element = document.getElementById( sbjRef.subjointId );
             if( element !== null )
             {
                 return fromJoint( jointer, element );
@@ -3867,12 +3931,12 @@ window.wayic_read_readable = ( function()
                         console.assert( targetPosition & DOCUMENT_POSITION_FOLLOWING, A );
                         return TARGET_DOWN;
                     })();
-                    return new TargetWhereabouts( direction, /*documentLocationN*/'', sbj );
+                    return new TargetWhereabouts( direction, /*documentUri*/'', sbj );
                 }
             }
 
             tsk( makeMessage_incompleteJointTo('this document',joinV) );
-            return new TargetWhereabouts( /*direction*/null, /*documentLocationN*/'', element );
+            return new TargetWhereabouts( /*direction*/null, /*documentUri*/'', element );
         }
 
 
@@ -3960,7 +4024,7 @@ window.wayic_read_readable = ( function()
             const id = ROOT_LEG_ID;
             console.assert( !(toEnforceConstraints && wasOpened(id)), A );
             openLeg( id );
-            DocumentCache.readNowOrLater( ROOT_DOCUMENT_LOCATION, new class extends DocumentReader
+            DocumentCache.readNowOrLater( ROOT_DOCUMENT_URI, new class extends DocumentReader
             {
                 close( cacheEntry ) { shutLeg( id ); }
                 read( cacheEntry, doc )
@@ -3979,10 +4043,11 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether the specified leg is already traced.
           *
-          *     @see #makeLegID
+          *     @param legId (string, see #makeLegId)
+          *
           *     @see #shutLeg
           */
-        function isShut( legID ) { return legsShut.includes(legID); }
+        function isShut( legId ) { return legsShut.includes(legId); }
           // The likely efficiency of this test is asserted by INC FAST, q.v.
 
 
@@ -4002,24 +4067,25 @@ window.wayic_read_readable = ( function()
         /** Constructs a trace leg identifier (string) for the given subjoining waybit.
           * Each trace leg is scoped to single DOM branch exclusive of subjoints.
           *
-          *     @param sbjDocLoc (string) The location of the subjoint document in normal URI form.
-          *     @param sbjID (string) The identifier of the subjoining waybit.
+          *     @param sbjDocUri (string) The location of the subjoint document in normal URI form.
+          *     @param sbjId (string) The identifier of the subjoining waybit.
           *
           *     @see URIs#normalized
           */
-        function makeLegID( sbjDocLoc, sbjID ) { return sbjDocLoc + '#' + sbjID; }
+        function makeLegId( sbjDocUri, sbjId ) { return sbjDocUri + '#' + sbjId; }
 
 
 
         /** Adds the given leg identifier to legsOpen.
           *
-          *     @see #makeLegID
+          *     @param legId (string, see #makeLegId)
+          *
           *     @see #wasOpened
           */
-        function openLeg( legID )
+        function openLeg( legId )
         {
-            legsOpen.push( legID );
-         // console.debug( legsOpen.length + '\t\tleg ' + legID ); // TEST
+            legsOpen.push( legId );
+         // console.debug( legsOpen.length + '\t\tleg ' + legId ); // TEST
               // Spacing matters here, cf. shutLeg
         }
 
@@ -4029,29 +4095,30 @@ window.wayic_read_readable = ( function()
           *
           *     @see http://reluk.ca/project/wayic/script/way_root_element
           */
-        const ROOT_LEG_ID = makeLegID( ROOT_DOCUMENT_LOCATION, 'root' );
+        const ROOT_LEG_ID = makeLegId( ROOT_DOCUMENT_URI, 'root' );
 
 
 
         /** Moves the given leg identifier from legsOpen to legsShut,
           * then starts decorating if all legs are now shut.
           *
-          *     @throws (string) Error message if legID is missing from legsOpen.
+          *     @param legId (string, see #makeLegId)
           *
-          *     @see #makeLegID
+          *     @throws (string) Error message if legId is missing from legsOpen.
+          *
           *     @see #isShut
           */
-        function shutLeg( legID )
+        function shutLeg( legId )
         {
-            const o = legsOpen.indexOf( legID );
-            if( o < 0 ) throw 'Leg is not open: ' + legID;
+            const o = legsOpen.indexOf( legId );
+            if( o < 0 ) throw 'Leg is not open: ' + legId;
 
           // Shut the leg
           // ------------
             legsOpen.splice( o, /*removal count*/1 );
-         // console.debug( '\t' + legsOpen.length + '\tleg ' + legID + ' ·' ); // TEST
+         // console.debug( '\t' + legsOpen.length + '\tleg ' + legId + ' ·' ); // TEST
               // Spacing matters here, cf. openLeg
-            legsShut.push( legID );
+            legsShut.push( legId );
             if( legsOpen.length > 0 ) return;
 
           // After all are shut
@@ -4067,13 +4134,13 @@ window.wayic_read_readable = ( function()
           * May return with any number of its referentially joined legs yet untraced,
           * each slated for a separate tracing.
           *
-          *     @see #makeLegID
+          *     @param legId (string, see #makeLegId)
           *     @param branch (Element) Base element of the branch that comprises the leg.
           *     @param cacheEntry (DocumentCacheEntry)
           */
-        function traceLeg( legID, branch, cacheEntry )
+        function traceLeg( legId, branch, cacheEntry )
         {
-            const docLoc = cacheEntry.location;
+            const docUri = cacheEntry.uri;
             const doc = branch.ownerDocument;
             if( doc === document )
             {
@@ -4090,24 +4157,28 @@ window.wayic_read_readable = ( function()
                 jointer: if( joinV !== null )
                 {
                     let sbjRef;
-                    try { sbjRef = new SubjoiningWaybitReference( /*jointer*/t, joinV ); }
+                    try
+                    {
+                        sbjRef = new SubjoiningWaybitReference( /*srjDocUri*/docUri, /*jointer*/t,
+                          joinV );
+                    }
                     catch( unparseable ) { break jointer; }
 
                     // No need here to fend against other types of malformed jointing.
                     // Rather take it as the wayscribe intended, and so extend the trace.
-                    let sbjDocLoc = sbjRef.subjointDocumentLocation;
-                    sbjDocLoc = sbjDocLoc.length > 0?
-                      URIs.normalized(sbjDocLoc,/*base*/docLoc): docLoc;
-                    const sbjID = sbjRef.subjointID;
-                    const sbjLegID = makeLegID( sbjDocLoc, sbjID );
-                    if( wasOpened( sbjLegID )) break jointer;
+                    let sbjDocPath = sbjRef.subjointDocumentPath;
+                    sbjDocPath = sbjDocPath.length > 0?
+                      URIs.normalized(sbjDocPath,/*base*/docUri): docUri;
+                    const sbjId = sbjRef.subjointId;
+                    const sbjLegId = makeLegId( sbjDocPath, sbjId );
+                    if( wasOpened( sbjLegId )) break jointer;
 
-                    openLeg( sbjLegID );
-                    DocumentCache.readNowOrLater( sbjDocLoc, new class extends DocumentReader
+                    openLeg( sbjLegId );
+                    DocumentCache.readNowOrLater( sbjDocPath, new class extends DocumentReader
                     {
                         close( sbjDocReg )
                         {
-                            if( sbjDocReg.document === null ) shutLeg( sbjLegID );
+                            if( sbjDocReg.document === null ) shutLeg( sbjLegId );
                             // Else readDirectly has (or will) shut it
                         }
 
@@ -4116,20 +4187,20 @@ window.wayic_read_readable = ( function()
                           after the present leg is fully traced and marked shut.  Thus it enables
                           optimizations elsewhere in the code that depend on such ordering. */
                         {
-                            const wasCalledLate = isShut( legID );
+                            const wasCalledLate = isShut( legId );
                             const readMethod = wasCalledLate? this.readDirectly: this.readLater;
                             readMethod.call( this, sbjDocReg, sbjDoc );
                         }
 
                         readDirectly( sbjDocReg, sbjDoc )
                         {
-                            const sbj = sbjDoc.getElementById( sbjID );
+                            const sbj = sbjDoc.getElementById( sbjId );
                             sbjTrace:
                             {
                                 if( sbj === null )
                                 {
                                     console.info( 'Incomplete joint truncates trace at leg: '
-                                      + sbjLegID ); // In case a report issues from nowhere else
+                                      + sbjLegId ); // In case a report issues from nowhere else
                                     break sbjTrace; // Invalid joint
                                 }
 
@@ -4144,7 +4215,7 @@ window.wayic_read_readable = ( function()
                                     const aNS = a.namespaceURI;
                                     if( aNS === null ) // Then *a* is the document node
                                     {
-                                        tsk( 'Malformed document: Missing *body* element: ' + sbjDocLoc );
+                                        tsk( 'Malformed document: Missing *body* element: ' + sbjDocPath );
                                         break;
                                     }
 
@@ -4153,7 +4224,7 @@ window.wayic_read_readable = ( function()
                                         const id = a.getAttribute( 'id' );
                                         if( id === null ) continue;
 
-                                        if( isShut( makeLegID( sbjDocLoc, id ))) break sbjTrace;
+                                        if( isShut( makeLegId( sbjDocPath, id ))) break sbjTrace;
                                           // If only for sake of efficiency, ∵ this subjoint branch is
                                           // covered already (or will be) as part of a larger branch.
                                     }
@@ -4162,9 +4233,9 @@ window.wayic_read_readable = ( function()
 
                               // Trace into the subjoint
                               // -----------------------
-                                traceLeg( sbjLegID, sbj, sbjDocReg );
+                                traceLeg( sbjLegId, sbj, sbjDocReg );
                             }
-                            shutLeg( sbjLegID );
+                            shutLeg( sbjLegId );
                         }
 
                         readLater( sbjDocReg, sbjDoc )
@@ -4186,7 +4257,7 @@ window.wayic_read_readable = ( function()
               // Subjoining waybit, case of
               // -----------------
                 const id = t.getAttribute( 'id' );
-                if( id && isShut(makeLegID(docLoc,id)) ) toLastDescendant( traversal ); /* Bypassing
+                if( id && isShut(makeLegId(docUri,id)) ) toLastDescendant( traversal ); /* Bypassing
                   sub-branch t, if only for efficiency, as already it was traced in a separate leg. */
             }
             while( (t = traversal.nextNode()) !== null );
@@ -4196,10 +4267,11 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether the specified leg was ever opened.
           *
-          *     @see #makeLegID
+          *     @param legId (string, see #makeLegId)
+          *
           *     @see #openLeg
           */
-        function wasOpened( legID ) { return legsOpen.includes(legID) || legsShut.includes(legID); }
+        function wasOpened( legId ) { return legsOpen.includes(legId) || legsShut.includes(legId); }
           // The likely efficiency of these tests is asserted by INC FAST, q.v.
 
 
@@ -4282,15 +4354,14 @@ window.wayic_read_readable = ( function()
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
   *
-  *  [UAU]  The URL API for all URIs?  Yes, the URL API applies to URIs in general.  "In practice
-  *         a single algorithm is used for both".  It might equally have been called the "URI API".
-  *         https://url.spec.whatwg.org/#goals
+  *  [UAU]  Here employing the URL API to handle URIs in general.  Despite the name "URL API",
+  *         it actually covers the forms "URI and IRI" to boot.  https://url.spec.whatwg.org/#goals.
   *
   *  [UN] · Either *undefined* or null in value.
   *
   *  [UZ] · Either *undefined* or zero in value.
   *
-  *  [WDL]  ‘window.location’ or ‘document.location’?  One may use either, they are identical.
+  *  [WDL]  ‘window.location’ or ‘window.document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
   *
   *  [WTP]  Window target positioning.  Normally the browser itself does this, vertically scrolling
