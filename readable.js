@@ -3213,7 +3213,7 @@ window.wayic_read_readable = ( function()
                 const pp = u.searchParams; /* Anticipating implementation of ./project.task
                   § Bidirectional traversal of referential joints § scene selection model */
                 pp.set( 'scn', 'srj' );
-                pp.set( 'rfn', bit.getAttribute('id') );
+                pp.set( 'bit', bit.getAttribute('id') );
              // history.replaceState( history./*duplicate of*/state, /*no title*/'', u.href ); // TEST
                 return;
             }
@@ -3261,10 +3261,7 @@ window.wayic_read_readable = ( function()
    //   S u b j o i n i n g   W a y b i t   R e f e r e n c e
 
 
-    /** A direct mode, subjoining waybit reference.
-      *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § Subjoining waybit reference, and
-      *       § Offset capable referencing § refinement attribution § direct mode.
+    /** @see http://reluk.ca/project/wayic/cast/doc.task § Subjoining waybit reference
       */
     class SubjoiningWaybitReference
     {
@@ -3282,14 +3279,6 @@ window.wayic_read_readable = ( function()
         constructor( srjDocUri, jointer, joinV )
         {
             this._joinV = joinV;
-            {
-                const offsetV = jointer.getAttributeNS( NS_WAY, 'offset' );
-                if( offsetV !== null )
-                {
-                    throw 'Attribute not yet supported (' + a2s('offset',offsetV) + ')';
-                }
-            }
-
             let sbjDocRef = URIs.defragmented( joinV );
             {
                 const fragment = joinV.slice( sbjDocRef.length + 1 );
