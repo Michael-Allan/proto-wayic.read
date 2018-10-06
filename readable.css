@@ -1093,10 +1093,10 @@ html[read|animatedShow]
  *          https://www.w3.org/TR/css-position-3/#cb
  *
  *  [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
- *         across all relative references, that is, and throughout the waycast.  They will not extend
- *         across intercast references, e.g. imports via subjoining waybit references.  Though the
- *         original document was loaded on a ‘file’ scheme URI, still its intercast references will
- *         resolve because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
+ *         across all relative references, that is, and throughout the waycast.
+ *         However they will not extend across any intercast reference; the referring document
+ *         may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
+ *         because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
  *         http://reluk.ca/project/wayic/intercast § Design constraints § waycast publication
  *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
