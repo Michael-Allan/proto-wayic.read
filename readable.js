@@ -1221,7 +1221,7 @@ window.wayic_read_readable = ( function()
           // ================
           // Bitform jointing by element *t*
           // ================
-            const joinV = ( ()=> // Subjoining waybit reference, non-null if *t* is a jointer
+            const joinV = ( ()=> // *join* attribute, non-null if *t* is a jointer
             {
                 let v = t.getAttributeNS( NS_WAY, 'join' );
                 if( v === null ) return null;
