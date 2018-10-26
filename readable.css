@@ -1097,7 +1097,7 @@ html[read|animatedShow]
  *         However they will not extend across any intercast reference; the referring document
  *         may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
  *         because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
- *         http://reluk.ca/project/wayic/intercast § Design constraints § waycast publication
+ *         http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
  *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
  *
