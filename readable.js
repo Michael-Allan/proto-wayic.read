@@ -162,7 +162,7 @@
   *                     bullseye  ∙ Iconic bullseye, a dimensionless point centred on the icon
   *
   *
-  * NOTES  (continued at bottom)
+  * NOTES  (see at bottom)
   * -----
   */
 'use strict';
