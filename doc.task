@@ -1,0 +1,22 @@
+wayic.read/doc.task - Documentation in rough
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Design constraints`
+    [ ⤒ maximal
+        + bounded by fidelity to the waycast
+            - the transformer is limited to a conservative presentation
+                - true to the way declaration's formal source in the context of its native waycast
+            - why?
+                * maximization of user freedom
+                    ( see Fi, http://reluk.ca/project/wayic/architec/doc.task § Architectonic
+                    - allowing the waycaster to remain close to the waycast
+                        - itself a structural guarantor of personal freedom
+                        - by not obscuring it with improper additions
+                * consistency of overall user experience
+                    - consistent with the way declaration as the wayscribe sees it while editing
+                * ease of design
+                    - adopting the basic presentation of the waycast
+                        - the basic presentation need not be designed anew
+
+
+                                     Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.
