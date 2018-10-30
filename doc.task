@@ -4,7 +4,7 @@ wayic.read/doc.task - Documentation in rough
     Design constraints`
     [ ⤒ maximal
         + bounded by fidelity to the waycast
-            - the transformer is limited to a conservative presentation
+            - the presenter is limited to a conservative presentation
                 - true to the way declaration's formal source in the context of its native waycast
             - why?
                 * maximization of user freedom

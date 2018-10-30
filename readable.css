@@ -1,6 +1,6 @@
-/* readable - Way declarations that are readable on the Web
+/* readable - Web presenter of way declarations
  *
- *   Here are usage instructions and advice for waycasters who wish to use this transformer.
+ *   Here are usage instructions and advice for waycasters who wish to use this presenter.
  *
  *
  * INSTALLATION
@@ -38,7 +38,7 @@
  *
  * CONFIGURATION
  * -------------
- *   Optionally configure the transformer before starting it.
+ *   Optionally configure the presenter before starting it.
  *   For example: (extending the example above)
  *
  *       ⋮
@@ -53,14 +53,14 @@
  *
  * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
  * -----------------------------------------
- *   This transformer takes as anonymous any wayscript element in which the local part of the name
+ *   This presenter takes as anonymous any wayscript element in which the local part of the name
  *   is encoded by a single underscore ‘_’.  It transforms the element accordingly.  Likewise it gives
  *   an element with a namespace prefix of ‘_’ the same form as an element that has no prefix.
  *
  *
  * SECTIONING
  * ----------
- *   This transformer puts vertical margins on HTML *section* elements.  It adds the same margins
+ *   This presenter puts vertical margins on HTML *section* elements.  It adds the same margins
  *   to wayscript elements that are *direct children of the body*.  To defeat this automatic margining
  *   for a given group of *body* children, put them together in a single *section* element.
  *
@@ -71,7 +71,7 @@
  *
  *   Console reporting
  *   -----------------
- *     This transformer reports problems it detects to the browser’s debugging console.
+ *     This presenter reports problems it detects to the browser’s debugging console.
  *     https://console.spec.whatwg.org/
  *
  *   Requests by ‘file’ scheme
@@ -81,7 +81,7 @@
  *     Alert reporting
  *     ---------------
  *       When the user requests a way declaration document from a ‘file’ scheme URI,
- *       this transformer assumes that the user is the author of that document.  Then,
+ *       this presenter assumes that the user is the author of that document.  Then,
  *       in addition to console reporting, it opens an *alert* window to report malformed content
  *       or any other problem that an author might be able to remedy.
  *

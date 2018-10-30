@@ -1,4 +1,4 @@
-/** readable - Way declarations that are readable on the Web
+/** readable - Web presenter of way declarations
   *
   *   See readable.css for a waycaster’s introduction.  The sections below are for programmers.
   *
