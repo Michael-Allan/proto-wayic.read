@@ -26,4 +26,82 @@
     <p>
         The files for this project are released under an <a href='LICENCE.txt'>MIT licence</a>.
         </p>
+    <ul>
+        <li>Readable copy of latest files at <a href='http://reluk.ca/project/wayic/read/'>reluk.ca</a></li>
+        <li>Browseable revision history at <a>GitHub</a> (top of this page) *</li>
+        <li>
+            Bare <code>.git</code> clones at
+            <a href=    'http://reluk.ca/var/repo/git/wayic.read.git'>reluk.ca</a> or
+            <a href='https://github.com/Michael-Allan/wayic.read.git'>GitHub</a> *
+            <div style='font-size:0.85em; margin-top:1em; opacity:0.7'>
+                * Branch reluk.ca is liable to be rebased, master is stable.
+                </div>
+            </li>
+        </ul>
     </section>
+<script> // this all renders when viewed on GitHub, but no matter
+    ( function()
+    {
+
+        /** Corrects hyperlinks and related content of this document under the assumption
+          * that it's *not* served from GitHub.
+          */
+        function amend()
+        {
+            var isCorrect_github = false;
+            var isCorrect_reluk = docLoc.indexOf('//reluk.ca/') < 0;
+            var traversal = document.createNodeIterator( document.body, NodeFilter.SHOW_ELEMENT );
+            if( !traversal ) return;
+
+            for( ;; )
+            {
+                var t = traversal.nextNode();
+                if( !t ) break;
+
+                if( t.localName != 'a' ) continue;
+
+                var maybeFinished = false;
+                if( !isCorrect_reluk && t.href == 'http://reluk.ca/project/wayic/read/' )
+                {
+                  // Disable useless link, append text directions instead
+                  // --------------------
+                    t.removeAttribute( 'href' );
+                    var text = document.createTextNode( ' (top of this page)' );
+                    t.parentNode.insertBefore( text, t.nextSibling );
+                    isCorrect_reluk = maybeFinished = true;
+                }
+                if( !isCorrect_github )
+                {
+                    var text = asText( t.firstChild );
+                    if( text && text.data == 'GitHub' )
+                    {
+                        text = asText( t.nextSibling );
+                        if( text )
+                        {
+                          // Remove misleading text directions, enable link instead
+                          // ---------------------------------
+                            text.replaceData( 0, text.length, ' *' ); // leaving only the last bit
+                            t.setAttribute( 'href', 'https://github.com/Michael-Allan/wayic.read/' );
+                            isCorrect_github = maybeFinished = true;
+                        }
+                    }
+                }
+                if( maybeFinished && isCorrect_github && isCorrect_reluk ) break;
+            }
+        }
+
+
+        /** @return The given node if it's a text node, otherwise null.
+          */
+        function asText( node ) { return node.nodeType == /*Node.TEXT_NODE*/3? node : null; }
+
+
+        var docLoc = document.URL;
+
+
+    ////////////////////
+
+        if( docLoc.indexOf('//github.com/') < 0) amend();
+
+    }() );
+    </script>
