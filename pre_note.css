@@ -1,6 +1,10 @@
-/* pre_note - Informal notes in *pre* elements
+/* pre_note.css - Informal note styling on the client side
  *
- *   See readable.css for usage instructions.
+ *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
+ *   this style sheet runs on the client side — in the waycast reader’s web browser —
+ *   where it formats the presentation of informal, way declaration notes.
+ *
+ *   See manual.task for usage instructions.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
 
@@ -31,4 +35,4 @@ html|pre
 }
 
 
-/* Copyright © 2017 Michael Allan and contributors.  Licence MIT. */
+/* Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT. */

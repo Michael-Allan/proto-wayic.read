@@ -1,109 +1,10 @@
-/* readable - Web presenter of way declarations
+/* readable.css - Document styling on the client side
  *
- *   Here are usage instructions and advice for waycasters who wish to use this presenter.
+ *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
+ *   this style sheet runs on the client side — in the waycast reader’s web browser —
+ *   where it formats the presentation of each way declaration document.
  *
- *
- * INSTALLATION
- * ------------
- *   See also http://reluk.ca/project/wayic/cast/doc.task § Configuration of a waycast.
- *   For a working example of an installation, see:
- *
- *       * http://reluk.ca/project/waycast/way_declaration_document.css
- *       * http://reluk.ca/project/waycast/way_declaration_document.js
- *
- *
- *   Personal style sheet, way_declaration_document.css
- *   --------------------
- *     Atop the style sheet, insert this:
- *
- *         @import 'http://reluk.ca/project/wayic/read/readable.css';
- *
- *     Optionally add this:
- *
- *         @import 'http://reluk.ca/project/wayic/read/pre_note.css';
- *
- *
- *   Personal configuration program, way_declaration_document.js
- *   ------------------------------
- *     There insert the equivalent of this:
- *
- *         const s = document.body.appendChild(
- *           document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
- *         s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
- *         s.addEventListener( 'load', ( _Event ) =>
- *         {
- *            wayic_read_readable.start();
- *         });
- *
- *
- * CONFIGURATION
- * -------------
- *   Optionally configure the presenter before starting it.
- *   For example: (extending the example above)
- *
- *       ⋮
- *       s.addEventListener( 'load', ( _Event ) =>
- *       {
- *          wayic_read_readable.setEnforceConstraints( true );
- *          wayic_read_readable.start();
- *       });
- *
- *   The available configuration options are detailed in readable.js § Public interface.
- *
- *
- * ANONYMOUS ELEMENT AND PREFIX DECLARATIONS
- * -----------------------------------------
- *   This presenter takes as anonymous any wayscript element in which the local part of the name
- *   is encoded by a single underscore ‘_’.  It transforms the element accordingly.  Likewise it gives
- *   an element with a namespace prefix of ‘_’ the same form as an element that has no prefix.
- *
- *
- * SECTIONING
- * ----------
- *   This presenter puts vertical margins on HTML *section* elements.  It adds the same margins
- *   to wayscript elements that are *direct children of the body*.  To defeat this automatic margining
- *   for a given group of *body* children, put them together in a single *section* element.
- *
- *
- * TROUBLESHOOTING
- * ---------------
- *   See also readable.js § toEnforceConstraints.
- *
- *   Console reporting
- *   -----------------
- *     This presenter reports problems it detects to the browser’s debugging console.
- *     https://console.spec.whatwg.org/
- *
- *   Requests by ‘file’ scheme
- *   -------------------------
- *     When the user requests a way declaration document from a ‘file’ scheme URI.
- *
- *     Alert reporting
- *     ---------------
- *       When the user requests a way declaration document from a ‘file’ scheme URI,
- *       this presenter assumes that the user is the author of that document.  Then,
- *       in addition to console reporting, it opens an *alert* window to report malformed content
- *       or any other problem that an author might be able to remedy.
- *
- *     Limitations
- *     -----------
- *       When the user requests a way declaration document from a ‘file’ scheme URI,
- *       intracast, interdocument referential jointers may fail to resolve their references. [EFL]
- *       In that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
- *       and generally the transformation will be incomplete and the way definition harder to view.
- *       Security constraints enforced by the browser are the underlying cause of this.
- *
- *       A workaround for Chrome is its ‘--allow-file-access-from-files’ option. [AFA]
- *
- *       A workaround for Firefox is to first request the way root document
- *       from the waycast root directory.  Then follow the links from there. [SPF]
- *       Travel by other means (e.g. bookmark or address bar) will break the workaround.
- *       Travel by any means to the directory index, which for file scheme the browser itself generates,
- *       will also break the workaround.
- *
- *
- * NOTES  (see at bottom)
- * -----
+ *   See manual.task for usage instructions.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
 @namespace read 'data:,wayic.read';
@@ -1070,19 +971,6 @@ html[read|animatedShow]
 
 /* NOTES
  * -----
- *  [AFA]  Chrome option ‘--allow-file-access-from-files’.
- *         https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
- *         https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
- *
- *         Caveats: https://stackoverflow.com/questions/29371600
- *
- *         Without this option, when such file access is disallowed,
- *         Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
- *         for protocol schemes: http, data, chrome, chrome-extension, https.’
- *
- *         Discussion of the underlying problem:
- *         https://bugs.chromium.org/p/chromium/issues/detail?id=47416
- *
  *  [C]  · Class selectors.  These fail for NS_READ elements under Chrome (59).  Instead select
  *         the class of NS_READ element using the general attribute selector [class~='CLASS'].
  *
@@ -1092,12 +980,10 @@ html[read|animatedShow]
  *  [ECB]  Here establishing the containing block for absolutely positioned descendants.
  *          https://www.w3.org/TR/css-position-3/#cb
  *
- *  [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
- *         across all relative references, that is, and throughout the waycast.
- *         However they will not extend across any intercast reference; the referring document
- *         may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
- *         because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
- *         http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
+ *  [FIB]  Focus for inlined breadcrumbs.  Here avoiding use of the HTML focus facility as a base
+ *         for inlined breadcrumb trails.  It seems unreliable.  The browsers are doing their own
+ *         peculiar things with focus which are hard to work around.
+ *         http://w3c.github.io/html/editing.html#focus
  *
  *  [FT] · Failure of target pseudo-class in selector.  Here using a selector in workaround form:
  *
@@ -1111,14 +997,6 @@ html[read|animatedShow]
  *         (∼1 s interval) back-and-forth travel.  Otherwise no workaround would be necessary
  *         and attribute *isSubjoining* would need only a boolean value [BA in readable.js].
  *
- *  [GSC]  General sibling combinator.  Really there is none.  The combinator that CSS misnames a
- *         “general sibling combinator” is really rather particular in its application, in that it
- *         can only combine siblings in document order.  It cannot express a combination like this:
- *
- *             parent > subsequentSibling ~ priorSibling
- *
- *         https://www.w3.org/TR/css3-selectors/#general-sibling-combinators
- *
  *  [HSP]  HTML-embedded styling property.  The SVG standard appears to grant the *svg* element
  *         no such styling property.  Nevertheless the browsers are obeying it,
  *         at least when the *svg* element is embedded in HTML.
@@ -1129,10 +1007,6 @@ html[read|animatedShow]
  *  [NMP]  Not on multi-position travel.  Travel direction cues appear for unit travel and reload alone,
  *         because it happens these alone determine the calculated direction.  Showing that direction
  *         in other cases is unlikely to help reorient the user, rather likely to mislead him.
- *
- *  [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
- *         if the parent directory of the originating file is an ancestor directory of the target file.”
- *         https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
  *
  *  [VCB]  Vertical centring on bullseye.  Here deflecting Y offset by -BBW for a better centring.
  *         Unicode 1f78b round target.  Droid Sans/Chrome, Georgia/Firefox.

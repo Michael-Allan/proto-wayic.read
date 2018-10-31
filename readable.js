@@ -1,11 +1,10 @@
-/** readable - Web presenter of way declarations
+/** readable.js - Document programming on the client side
   *
-  *   See readable.css for a waycaster’s introduction.  The sections below are for programmers.
+  *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
+  *   this presentation program runs on the client side — in the waycast reader’s web browser —
+  *   where it manipulates the DOM of each way declaration document.
   *
-  *
-  * SUPPORTED BROWSERS
-  * ------------------
-  *   See README.html#browser_support
+  *   See manual.task for usage instructions.  The sections below are for programmers.
   *
   *
   * EXTENSION of HTML DOM
@@ -109,7 +108,7 @@
   *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
   *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
-  *                         Appears at most on one element. [BA, FIB]
+  *                         Appears at most on one element. [BA, readable.css FIB]
   *     [targetDirection] · Direction to the target: one of 'self', ‘up’ or ‘down’ (see § html:html).
   *                         Present only for a complete (target exists) intradocument hyperlink.
   *
@@ -4297,11 +4296,6 @@ window.wayic_read_readable = ( function()
   *
   *  [FHS]  Firefox (52.2) has the wrong History.state after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
-  *
-  *  [FIB]  Focus for inlined breadcrumbs.  Here avoiding use of the HTML focus facility as a base
-  *         for inlined breadcrumb trails.  It seems unreliable.  The browsers are doing their own
-  *         peculiar things with focus which are hard to work around.
-  *         http://w3c.github.io/html/editing.html#focus
   *
   *  [FSS]  Session storage for a document requested from a ‘file’ scheme URI.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
