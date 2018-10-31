@@ -1,0 +1,130 @@
+wayic.read/manual.task - Usage instructions
+
+    - instructions to the waycaster on using wayic.read
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Requirements`
+    * a waycast
+        ( http://reluk.ca/project/wayic/cast/
+    * a recent version of Chrome or Firefox
+        ( changing?  sync'd → README.html
+        - though any recent browser should work, only Chrome and Firefox are tested
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Installation`
+    - see also http://reluk.ca/project/wayic/cast/doc.task § Configuration of a waycast
+    - for a working example of an installation, see:
+        < http://reluk.ca/project/waycast/way_declaration_document.css
+        < http://reluk.ca/project/waycast/way_declaration_document.js
+    + personal style sheet, way_declaration_document.css
+        - atop the style sheet, insert this:
+
+              @import 'http://reluk.ca/project/wayic/read/readable.css';
+
+        - optionally add this:
+
+              @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+
+    + personal configuration program, way_declaration_document.js
+        - there insert the equivalent of this:
+
+              const s = document.body.appendChild(
+                document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
+              s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
+              s.addEventListener( 'load', ( _Event ) =>
+              {
+                 wayic_read_readable.start();
+              });
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Configuration`
+    - optionally configure wayic.read before starting it
+    - for example: (extending the example above)
+
+          ⋮
+          s.addEventListener( 'load', ( _Event ) =>
+          {
+             wayic_read_readable.setEnforceConstraints( true );
+             wayic_read_readable.start();
+          });
+
+    - the available configuration options are detailed in readable.js § Public interface
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  L e x i c a l l y   o r d e r e d   § §
+/
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Anonymous element and prefix declarations`
+    - the presenter takes as anonymous any wayscript element in which the local part of the name
+      is encoded by a single underscore ‘_’
+    - it transforms and presents the element accordingly
+    - likewise it gives an element with a namespace prefix of ‘_’ the same form as an element
+      that has no prefix
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Sectioning`
+    - the presenter adds vertical margins to HTML *section* elements
+    - it adds the same margins to wayscript elements that are *direct children of the body*
+    - to defeat this addition for a given group of *body* children
+        - put them together in a single *section* element
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Troubleshooting`
+    < see also readable.js § toEnforceConstraints
+    + console reporting
+      - the presenter reports problems it detects to the browser’s debugging console
+        ( https://console.spec.whatwg.org/
+    + requests by ‘file’ scheme
+        - when the user requests a way declaration document from a ‘file’ scheme URI
+        * alert reporting
+            - when the user requests a way declaration document from a ‘file’ scheme URI,
+              the presenter assumes that the user is the author of that document
+            - then, in addition to console reporting, it opens an *alert* window to report
+              malformed content or any other problem that an author might be able to remedy
+        * limitations
+            - when the user requests a way declaration document from a ‘file’ scheme URI,
+              intracast, interdocument referential jointers may fail to resolve their references  [EFL]
+            - in that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
+              and generally the transformation will be incomplete and the way definition harder to view
+            - security constraints enforced by the browser are the underlying cause of this
+            * workaround for Chrome
+                - its ‘--allow-file-access-from-files’ option  [AFA]
+            * workaround for Firefox
+                - first request the way root document from the waycast root directory
+                - then follow the links from there  [SPF]
+                - travel by other means (e.g. bookmark or address bar) will break the workaround
+                - travel by any means to the directory index, which for file scheme
+                  the browser itself generates, will also break the workaround
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// N o t e s
+/
+    [AFA]  Chrome option ‘--allow-file-access-from-files’.
+           https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
+           https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
+
+           Caveats: https://stackoverflow.com/questions/29371600
+
+           Without this option, when such file access is disallowed,
+           Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
+           for protocol schemes: http, data, chrome, chrome-extension, https.’
+
+           Discussion of the underlying problem:
+           https://bugs.chromium.org/p/chromium/issues/detail?id=47416
+
+    [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
+           across all relative references, that is, and throughout the waycast.
+           However they will not extend across any intercast reference; the referring document
+           may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
+           because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
+           http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
+
+    [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
+           if the parent directory of the originating file is an ancestor directory of the target file.”
+           https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+
+
+
+                                     Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.

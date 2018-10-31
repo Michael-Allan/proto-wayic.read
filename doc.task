@@ -1,5 +1,7 @@
 wayic.read/doc.task - Documentation in rough
 
+    < see also manual.task
+
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Design constraints`
     [ ⤒ maximal
@@ -17,6 +19,7 @@ wayic.read/doc.task - Documentation in rough
                 * ease of design
                     - adopting the basic presentation of the waycast
                         - the basic presentation need not be designed anew
+
 
 
                                      Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.
