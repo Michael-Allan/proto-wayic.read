@@ -528,17 +528,16 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The location of the waycast root directory (string) as a relative-path reference, but without
-      * a trailing slash '/'.  Minimally it is a single dot '.'; otherwise it is taken directly from
-      * the waycast reference in the *src* attribute of the *script* element that loads the waycaster's
-      * personal configuration script.  Appending a slash in either case will yield a valid reference.
+    /** The location of the waycast root directory (string) as a non-empty relative-path reference,
+      * but without a trailing slash '/'.  Appending a slash will yield a valid reference.
       *
       *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
       *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
-      *     @see Personalized configuration, http://reluk.ca/project/wayic/cast/doc.task
       */
     const CAST_ROOT_PATH = ( ()=>
     {
+        // Determining the value from the *script* element that loads the waycaster's
+        // personal configuration program.
         const configFileName = 'way_declaration_document.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
         for( let t = traversal.lastChild(); t !== null; t = traversal.previousSibling() )
