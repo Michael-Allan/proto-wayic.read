@@ -101,29 +101,29 @@ wayic.read/manual.task - Usage instructions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // N o t e s
 /
-    [AFA]  Chrome option ‘--allow-file-access-from-files’.
-           https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
-           https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
+   [AFA]  Chrome option ‘--allow-file-access-from-files’.
+          https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
+          https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
 
-           Caveats: https://stackoverflow.com/questions/29371600
+          Caveats: https://stackoverflow.com/questions/29371600
 
-           Without this option, when such file access is disallowed,
-           Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
-           for protocol schemes: http, data, chrome, chrome-extension, https.’
+          Without this option, when such file access is disallowed,
+          Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
+          for protocol schemes: http, data, chrome, chrome-extension, https.’
 
-           Discussion of the underlying problem:
-           https://bugs.chromium.org/p/chromium/issues/detail?id=47416
+          Discussion of the underlying problem:
+          https://bugs.chromium.org/p/chromium/issues/detail?id=47416
 
-    [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
-           across all relative references, that is, and throughout the waycast.
-           However they will not extend across any intercast reference; the referring document
-           may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
-           because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
-           http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
+   [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
+          across all relative references, that is, and throughout the waycast.
+          However they will not extend across any intercast reference; the referring document
+          may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
+          because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
+          http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
 
-    [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
-           if the parent directory of the originating file is an ancestor directory of the target file.”
-           https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
+   [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
+          if the parent directory of the originating file is an ancestor directory of the target file.”
+          https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
 
 
 
