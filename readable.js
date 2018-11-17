@@ -89,8 +89,7 @@
   *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
   *     [hasShortName]      · Has a visible name no longer than three characters?
   *     [isProperWayscript] · Is an element of wayscript proper?
-  *                           http://reluk.ca/project/wayic/script/wayscript#proper_wayscript
-  *     [isWaybit]         · Is a waybit?
+  *     [isWaybit]          · Is a waybit?
   *
   *     eSTag       ∙ Start tag of an element, reproducing content that would otherwise be invisible
   *                   except in the wayscript source.
@@ -531,7 +530,6 @@ window.wayic_read_readable = ( function()
     /** The location of the waycast root directory (string) as a non-empty relative-path reference,
       * but without a trailing slash '/'.  Appending a slash will yield a valid reference.
       *
-      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
       *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
       */
     const CAST_ROOT_PATH = ( ()=>
@@ -584,7 +582,6 @@ window.wayic_read_readable = ( function()
     /** The location of the waycast root directory (string) in normal URI form,
       * and with a trailing slash '/'.
       *
-      *     @see http://reluk.ca/project/wayic/cast/waycast_root_directory
       *     @see URIs#normalized
       */
     const CAST_ROOT_URI = ( ()=>
@@ -986,7 +983,6 @@ window.wayic_read_readable = ( function()
 
     /** The location of the way root document (string) in normal URI form.
       *
-      *     @see http://reluk.ca/project/wayic/cast/way_root_document
       *     @see URIs#normalized
       */
     const ROOT_DOCUMENT_URI = CAST_ROOT_URI + 'way.xht';
@@ -2487,7 +2483,6 @@ window.wayic_read_readable = ( function()
           *     @return (string) An equivalent reference in document context,
           *       formed as a relative-path reference, possibly equal to the given *ref*.
           *
-          *     @see http://reluk.ca/project/wayic/cast/waycast_context
           *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           */
         expo.removedFromWaycastContext = function( ref )
@@ -3259,7 +3254,7 @@ window.wayic_read_readable = ( function()
    //   S u b j o i n i n g   W a y b i t   R e f e r e n c e
 
 
-    /** @see http://reluk.ca/project/wayic/cast/doc.task § Subjoining waybit reference
+    /** @see http://reluk.ca/project/wayic/script/doc.task § Subjoining waybit reference
       */
     class SubjoiningWaybitReference
     {
@@ -3992,8 +3987,6 @@ window.wayic_read_readable = ( function()
       * The trace serves two ultimate purposes: (1) reforming the present document to show which parts
       * are *on way*; and (2) discovery of other documents for cache omnireaders.
       *
-      *     @see http://reluk.ca/project/wayic/script/way_root_element
-      *     @see http://reluk.ca/project/wayic/script/on_way
       *     @see DocumentCache#addOmnireader
       */
     const WayTracer = ( function()

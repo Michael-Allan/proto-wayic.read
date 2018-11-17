@@ -5,7 +5,6 @@ wayic.read/manual.task - Usage instructions
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Requirements`
     * a waycast
-        ( http://reluk.ca/project/wayic/cast/
     * a recent version of Chrome or Firefox
         ( changing?  sync'd → README.html
         - though any recent browser should work, only Chrome and Firefox are tested
