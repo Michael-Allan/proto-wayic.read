@@ -55,7 +55,7 @@ wayic.read/manual.task - Usage instructions
 /
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Anonymous element and prefix declarations`
-    - the presenter takes as anonymous any wayscript element in which the local part of the name
+    - the presenter takes as anonymous any Wayscript element in which the local part of the name
       is encoded by a single underscore ‘_’
     - it transforms and presents the element accordingly
     - likewise it gives an element with a namespace prefix of ‘_’ the same form as an element
@@ -64,7 +64,7 @@ wayic.read/manual.task - Usage instructions
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Sectioning`
     - the presenter adds vertical margins to HTML *section* elements
-    - it adds the same margins to wayscript elements that are *direct children of the body*
+    - it adds the same margins to Wayscript elements that are *direct children of the body*
     - to defeat this addition for a given group of *body* children
         - put them together in a single *section* element
 

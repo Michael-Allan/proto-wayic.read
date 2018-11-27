@@ -962,7 +962,7 @@ html[read|animatedShow]
 *[read|isProperWayscript]
 {
     clear: left;
-    display: block; /* Changing the wayscript *display* property?  sync'd → readable.js layoutBlock. */
+    display: block; /* Changing?  sync'd → readable.js layoutBlock. */
     margin-top:    0.1em;
     margin-bottom: 0.1em;
 }

@@ -33,8 +33,8 @@
   *             ⋮                         * Formal names and sub-hierarchies omitted
   *
   *
-  * MARKUP INSERTS
-  * --------------
+  * MARKUP INSERTIONS
+  * -----------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
   *   Key to these outlines:
   *
@@ -53,7 +53,7 @@
   *   ---------
   *     [animatedShow] · Style rules that must animate or re-animate on each load of the document,
   *                      and on each revisit to it, must depend on this attribute.
-  *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse.
+  *     [lighting]      · Either ‘paper’ for black on white effects, or ‘neon’ for the reverse
   *     [travelDelta]    · Travel distance in session history to reach the present entry
   *                        from the last entry of ours that was shown: -N, 0 or N
   *                        (backward by N entries, reload, or forward by N entries). [OUR]
@@ -88,16 +88,15 @@
   *   --------------------------
   *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
   *     [hasShortName]      · Has a visible name no longer than three characters?
-  *     [isProperWayscript] · Is an element of wayscript proper?
+  *     [isProperWayscript] · Is an element of Wayscript proper?
   *     [isWaybit]          · Is a waybit?
   *
-  *     eSTag       ∙ Start tag of an element, reproducing content that would otherwise be invisible
-  *                   except in the wayscript source.
-  *         eQName              ∙ Qualified name of the element. [QN]
+  *     eSTag       ∙ Start tag of an element, to make it visible in the way model
+  *         eQName              ∙ Qualified name of the element [QN]
   *             [isAnonymous]    · Has a local part that is declared to be anonymous?  [BA]
-  *             ePrefix           ∙ XML namespace prefix, if any.
+  *             ePrefix           ∙ XML namespace prefix, if any
   *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
-  *             eName             ∙ Local part of the name.
+  *             eName             ∙ Local part of the name
   *
   *     textAligner ∙ (only if element is a step)
   *
@@ -142,7 +141,7 @@
   *
   *   * (as a) Subjoining waybit
   *   ----------------------------
-  *     [isSubjoining]   · Either ‘window targeted’ or ‘window untargeted’. [FT in readable.css]
+  *     [isSubjoining]   · Either ‘window targeted’ or ‘window untargeted’ [FT in readable.css]
   *     [:id]             ·
   *     [showsBreadcrumb] · (q.v. under § html:a)
   *
@@ -295,7 +294,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Identifier of the top para-namespace of wayscript proper.
+    /** Identifier of the top para-namespace of Wayscript proper.
       *
       *     @see #TOP_ID_BIT
       *     @see #TOP_ID_STEP
@@ -687,7 +686,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The string that means *none* when it encodes the local part of a wayscript element's name.
+    /** The string that means *none* when it encodes the local part of a Wayscript element's name.
       */
     const ELEMENT_NAME_NONE = '_';
 
@@ -877,7 +876,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns a message (string) that the given wayscript attribute violates a formal constraint.
+    /** Returns a message (string) that the given Wayscript attribute violates a formal constraint.
       *
       *     @param name (string) The formal name of the attribute.
       *     @param value (string) The actual value of the attribute.
@@ -885,7 +884,7 @@ window.wayic_read_readable = ( function()
       */
     function makeMessage_malformedAttribute( name, value, violation )
     {
-        return 'Malformed wayscript attribute (' + a2s(name,value) + '): ' + violation;
+        return 'Malformed Wayscript attribute (' + a2s(name,value) + '): ' + violation;
     }
 
 
@@ -946,7 +945,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Identifier of the XML top namespace of wayscript proper.
+    /** Identifier of the XML top namespace of Wayscript proper.
       */
     const NS_WAY = 'data:,wayscript';
 
@@ -1048,8 +1047,8 @@ window.wayic_read_readable = ( function()
 
 
     /** Returns the top sub-identifier of *ns*; or the empty string if *ns* has no sub-identifier
-      * because it identifies the top namespace of wayscript; or null if *ns* has no sub-identifier
-      * because it identifies a namespace outside of wayscript proper.
+      * because it identifies the top namespace of Wayscript; or null if *ns* has no sub-identifier
+      * because it identifies a namespace outside of Wayscript proper.
       *
       *     @param ns (string) An XML namespace identifier.
       *
@@ -1352,7 +1351,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Reports a rule violation or formal fault, such as malformed wayscript,
+    /** Reports a rule violation or formal fault, such as malformed waysource,
       * that a user with write access to the present document might be able to correct.
       *
       *     @param report (string)
@@ -1392,7 +1391,7 @@ window.wayic_read_readable = ( function()
     function willDisplayInLine( element )
     {
         const ns = element.namespaceURI;
-        if( topId(ns) !== null ) return false; // Never is a proper wayscript element inlined
+        if( topId(ns) !== null ) return false; // Never is a proper Wayscript element inlined
 
         const styleDeclarations = getComputedStyle( element );
         const displayStyle = styleDeclarations.getPropertyValue( 'display' );
@@ -2985,7 +2984,7 @@ window.wayic_read_readable = ( function()
    //   P a r t   T r a n s f o r m   C
 
 
-    /** The part of a proper wayscript element's transformation that is generally open to being redone.
+    /** The part of a proper Wayscript element's transformation that is generally open to being redone.
       * This is a disposable, single-use class.
       */
     class PartTransformC
@@ -2994,7 +2993,7 @@ window.wayic_read_readable = ( function()
 
         /** Constructs a PartTransformC.
           *
-          *     @param element (Element) The proper wayscript element to transform.
+          *     @param element (Element) The proper Wayscript element to transform.
           */
         constructor( element )
         {
@@ -4343,7 +4342,7 @@ window.wayic_read_readable = ( function()
   *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.
   *         It failed when this program was loaded by a *script* element injected at runtime.
   *         Probably because then the program ran late and was therefore late in styling the elements
-  *         - especially the crucial display style of ‘block’ for the proper wayscript elements,
+  *         - especially the crucial display style of ‘block’ for the proper Wayscript elements,
   *         which are XML and therefore ‘inline’ by default - which confused the browser.
   *
   *         A remedy might be to make this program load immediately.  The only reliable way, however,
