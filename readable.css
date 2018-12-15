@@ -327,6 +327,13 @@ read|bitform > a
 }
 
 
+read|bitform > a > preview:empty,
+read|bitform > a > preview:empty + br
+{
+    display: none;
+}
+
+
 read|bitform > a > preview[class~='singleCharacterContent'] /* [C] */
 {
     display: inline-block; /* Enables *min-width* */
