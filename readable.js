@@ -3916,7 +3916,7 @@ window.wayic_read_readable = ( function()
                 }
             }
 
-            tsk( makeMessage_incompleteJointTo('this document',joinV) );
+            tsk( makeMessage_incompleteJointTo('this document',sbjRef.joinV) );
             return new TargetWhereabouts( /*direction*/null, /*documentUri*/'', element );
         }
 
