@@ -3074,21 +3074,18 @@ window.wayic_read_readable = ( function()
             let lp = this.localPartOverride;
             localPart:
             {
-                if( lp === null )
-                {
-                    lp = e.localName;
-                    if( lp === ELEMENT_NAME_NONE )
-                    {
-                        isAnonymous = true;
-                        lp = '●'; // Unicode 25cf (black circle)
-                        eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
-                    }
-                    else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE );
-                      // Starts with a non-underscore, hopefully followed by some other visible content?
-                      // Then replace any underscores with nonbreaking spaces for sake of readability.
-                }
-                else if( lp.length === 0 ) break localPart;
+                if( lp === null /* no override */) lp = e.localName;
+                else if( lp.length === 0 /* empty override */) break localPart;
 
+                if( lp === ELEMENT_NAME_NONE )
+                {
+                    isAnonymous = true;
+                    lp = '●'; // Unicode 25cf (black circle)
+                    eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
+                }
+                else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE );
+                  // Starts with a non-underscore, hopefully followed by some other visible content?
+                  // Then replace any underscores with nonbreaking spaces for sake of readability.
                 eName.appendChild( document.createTextNode( lp ));
             }
 
