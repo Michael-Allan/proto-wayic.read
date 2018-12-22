@@ -86,7 +86,7 @@
   *     [isOnWayBranch] · Whether this element, with all its descendants, is on way  [BA]
   *
   *
-  *   * (as a) Wayscript element
+  *   * (as a) proper Wayscript element
   *   --------------------------
   *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
   *     [hasShortName]      · Has a visible name no longer than three characters?
@@ -129,7 +129,7 @@
   *                  (yielding an incomplete joint) or itself a jointer (yielding a double joint)?  [BA]
   *     [way:join] ·  [S]
   *
-  *     eSTag                  ∙ (q.v. under § Wayscript element)
+  *     eSTag                  ∙ (q.v. under § proper Wayscript element)
   *     textAligner             ∙ (only if element is a step)
   *     bitform                  ∙ Jointing presenter
   *         html:a                ∙ (§ q.v.)
@@ -147,7 +147,7 @@
   *     [:id]             ·
   *     [showsBreadcrumb] · (q.v. under § html:a)
   *
-  *     eSTag               ∙ (q.v. under § Wayscript element)
+  *     eSTag               ∙ (q.v. under § proper Wayscript element)
   *         html:div         ∙ Inway  [SH, ODO]
   *             [:class]      · ‘inway’
   *             svg:svg        ∙ Approach
