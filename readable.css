@@ -342,7 +342,7 @@ read|bitform > a > preview[class~='singleCharacterContent'] /* [C] */
 }
 
 
-*:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|hasShortName]) >
+*:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|presentsShortName]) >
 read|bitform > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
@@ -489,8 +489,8 @@ read|eSTag
 }
 
 
-*:not([id]) > read|eSTag > eQName[read|isAnonymous] > eName /* Transformed by readable.js
-  to a mere bullet for anonymity, yet not styled with a cursor for (§) self-hyperlinking. */
+*[read|presentsShortName]:not([read|presentsShortName*='2']):not([id]) > read|eSTag > eQName > eName
+  /* Presents a name shorter than 2, yet is not styled with a cursor in § Self-hyperlinking. */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
@@ -509,14 +509,14 @@ read|eSTag
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
 
-*[read|hasShortName][read|hasLeader]:not([read|imaging='absent'])[read|isWaybit] > eSTag
+*[read|presentsShortName][read|hasLeader]:not([read|imaging='absent'])[read|isWaybit] > eSTag
 {
     float: left; /* Putting the element's start tag in line with its leading text content */
     margin-right: 0.5em;
 }
 
 
-step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
+step|*[read|presentsShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     display: block;
 }
@@ -526,7 +526,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|te
  */
 
 html[read|lighting='neon']
-step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
+step|*[read|presentsShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     padding-top: 0.30em; /* = NEO_ST_MARG_T + ST_PAD_T */
 }
@@ -536,7 +536,7 @@ step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|te
  */
 
 html[read|lighting='paper']
-step|*[read|hasShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
+step|*[read|presentsShortName][read|hasLeader]:not([read|imaging='absent']) > read|textAligner
 {
     padding-top: 0.28em; /* = PAP_ST_MARG_T + ST_PAD_T + ST_BOR */
 }
@@ -554,8 +554,8 @@ step|* > eSTag > eQName
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
-step|* > eSTag > eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then */
-{                                                      /* it is formed as a mere bullet. */
+step|* > eSTag > eQName > eName
+{
     font-weight: bold;
 }
 
@@ -934,8 +934,7 @@ eQName > ePrefix
 }
 
 
-*[read|isWaybit]:not(step|*) > eSTag
-eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then it is formed as a mere bullet */
+*[read|isWaybit]:not(step|*) > eSTag > eQName > eName
 {
     filter: contrast(1.4);
     font-weight: bold;

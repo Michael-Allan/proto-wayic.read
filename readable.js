@@ -88,10 +88,12 @@
   *
   *   * (as a) proper Wayscript element
   *   --------------------------
-  *     [hasLeader]        · Has leading, non-whitespace text?  [BA]
-  *     [hasShortName]      · Has a visible name no longer than three characters?
+  *     [hasLeader]         · Has leading, non-whitespace text?  [BA]
   *     [isProperWayscript] · Is an element of Wayscript proper?
   *     [isWaybit]          · Is a waybit?
+  *     [presentsShortName] · Is a non-step waybit presenting an *eQName* no longer than two characters,
+  *                           or a step no longer than one?  The value is one of '0', '01' or '012',
+  *                           according to the presented length.
   *
   *     eSTag       ∙ Start tag of an element, to make it visible in the way model
   *         eQName              ∙ Qualified name of the element [QN]
@@ -3094,20 +3096,24 @@ window.wayic_read_readable = ( function()
           // formation of name
           // - - - - - - - - -
             const eNS = e.namespaceURI;
-            let formedName, maxShort;
+            let presentedName, maxShort;
             if( eNS === NS_STEP )
             {
-                formedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
+                presentedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
                 maxShort = 1; // Less to allow room for extra padding that readable.css adds
             }
             else
             {
-                formedName = lp;
+                presentedName = lp;
                 maxShort = 2;
             }
-  /*[C2]*/  if( formedName.length <= maxShort )
+            const presentedNameLength = presentedName.length;
+  /*[C2]*/  if( presentedNameLength <= maxShort )
             {
-                e.setAttributeNS( NS_READ, 'hasShortName', 'hasShortName' );
+                let value = '0';
+                while( value.length <= presentedNameLength ) value += value.length;
+                  // Yields '0', '01' or '012' according to the presented length
+                e.setAttributeNS( NS_READ, 'presentsShortName', value );
             }
         }
 
@@ -3139,7 +3145,7 @@ window.wayic_read_readable = ( function()
 
             // Remove any attributes that might have been set:
             element.removeAttributeNS( NS_READ, 'hasLeader' );
-            element.removeAttributeNS( NS_READ, 'hasShortName' );
+            element.removeAttributeNS( NS_READ, 'presentsShortName' );
             element.removeAttributeNS( NS_READ, 'imaging' );
         }
 
