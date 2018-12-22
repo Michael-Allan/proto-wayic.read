@@ -489,7 +489,7 @@ read|eSTag
 }
 
 
-*:not([id]) read|eSTag > eQName[read|isAnonymous] > eQName /* Transformed by readable.jss
+*:not([id]) read|eSTag > eQName[read|isAnonymous] > eQName /* Transformed by readable.js
   to a mere bullet for anonymity, yet not styled with a cursor for (§) self-hyperlinking. */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
@@ -555,7 +555,7 @@ step|* > eSTag > eQName
 
 step|* > eSTag > eQName > ePrefix,
 step|* > eSTag > eQName:not([read|isAnonymous]) > eName /* Not when isAnonymous ∵ then */
-{                                                       /* it is formed as a mere bullet */
+{                                                      /* it is formed as a mere bullet. */
     font-weight: bold;
 }
 

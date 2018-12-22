@@ -36,7 +36,9 @@
   * MARKUP INSERTIONS
   * -----------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
-  *   Key to these outlines:
+  *   Most of the introduced markup is namespaced ‘data:,wayic.read’.
+  *
+  *   Key to the outlines below:
   *
   *       *          ∙ Any element in any XML namespace
   *       foo         ∙ Element ‘foo’ in namespace ‘data:,wayic.read’ *
@@ -114,7 +116,7 @@
   *   hyperform, presenter of a referential jointer or a generic hyperlink trigger (both take this form)
   *   ---------
   *     html:a         ∙ (§ q.v.)
-  *         [way:join] · (only if element *a* is a referential jointer)
+  *         [way:join] · (only if element *a* is a referential jointer) [S]
   *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
   *
   *
@@ -125,7 +127,7 @@
   *                          cached image of the subjoining waybit (value ‘present’) or not (‘absent’).
   *     [isBroken] · Forms a broken joint, referring to a subjoining waybit that is either non-existent
   *                  (yielding an incomplete joint) or itself a jointer (yielding a double joint)?  [BA]
-  *     [way:join] ·
+  *     [way:join] ·  [S]
   *
   *     eSTag                  ∙ (q.v. under § Wayscript element)
   *     textAligner             ∙ (only if element is a step)
@@ -299,7 +301,7 @@ window.wayic_read_readable = ( function()
       *     @see #TOP_ID_BIT
       *     @see #TOP_ID_STEP
       *
-      *     @see § Namespacing § hierarchy, http://reluk.ca/project/wayic/script/doc.task
+      *     @see § Namespacing § hierarchy [S]
       */
     const PARA_NS_WAY = 'data:,wayscript.';
 
@@ -312,7 +314,7 @@ window.wayic_read_readable = ( function()
     /** The top sub-identifier of a waybit proper.
       *
       *     @see #NS_BIT
-      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
+      *     @see § Namespacing § top sub-identifier [S]
       */
     const TOP_ID_BIT = 'bit';
 
@@ -321,7 +323,7 @@ window.wayic_read_readable = ( function()
     /** The top sub-identifier of a step.
       *
       *     @see #NS_STEP
-      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
+      *     @see § Namespacing § top sub-identifier [S]
       */
     const TOP_ID_STEP = 'bit.step';
 
@@ -797,7 +799,7 @@ window.wayic_read_readable = ( function()
       *
       *     @param subId (string) A sub-identifier.
       *
-      *     @see § Namespacing § sub-identifier, http://reluk.ca/project/wayic/script/doc.task
+      *     @see § Namespacing § sub-identifier [S]
       */
     function isBitTopId( subId )
     {
@@ -1052,7 +1054,7 @@ window.wayic_read_readable = ( function()
       *
       *     @param ns (string) An XML namespace identifier.
       *
-      *     @see § Namespacing § top sub-identifier, http://reluk.ca/project/wayic/script/doc.task
+      *     @see § Namespacing § top sub-identifier [S]
       */
     function topId( ns )
     {
@@ -3080,7 +3082,7 @@ window.wayic_read_readable = ( function()
                 if( lp === ELEMENT_NAME_NONE )
                 {
                     isAnonymous = true;
-                    lp = '●'; // Unicode 25cf (black circle)
+                    lp = '●'; // Unicode 25cf (black circle) to serve as a bullet
                     eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
                 }
                 else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE );
@@ -3250,7 +3252,7 @@ window.wayic_read_readable = ( function()
    //   S u b j o i n i n g   W a y b i t   R e f e r e n c e
 
 
-    /** @see http://reluk.ca/project/wayic/script/doc.task § Subjoining waybit reference
+    /** @see § Subjoining waybit reference [S]
       */
     class SubjoiningWaybitReference
     {
@@ -4312,6 +4314,8 @@ window.wayic_read_readable = ( function()
   *
   *  [RPP]  Restricted public property.  Despite its exposure in the public interface,
   *         this property is not intended for general use.
+  *
+  *  [S]  · http://reluk.ca/project/wayic/script/doc.task
   *
   *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
   *         such as the *style* attribute.
