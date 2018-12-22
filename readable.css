@@ -554,7 +554,7 @@ step|* > eSTag > eQName
             ST_PAD_T ST_PAD_L ST_PAD_B */
 
 step|* > eSTag > eQName > ePrefix,
-step|* > eSTag > eQName > eName
+step|* > eSTag > eQName > eName:not([class~='unboldable'])
 {
     font-weight: bold;
 }
@@ -934,7 +934,7 @@ eQName > ePrefix
 }
 
 
-*[read|isWaybit]:not(step|*) > eSTag > eQName > eName
+*[read|isWaybit]:not(step|*) > eSTag > eQName > eName:not([class~='unboldable'])
 {
     filter: contrast(1.4);
     font-weight: bold;

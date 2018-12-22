@@ -91,8 +91,8 @@
   *     [hasLeader]         · Has leading, non-whitespace text?  [BA]
   *     [isProperWayscript] · Is an element of Wayscript proper?
   *     [isWaybit]          · Is a waybit?
-  *     [presentsShortName] · Is a non-step waybit presenting an *eQName* no longer than two characters,
-  *                           or a step no longer than one?  The value is one of '0', '01' or '012',
+  *     [presentsShortName] · Is a non-step presenting an *eQName* no longer than two characters,
+  *                           or a step no longer than one?  The value is one of ‘0’, ‘01’ or ‘012’,
   *                           according to the presented length.
   *
   *     eSTag       ∙ Start tag of an element, to make it visible in the way model
@@ -101,6 +101,7 @@
   *             ePrefix           ∙ XML namespace prefix, if any
   *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
   *             eName             ∙ Local part of the name
+  *                 [:class]     · One of none or ‘unboldable’
   *
   *     textAligner ∙ (only if element is a step)
   *
@@ -111,7 +112,7 @@
   *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
   *                         Appears at most on one element. [BA, readable.css FIB]
-  *     [targetDirection] · Direction to the target: one of 'self', ‘up’ or ‘down’ (see § html:html).
+  *     [targetDirection] · Direction to the target: one of ‘self’, ‘up’ or ‘down’ (see § html:html).
   *                         Present only for a complete (target exists) intradocument hyperlink.
   *
   *
@@ -3074,20 +3075,60 @@ window.wayic_read_readable = ( function()
           // local part of name
           // - - - - - - - - - -
             const eName = eQName.appendChild( document.createElementNS( NS_READ, 'eName' ));
+            const eNS = e.namespaceURI;
             let isAnonymous = false;
             let lp = this.localPartOverride;
             localPart:
             {
-                if( lp === null /* no override */) lp = e.localName;
-                else if( lp.length === 0 /* empty override */) break localPart;
+                const eN = e.localName;
+                if( lp === null /* no override */) lp = eN;
+                else if( lp.length === 0 /* empty override, e.g. unqualified group */) break localPart;
 
-                if( lp === ELEMENT_NAME_NONE )
+              // name masking
+              // - - - - - - -
+                const body = document.body;
+                let mask = null;
+                const isMaskable = eN.length == 1 || !eN.startsWith('_'); /* In case of a waybit,
+                  its name must be either '_' or non-reserved. § Name masking attribute [S] */
+                if( isMaskable ) for( let a = e;; ) // Seek mask declaration in self and ancestors
+                {
+                    const aNS = a.namespaceURI;
+                    if( aNS === null ) // Then *a* is the document node, and *body* was missed
+                    {
+                        console.assert( false, A );
+                        break;
+                    }
+
+                    if( a.localName === eN && aNS === eNS )
+                    {
+                        mask = a.getAttributeNS( NS_WAY, 'nameMask' );
+                        if( mask !== null )
+                        {
+                            if( mask === 'unset' ) mask = null;
+                            break;
+                        }
+                    }
+
+                    a = a.parentNode;
+                    if( a === body ) break;
+                }
+
+              // name assignment
+              // - - - - - - - -
+                if( mask !== null )
+                {
+                    lp = mask;
+                    eName.setAttribute( 'class', 'unboldable' ); /* The result would be uncertain ∵ the
+                      broadened choice of characters exposes many that render poorly in bold face. */
+                }
+                else if( lp === ELEMENT_NAME_NONE )
                 {
                     isAnonymous = true;
-                    lp = '●'; // Unicode 25cf (black circle) to serve as a bullet
                     eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
+                    lp = '●'; // Unicode 25cf (black circle) to serve as a bullet
+                    eName.setAttribute( 'class', 'unboldable' );
                 }
-                else if( lp.charAt(0) !== '_' ) lp = lp.replace( /_/g, NO_BREAK_SPACE );
+                else if( !lp.startsWith( '_' )) lp = lp.replace( /_/g, NO_BREAK_SPACE );
                   // Starts with a non-underscore, hopefully followed by some other visible content?
                   // Then replace any underscores with nonbreaking spaces for sake of readability.
                 eName.appendChild( document.createTextNode( lp ));
@@ -3095,7 +3136,6 @@ window.wayic_read_readable = ( function()
 
           // formation of name
           // - - - - - - - - -
-            const eNS = e.namespaceURI;
             let presentedName, maxShort;
             if( eNS === NS_STEP )
             {
@@ -3112,7 +3152,7 @@ window.wayic_read_readable = ( function()
             {
                 let value = '0';
                 while( value.length <= presentedNameLength ) value += value.length;
-                  // Yields '0', '01' or '012' according to the presented length
+                  // Yields '0', '01' or '012' according to presented length
                 e.setAttributeNS( NS_READ, 'presentsShortName', value );
             }
         }
@@ -4306,7 +4346,7 @@ window.wayic_read_readable = ( function()
   *         making them harder to find.
   *
   *  [OUR]  Here the entry reference is restricted to *our* entries in the session history.
-  *         An entry's document might not run this program, or its session store might be inaccessible
+  *         An entry’s document might not run this program, or its session store might be inaccessible
   *         to this program.  Such an entry would not be *ours* in the present sense of the term.
   *
   *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
