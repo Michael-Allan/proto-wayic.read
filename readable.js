@@ -101,7 +101,7 @@
   *             ePrefix           ∙ XML namespace prefix, if any
   *                 [isAnonymous] · Has a prefix that is declared to be anonymous?
   *             eName             ∙ Local part of the name
-  *                 [:class]     · One of none or ‘unboldable’
+  *                 [:class]     · One of none or ‘wideCharacterSpace’
   *
   *     textAligner ∙ (only if element is a step)
   *
@@ -3120,15 +3120,14 @@ window.wayic_read_readable = ( function()
                 if( mask !== null )
                 {
                     lp = mask;
-                    eName.setAttribute( 'class', 'unboldable' ); /* The result would be uncertain ∵ the
-                      broadened choice of characters exposes many that render poorly in bold face. */
+                    eName.setAttribute( 'class', 'wideCharacterSpace' );
                 }
                 else if( lp === ELEMENT_NAME_NONE )
                 {
                     isAnonymous = true;
                     eQName.setAttributeNS( NS_READ, 'isAnonymous', 'isAnonymous' );
                     lp = '●'; // Unicode 25cf (black circle) to serve as a bullet
-                    eName.setAttribute( 'class', 'unboldable' );
+                    eName.setAttribute( 'class', 'wideCharacterSpace' );
                 }
                 else if( !lp.startsWith( '_' )) lp = lp.replace( /_/g, NO_BREAK_SPACE );
                   // Starts with a non-underscore, hopefully followed by some other visible content?
