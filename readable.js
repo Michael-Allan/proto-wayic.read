@@ -1184,6 +1184,19 @@ window.wayic_read_readable = ( function()
                     }
                     href = sbjRef.hrefTo( t );
                 }
+                for( let a = t;; ) // Scan ancestors
+                {
+                    a = a.parentNode;
+                    if( a === document.body ) break;
+
+                    if( a.namespaceURI !== NS_HTML ) continue;
+
+                    const aN = a.localName;
+                    if( aN === 'h1' || aN === 'h2' || aN === 'h3'
+                     || aN === 'h4' || aN === 'h5' || aN === 'h6' ) break hyperlinkage;
+                      // Omitting the hyperstyler in elements with enlarged fonts where it may
+                      // present poorly and pose difficulties for the waycaster to defeat.
+                }
 
               // Hyperstyler
               // -----------
