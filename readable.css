@@ -223,10 +223,10 @@ html[read|lighting='paper'] way|group
 
 
 
-/* ---  H y p e r f o r m   p r e s e n t e r  ---------------------------------------------------------
+/* ---  H y p e r s t y l e r  -------------------------------------------------------------------------
  */
 
-read|hyperform       > html|a
+read|hyperstyler       > html|a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
     text-decoration-color: transparent; /* Redundant but for enabling a *transition* effect */
@@ -239,21 +239,21 @@ read|hyperform       > html|a
     outline-offset: 0.5em;
 }
 html[read|animatedShow]
-read|hyperform       > html|a[read|showsBreadcrumb]
+read|hyperstyler       > html|a[read|showsBreadcrumb]
 {
     animation-name: fadingCrumb; /* As a breadcrumb locator */
 }
 
 
-read|hyperform:hover > html|a,
-read|hyperform       > html|a[read|showsBreadcrumb]
+read|hyperstyler:hover > html|a,
+read|hyperstyler       > html|a[read|showsBreadcrumb]
 {
     text-decoration-color: var(--hyperlink-color);
     text-decoration-line: underline; /* [FIB] */
 }
 
 
-read|hyperform       > html|a:not([read|showsBreadcrumb])
+read|hyperstyler       > html|a:not([read|showsBreadcrumb])
 {
     transition-property: text-decoration-color,    z-index;
     transition-duration:                  0.2s,         0s;
@@ -262,21 +262,21 @@ read|hyperform       > html|a:not([read|showsBreadcrumb])
 }
 
 
-read|hyperform       > html|a,
-read|hyperform       > read|triggerMark
+read|hyperstyler       > html|a,
+read|hyperstyler       > read|triggerMark
 {
     position: relative; /* Enabling *z-index* change on hover */
     z-index: 0; /* So enabling its *transition*, which the default does not */
 }
-read|hyperform:hover > html|a,
-read|hyperform       > html|a[read|showsBreadcrumb],
-read|hyperform:hover > read|triggerMark
+read|hyperstyler:hover > html|a,
+read|hyperstyler       > html|a[read|showsBreadcrumb],
+read|hyperstyler:hover > read|triggerMark
 {
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-read|hyperform       > read|triggerMark
+read|hyperstyler       > read|triggerMark
 {
     color: var(--hyperlink-color);
 }
@@ -286,40 +286,40 @@ read|hyperform       > read|triggerMark
 /* ---  R e f e r e n t i a l   j o i n t e r  ---------------------------------------------------------
  */
 
-read|bitform   > a:not([href^='#']), /* With a target reference in interdocument form */
-read|hyperform > a:not([href^='#'])[way|join]
+read|bitformJointing > a:not([href^='#']), /* With a target reference in interdocument form */
+read|hyperstyler     > a:not([href^='#'])[way|join]
 {
     cursor: url('trigger_cursor/target_out.svg') 13 2, pointer; /* As a directional cue */
 }
 
 
-read|bitform   > a[href^='#'][read|targetDirection='self'], /* Targeting self */
-read|hyperform > a[href^='#'][read|targetDirection='self'][way|join]
+read|bitformJointing > a[href^='#'][read|targetDirection='self'], /* Targeting self */
+read|hyperstyler     > a[href^='#'][read|targetDirection='self'][way|join]
 {
     cursor: url('trigger_cursor/base.svg') 13 2, pointer;
 }
-read|bitform   > a[href^='#'][read|targetDirection='up'], /* Targeting upward in own document, */
-read|hyperform > a[href^='#'][read|targetDirection='up'][way|join]
+read|bitformJointing > a[href^='#'][read|targetDirection='up'], /* Targeting upward in own document, */
+read|hyperstyler     > a[href^='#'][read|targetDirection='up'][way|join]
 {
     cursor: url('trigger_cursor/target_up.svg') 13 2, pointer;
 }
-read|bitform   > a[href^='#'][read|targetDirection='down'], /* … or downward, */
-read|hyperform > a[href^='#'][read|targetDirection='down'][way|join]
+read|bitformJointing > a[href^='#'][read|targetDirection='down'], /* … or downward, */
+read|hyperstyler     > a[href^='#'][read|targetDirection='down'][way|join]
 {
     cursor: url('trigger_cursor/target_down.svg') 13 2, pointer;
 }
-read|bitform   > a[href^='#']:not([read|targetDirection]), /* … or to a missing target. */
-read|hyperform > a[href^='#']:not([read|targetDirection])[way|join]
+read|bitformJointing > a[href^='#']:not([read|targetDirection]), /* … or to a missing target. */
+read|hyperstyler     > a[href^='#']:not([read|targetDirection])[way|join]
 {
     cursor: url('trigger_cursor/target_in.svg') 13 2, pointer;
 }
 
 
 
-/* ---  R e f e r e n t i a l   j o i n t e r --  B i t f o r m   p r e s e n t e r  -------------------
+/* ---  R e f e r e n t i a l   j o i n t e r --  B i t f o r m   j o i n t i n g  ---------------------
  */
 
-read|bitform > a
+read|bitformJointing > a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
     text-decoration: none; /* Defeat any browser default (Chrome).  Underlines are confusing here.
@@ -327,14 +327,14 @@ read|bitform > a
 }
 
 
-read|bitform > a > preview:empty,
-read|bitform > a > preview:empty + br
+read|bitformJointing > a > preview:empty,
+read|bitformJointing > a > preview:empty + br
 {
     display: none;
 }
 
 
-read|bitform > a > preview[class~='singleCharacterContent'] /* [C] */
+read|bitformJointing > a > preview[class~='singleCharacterContent'] /* [C] */
 {
     display: inline-block; /* Enables *min-width* */
     min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
@@ -343,20 +343,20 @@ read|bitform > a > preview[class~='singleCharacterContent'] /* [C] */
 
 
 *:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|presentsShortName]) >
-read|bitform > a > br
+read|bitformJointing > a > br
 {
     display: none; /* It happens that no text content precedes the injected *br* element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
       then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
 }
 *:not([read|hasPreviewString]):not([read|imaging='absent']) >
-read|bitform > a > verticalTruncator
+read|bitformJointing > a > verticalTruncator
 {
     margin-left: -2em; /* = -NEST_INDENT, leaving only the click padding for indentation */
 }
 
 
-read|bitform > a                       > verticalTruncator
+read|bitformJointing > a                       > verticalTruncator
 {
     padding-left: 1em; /* Extra click surface + indentation beneath overlying preview text; VT_PAD_L */
     padding-right: 4em; /* Extra click surface */
@@ -364,21 +364,21 @@ read|bitform > a                       > verticalTruncator
 }
 
 
-read|bitform > a:hover                 > verticalTruncator,
-read|bitform > a[read|showsBreadcrumb] > verticalTruncator
+read|bitformJointing > a:hover                 > verticalTruncator,
+read|bitformJointing > a[read|showsBreadcrumb] > verticalTruncator
 {
     color: var(--hyperlink-color); /* [FIB] */
     z-index: 1; /* Raised clear of the *offWayScreen* */
 }
 
 
-read|bitform > a                       > verticalTruncator > span
+read|bitformJointing > a                       > verticalTruncator > span
 {
     animation-duration: 3s;
     outline-offset: 0.3em;
 }
 html[read|animatedShow]
-read|bitform > a[read|showsBreadcrumb] > verticalTruncator > span
+read|bitformJointing > a[read|showsBreadcrumb] > verticalTruncator > span
 {
     animation-name: fadingCrumb; /* As a breadcrumb locator */
 }
@@ -388,7 +388,7 @@ read|bitform > a[read|showsBreadcrumb] > verticalTruncator > span
  */
 
 html[read|lighting='neon'] *[read|imaging]:not(step|*) > eSTag > eQName > eName,
-html[read|lighting='neon'] *[read|imaging] > read|bitform > a > preview
+html[read|lighting='neon'] *[read|imaging] > read|bitformJointing > a > preview
 {
     color: hsl( var(--subjointImage-hue), 30%, 50% );
 }
@@ -400,18 +400,18 @@ html[read|lighting='neon'] *[way|join$='/way.xht#resolve'] > eSTag > eQName > eN
 }
 
 
-html[read|lighting='neon'] *[read|isBroken] > read|bitform > a > preview
+html[read|lighting='neon'] *[read|isBroken] > read|bitformJointing > a > preview
 {
     color: hsl( 0/*red*/, 80%, 80% );
 }
 
 
-html[read|lighting='neon'] read|bitform > a                       > verticalTruncator
+html[read|lighting='neon'] read|bitformJointing > a                       > verticalTruncator
 {
     opacity: 0.4;
 }
-html[read|lighting='neon'] read|bitform > a:hover                 > verticalTruncator,
-html[read|lighting='neon'] read|bitform > a[read|showsBreadcrumb] > verticalTruncator
+html[read|lighting='neon'] read|bitformJointing > a:hover                 > verticalTruncator,
+html[read|lighting='neon'] read|bitformJointing > a[read|showsBreadcrumb] > verticalTruncator
 {
     opacity: 1;
 }
@@ -421,7 +421,7 @@ html[read|lighting='neon'] read|bitform > a[read|showsBreadcrumb] > verticalTrun
  */
 
 html[read|lighting='paper'] *[read|imaging] > eSTag > eQName > eName,
-html[read|lighting='paper'] *[read|imaging] > read|bitform > a > preview
+html[read|lighting='paper'] *[read|imaging] > read|bitformJointing > a > preview
 {
     color: hsl( var(--subjointImage-hue), 100%, 30% );
 }
@@ -433,18 +433,18 @@ html[read|lighting='paper'] *[way|join$='/way.xht#resolve'] > eSTag > eQName > e
 }
 
 
-html[read|lighting='paper'] *[read|isBroken] > read|bitform > a > preview
+html[read|lighting='paper'] *[read|isBroken] > read|bitformJointing > a > preview
 {
     color: hsl( 0/*red*/, 100%, 40% ); /* DARK_BREAK */
 }
 
 
-html[read|lighting='paper'] read|bitform > a                       > verticalTruncator
+html[read|lighting='paper'] read|bitformJointing > a                       > verticalTruncator
 {
     opacity: 0.2;
 }
-html[read|lighting='paper'] read|bitform > a:hover                 > verticalTruncator,
-html[read|lighting='paper'] read|bitform > a[read|showsBreadcrumb] > verticalTruncator
+html[read|lighting='paper'] read|bitformJointing > a:hover                 > verticalTruncator,
+html[read|lighting='paper'] read|bitformJointing > a[read|showsBreadcrumb] > verticalTruncator
 {
     opacity: 1;
 }

@@ -116,8 +116,8 @@
   *                         Present only for a complete (target exists) intradocument hyperlink.
   *
   *
-  *   hyperform, presenter of a referential jointer or a generic hyperlink trigger (both take this form)
-  *   ---------
+  *   hyperstyler, presenter of a generic hyperlink trigger or referential jointer (both use it)
+  *   -----------
   *     html:a         ∙ (§ q.v.)
   *         [way:join] · (only if element *a* is a referential jointer) [S]
   *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
@@ -134,7 +134,7 @@
   *
   *     eSTag                  ∙ (q.v. under § proper Wayscript element)
   *     textAligner             ∙ (only if element is a step)
-  *     bitform                  ∙ Jointing presenter
+  *     bitformJointing          ∙ Jointing presenter
   *         html:a                ∙ (§ q.v.)
   *             [targetDirection] · (q.v. under § html:a)
   *             preview           ∙ Subjoint preview
@@ -1185,13 +1185,13 @@ window.wayic_read_readable = ( function()
                     href = sbjRef.hrefTo( t );
                 }
 
-              // Hyperform
-              // ---------
-                const hyperform = document.createElementNS( NS_READ, 'hyperform' );
-                t.parentNode.insertBefore( hyperform, t );
-                hyperform.appendChild( t );
-                const mark = hyperform.appendChild( document.createElementNS( NS_READ, 'triggerMark' ));
-                mark.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
+              // Hyperstyler
+              // -----------
+                const hyperstyler = document.createElementNS( NS_READ, 'hyperstyler' );
+                t.parentNode.insertBefore( hyperstyler, t );
+                hyperstyler.appendChild( t );
+                const tM = hyperstyler.appendChild( document.createElementNS( NS_READ, 'triggerMark' ));
+                tM.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
                   // It needs no superscript styling, the font takes care of it
             }
 
@@ -1247,8 +1247,8 @@ window.wayic_read_readable = ( function()
                     break jointer;
                 }
 
-                const bitform = t.appendChild( document.createElementNS( NS_READ, 'bitform' ));
-                const a = bitform.appendChild( document.createElementNS( NS_HTML, 'a' ));
+                const bJ = t.appendChild( document.createElementNS( NS_READ, 'bitformJointing' ));
+                const a = bJ.appendChild( document.createElementNS( NS_HTML, 'a' ));
                 sbjRef.hrefTo( a );
                 const sbjWhereabouts = TargetWhereabouts.fromJointer( t, sbjRef );
                 const sbjDocUri = sbjWhereabouts.documentUri;
@@ -2932,8 +2932,8 @@ window.wayic_read_readable = ( function()
                       // ---------------
                         switch( d.localName )
                         {
-                            case 'bitform': // For the content of its *preview* element, below
-                            case 'hyperform': // For the content of its HTML *a* child
+                            case 'bitformJointing': // For the content of its *preview* element, below
+                            case 'hyperstyler':     // For the content of its HTML *a* child
                             case 'preview':
                                 continue dive; // Not bypassing *d* content
                         }
@@ -3693,8 +3693,8 @@ window.wayic_read_readable = ( function()
 
         function setSubjointPreview( jointer, newPreviewString )
         {
-            const bitform = jointer.lastChild;
-            const preview = asElementNamed( 'preview', bitform.firstChild/*a*/.firstChild );
+            const bJ = asElementNamed( 'bitformJointing', jointer.lastChild );
+            const preview = asElementNamed( 'preview', bJ.firstChild/*a*/.firstChild );
             const previewText = preview.firstChild;
             previewText.replaceData( 0, previewText.length, newPreviewString );
             configureForSubjointPreview( jointer, preview, newPreviewString );
