@@ -1821,14 +1821,11 @@ window.wayic_read_readable = ( function()
           */
         function hearClick/* event handler */( click )
         {
-            for( let t = click.target;; t = t.parentNode )
+            for( let t = click.target; t !== document.body; t = t.parentNode )
             {
                 if( t.namespaceURI !== NS_HTML ) continue;
 
-                const tN = t.localName;
-                if( tN === 'body' || tN === 'html' ) break;
-
-                if( tN !== 'a'/*hyperlink trigger*/ ) continue;
+                if( t.localName !== 'a'/*hyperlink trigger*/ ) continue;
 
                 if( !t.hasAttribute( 'href' )) break; // Dud link
 
@@ -3086,20 +3083,12 @@ window.wayic_read_readable = ( function()
 
               // name masking
               // - - - - - - -
-                const body = document.body;
                 let mask = null;
                 const isMaskable = eN.length == 1 || !eN.startsWith('_'); /* In case of a waybit,
                   its name must be either '_' or non-reserved. § Name masking attribute [S] */
                 if( isMaskable ) for( let a = e;; ) // Seek mask declaration in self and ancestors
                 {
-                    const aNS = a.namespaceURI;
-                    if( aNS === null ) // Then *a* is the document node, and *body* was missed
-                    {
-                        console.assert( false, A );
-                        break;
-                    }
-
-                    if( a.localName === eN && aNS === eNS )
+                    if( a.localName === eN && a.namespaceURI === eNS )
                     {
                         mask = a.getAttributeNS( NS_WAY, 'nameMask' );
                         if( mask !== null )
@@ -3110,7 +3099,7 @@ window.wayic_read_readable = ( function()
                     }
 
                     a = a.parentNode;
-                    if( a === body ) break;
+                    if( a === document.body ) break;
                 }
 
               // name assignment
@@ -4240,7 +4229,7 @@ window.wayic_read_readable = ( function()
                                     if( aNS === null ) // Then *a* is the document node
                                     {
                                         tsk( 'Malformed document: Missing *body* element: ' + sbjDocPath );
-                                        break;
+                                        break; // In case of jointing to a non-HTML document
                                     }
 
                                     if( isBitNS( aNS ))
