@@ -9,11 +9,6 @@ wayic.read/doc.task - Documentation in rough
             - the presenter is limited to a conservative presentation
                 - true to the way declaration's formal source in the context of its native waycast
             - why?
-                * maximization of user freedom
-                    ( see Fi, http://reluk.ca/project/wayic/architec/doc.task § Architectonic
-                    - allowing the waycaster to remain close to the waycast
-                        - itself a structural guarantor of personal freedom
-                        - by not obscuring it with improper additions
                 * consistency of overall user experience
                     - consistent with the way declaration as the wayscribe sees it while editing
                 * ease of design
