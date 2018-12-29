@@ -526,6 +526,13 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** The pattern of string that begins with characters that would look out of place immediately
+      * following an asterisk or like superscript.  Captures in group (1) the offending characters.
+      */
+    const ASTERISK_OFFENDING_PATTERN = new RegExp( '^([,;:…]|[.!?]+)\\s' );
+
+
+
     const BREAK_SYMBOL = '\u{1f5d9}';
       // Unicode 1f5d9 (cancellation X).  Changing? sync'd → readable.css.
 
@@ -1203,9 +1210,20 @@ window.wayic_read_readable = ( function()
                 const hyperstyler = document.createElementNS( NS_READ, 'hyperstyler' );
                 t.parentNode.insertBefore( hyperstyler, t );
                 hyperstyler.appendChild( t );
-                const tM = hyperstyler.appendChild( document.createElementNS( NS_READ, 'triggerMark' ));
-                tM.appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
-                  // It needs no superscript styling, the font takes care of it
+                const follower = hyperstyler.nextSibling;
+                if( follower !== null && follower.nodeType === TEXT_NODE )
+                {
+                    const offense = ASTERISK_OFFENDING_PATTERN.exec( follower.data );
+                    if( offense !== null ) // Then place the offender before the *triggerMark* asterisk
+                    {
+                        const offender = offense[1];
+                        follower.deleteData( 0, offender.length );
+                        hyperstyler.appendChild( document.createTextNode( offender ));
+                    }
+                }
+                hyperstyler.appendChild( document.createElementNS( NS_READ, 'triggerMark' ))
+                  .appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
+                    // which needs no superscript styling because the font takes care of it.
             }
 
             if( !isProperWayscript ) continue tt;
