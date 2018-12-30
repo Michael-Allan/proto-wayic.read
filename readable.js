@@ -1,7 +1,7 @@
 /** readable.js - Document programming on the client side
   *
   *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
-  *   this presentation program runs on the client side — in the waycast reader’s web browser —
+  *   this presentation program runs on the client side — in the waycast reader’s Web browser —
   *   where it manipulates the DOM of each way declaration document.
   *
   *   See manual.task for usage instructions.  The sections below are for programmers.
