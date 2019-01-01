@@ -1343,10 +1343,6 @@ window.wayic_read_readable = ( function()
          // =========
             if( tTopId === /*top NS*/'' && tN === 'group' )
             {
-                if( t.getAttribute('rel') !== 'in' )
-                {
-                    tsk( "A *group* element without the mandatory *rel* attribute, e.g. rel='in'" );
-                }
                 partTransform.localPartOverride = ''; // Emptied to accomodate text shipment, q.v. below
                 partTransform.run();
 
