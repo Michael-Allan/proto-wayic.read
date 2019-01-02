@@ -4418,4 +4418,4 @@ window.wayic_read_readable = ( function()
   */
 
 
-// Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.
+// Copyright © 2017-2019 Michael Allan and contributors.  Licence MIT.
