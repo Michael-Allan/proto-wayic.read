@@ -244,17 +244,17 @@ window.wayic_read_readable = ( function()
       */
     expo.start = function()
     {
-      // Gross form
-      // ----------
+      // Transform the document
+      // ----------------------
         transform();
 
-      // Document shown, view stable in the typical case [SIC]
-      // --------------
+      // Show the document
+      // -----------------
         ensureDocumentWillShow();
         if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
 
-      // Processes launched, view may deflect in atypical cases
-      // ------------------
+      // Launch the processes, the document will hold steady "in all but a few edge cases" [SIC]
+      // --------------------
         DocumentCachePersistor.start();
         AlldocScanner.start();
         SurjointFinisher.start();
