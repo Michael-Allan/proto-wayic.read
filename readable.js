@@ -1,6 +1,6 @@
 /** readable.js - Document programming on the client side
   *
-  *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
+  *   Summoned by the waycaster’s personal configuration program (see manual.task § installation),
   *   this presentation program runs on the client side — in the waycast reader’s Web browser —
   *   where it manipulates the DOM of each way declaration document.
   *
@@ -313,7 +313,7 @@ window.wayic_read_readable = ( function()
       *     @see #TOP_ID_BIT
       *     @see #TOP_ID_STEP
       *
-      *     @see § Namespacing § hierarchy [S]
+      *     @see § namespacing § hierarchy [S]
       */
     const PARA_NS_WAY = 'data:,wayscript.';
 
@@ -326,7 +326,7 @@ window.wayic_read_readable = ( function()
     /** The top sub-identifier of a waybit proper.
       *
       *     @see #NS_BIT
-      *     @see § Namespacing § top sub-identifier [S]
+      *     @see § namespacing § top sub-identifier [S]
       */
     const TOP_ID_BIT = 'bit';
 
@@ -335,7 +335,7 @@ window.wayic_read_readable = ( function()
     /** The top sub-identifier of a step.
       *
       *     @see #NS_STEP
-      *     @see § Namespacing § top sub-identifier [S]
+      *     @see § namespacing § top sub-identifier [S]
       */
     const TOP_ID_STEP = 'bit.step';
 
@@ -818,7 +818,7 @@ window.wayic_read_readable = ( function()
       *
       *     @param subID (string) A sub-identifier.
       *
-      *     @see § Namespacing § sub-identifier [S]
+      *     @see § namespacing § sub-identifier [S]
       */
     function isBitTopID( subID )
     {
@@ -1100,7 +1100,7 @@ window.wayic_read_readable = ( function()
     /** Moves the given tree walker to the last visible descendant of the current node.
       *
       *     @see #lastDescendant
-      *     @see Document Object Model traversal § Visibility of nodes,
+      *     @see Document Object Model traversal § visibility of nodes,
       *       https://www.w3.org/TR/DOM-Level-2-Traversal-Range/traversal.html#Iterator-Visibility-h4
       */
     function toLastDescendant( treeWalker ) { while( treeWalker.lastChild() ) {} }
@@ -1113,7 +1113,7 @@ window.wayic_read_readable = ( function()
       *
       *     @param ns (string) An XML namespace identifier.
       *
-      *     @see § Namespacing § top sub-identifier [S]
+      *     @see § namespacing § top sub-identifier [S]
       */
     function topID( ns )
     {
@@ -1469,7 +1469,7 @@ window.wayic_read_readable = ( function()
     /** The configuration of the present waycast (XMLDocument).
       * Set once only by `wayic_read_readable.start`, do not modify it.
       *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § Configuration of a waycast
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
       */
     let WAYCAST_CONFIG;
 
@@ -2487,7 +2487,7 @@ window.wayic_read_readable = ( function()
 
     /** Dealing with formally intracast references.
       *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § Formally intracast reference
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § formally intracast reference
       */
     const FormallyIntracastReferencing = ( function()
     {
@@ -3148,7 +3148,7 @@ window.wayic_read_readable = ( function()
               // - - - - - - -
                 let mask = null;
                 const isMaskable = eN.length == 1 || !eN.startsWith('_'); /* In case of a waybit,
-                  its name must be either '_' or non-reserved. § Name masking attribute [S] */
+                  its name must be either '_' or non-reserved. § name masking attribute [S] */
                 if( isMaskable ) for( let a = e;; ) // Seek mask declaration in self and ancestors
                 {
                     if( a.localName === eN && a.namespaceURI === eNS )
@@ -3299,7 +3299,7 @@ window.wayic_read_readable = ( function()
                 const u = new URL( location.toString() ); // [WDL]
                 u.hash = ''; // Remove the fragment
                 const pp = u.searchParams; /* Anticipating implementation of ./project.task
-                  § Bidirectional traversal of referential joints § scene selection model */
+                  § bidirectional traversal of referential joints § scene selection model */
                 pp.set( 'scn', 'srj' );
                 pp.set( 'bit', bit.getAttribute('id') );
              // history.replaceState( history./*duplicate of*/state, /*no title*/'', u.href ); // TEST
@@ -3349,7 +3349,7 @@ window.wayic_read_readable = ( function()
    //   S u b j o i n i n g   W a y b i t   R e f e r e n c e
 
 
-    /** @see § Subjoining waybit reference [S]
+    /** @see § subjoining waybit reference [S]
       */
     class SubjoiningWaybitReference
     {
@@ -4454,7 +4454,7 @@ window.wayic_read_readable = ( function()
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
   *         of the 'file' scheme workaround on Firefox (52), even for intra-directory requests.
-  *         <./manual.xht § Troubleshooting § requests by ‘file’ scheme § limitations>
+  *         <./manual.xht § troubleshooting § requests by ‘file’ scheme § limitations>
   */
 
 
