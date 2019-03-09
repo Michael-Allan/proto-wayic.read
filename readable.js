@@ -1906,7 +1906,7 @@ window.wayic_read_readable = ( function()
           */
         function hearClick/* event handler */( click )
         {
-            for( let t = click.target; t !== document.body; t = t.parentNode )
+            for( let t = click.target; t !== null; t = t.parentElement )
             {
                 if( t.namespaceURI !== NS_HTML ) continue;
 
