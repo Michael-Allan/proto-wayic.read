@@ -244,21 +244,30 @@ window.wayic_read_readable = ( function()
       */
     expo.start = function()
     {
-      // Transform the document
-      // ----------------------
-        transform();
+      // 1. Read the configuration of the present waycast
+      // -------------------------
+        const requestor = makeDocumentRequestor( CAST_ROOT_URI + 'waycast.xml' )
+        requestor.onload = ( event ) => // not by `addEventListener` [XHR]
+        {
+            WAYCAST_CONFIG = event.target.response;
 
-      // Show the document
-      // -----------------
-        ensureDocumentWillShow();
-        if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
+          // 2. Transform the document
+          // -------------------------
+            transform();
 
-      // Launch the processes, the document will hold steady "in all but a few edge cases" [SIC]
-      // --------------------
-        DocumentCachePersistor.start();
-        AlldocScanner.start();
-        SurjointFinisher.start();
-        WayTracer.start();
+          // 3. Show the document
+          // --------------------
+            ensureDocumentWillShow();
+            if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
+
+          // 4. Launch the processes, the document will hold steady "in all but a few edge cases" [SIC]
+          // -----------------------
+            DocumentCachePersistor.start();
+            AlldocScanner.start();
+            SurjointFinisher.start();
+            WayTracer.start();
+        };
+        requestor.send();
     };
 
 
@@ -874,6 +883,46 @@ window.wayic_read_readable = ( function()
 
 
 
+    /** Makes a requestor for XML or HTML documents, effective by either HTTP or local file access.
+      *
+      *     @param uri (string) As per 'URI', https://tools.ietf.org/html/rfc3986#section-3
+      *
+      *     @return (XMLHttpRequest)
+      */
+    function makeDocumentRequestor( uri )
+    {
+        const isSchemed = URIs.SCHEMED_PATTERN.test( uri );
+        if( !isSchemed ) throw MALFORMED_PARAMETER;
+
+        const requestor = new XMLHttpRequest();
+          // "XMLHttpRequest" is a misnomer; an instance of `XMLHttpRequest` is not a proper request,
+          // rather a requestor which makes a request when its `send` method is called.
+        requestor.open( 'GET', uri, /*async*/true );
+          // "Developers must not pass false for the `async` argument when *current global object*
+          // is a `Window` object."  https://xhr.spec.whatwg.org/#the-open()-method
+        requestor.responseType = 'document';
+        requestor.timeout = uri.startsWith('file:')? 2000: 8000; // ms, depends on `isSchemed`
+
+      // Failsafe event handlers, defaults for some of https://xhr.spec.whatwg.org/#event-handlers
+      // -----------------------
+        requestor.onabort = ( _event/*ignored ProgressEvent*/ ) =>
+        {
+            console.warn( 'Request aborted: ' + uri );
+        };
+        requestor.onerror = ( _event/*ignored ProgressEvent*/ ) =>
+        {
+            console.warn( 'Request failed: ' + uri );
+        };
+        requestor.ontimeout = ( _event/*ignored ProgressEvent*/ ) =>
+        {
+            console.warn( 'Request timed out: ' + uri );
+        };
+
+        return requestor;
+    }
+
+
+
     /** Returns a message (string) that *joinV* yields an incomplete joint because its referent
       * is nowhere in the indicated document.
       *
@@ -1414,6 +1463,15 @@ window.wayic_read_readable = ( function()
       *     @see https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-setproperty
       */
     const UNSET_STYLE = '';
+
+
+
+    /** The configuration of the present waycast (XMLDocument).
+      * Set once only by `wayic_read_readable.start`, do not modify it.
+      *
+      *     @see http://reluk.ca/project/wayic/cast/doc.task § Configuration of a waycast
+      */
+    let WAYCAST_CONFIG;
 
 
 
@@ -2197,36 +2255,18 @@ window.wayic_read_readable = ( function()
             readers.push( reader );
             entryMap.set( docUri, entry );
 
-          // ===================
-          // Configure a request for the document
-          // ===================
-            const req = new XMLHttpRequest();
-            req.open( 'GET', docUri, /*async*/true ); // Misnomer; opens nothing, only sets config
-         // req.overrideMimeType( 'application/xhtml+xml' );
+          // =====================
+          // Configure a requestor for the document
+          // =====================
+            const requestor = makeDocumentRequestor( docUri );
+         // requestor.overrideMimeType( 'application/xhtml+xml' );
          /// Still it parses to an XMLDocument (Firefox 52), unlike the present document
-            req.responseType = 'document';
-            req.timeout = docUri.startsWith('file:')? 2000: 8000; // ms
 
           // ===========
           // Stand ready to catch the response
           // ===========
-            req.onabort = ( _event/*ignored*/ ) =>
+            requestor.onload = ( event ) => // not by `addEventListener` [XHR]
             {
-                console.warn( 'Document request aborted: ' + docUri );
-            };
-            req.onerror = ( _event/*ignored*/ ) =>
-            {
-                // Parameter *_event* is a ProgressEvent, at least on Firefox,
-                // which contains no useful information on the specific cause of the error.
-
-                console.warn( 'Document request failed: ' + docUri );
-            };
-            req.onload = ( event ) =>
-            {
-                // If this listener is registered instead by req.addEventListener,
-                // then the file scheme workaround fails for Firefox (52),
-                // even for intra-directory requests. [SPF in readable.css]
-
                 const doc = event.target.response;
                 entry.document = doc;
 
@@ -2242,11 +2282,11 @@ window.wayic_read_readable = ( function()
                     if( id !== null ) testIdentification( t, id );
                 }
             };
-            req.onloadend = ( _event/*ignored*/ ) =>
+            requestor.onloadend = ( _event/*ignored ProgressEvent*/ ) =>
             {
-                // Parameter *_event* is a ProgressEvent, at least on Firefox, which contains
-                // no useful information.  If more information is ever needed, then it might
-                // be obtained from req.status, or the fact of a call to req.onerror, above.
+                // The given `ProgressEvent` holds slight information.  More might be got
+                // from the properties and methods of the requestor itself, or the fact
+                // of calls to other event handlers.
 
               // Notify the waiting readers
               // --------------------------
@@ -2256,15 +2296,11 @@ window.wayic_read_readable = ( function()
                 for( const r of omnireaders ) notifyReader( r, entry );
                 noteReadersNotified( entry );
             };
-            req.ontimeout = ( e ) =>
-            {
-                console.warn( 'Document request timed out: ' + docUri );
-            };
 
           // ================
           // Send the request
           // ================
-            req.send();
+            requestor.send();
         };
 
 
@@ -4415,6 +4451,10 @@ window.wayic_read_readable = ( function()
   *
   *         That leaves only *eval* or *Function*.  https://stackoverflow.com/a/21730944/2402790
   *         Neither seems reliable, especially in the case of debugging.
+  *
+  *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
+  *         of the 'file' scheme workaround on Firefox (52), even for intra-directory requests.
+  *         <./manual.xht § Troubleshooting § requests by ‘file’ scheme § limitations>
   */
 
 
