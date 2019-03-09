@@ -1,6 +1,6 @@
 /* readable.css - Document styling on the client side
  *
- *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
+ *   Summoned by the waycaster’s personal configuration program (see manual.task § installation),
  *   this style sheet runs on the client side — in the waycast reader’s Web browser —
  *   where it formats the presentation of each way declaration document.
  *
@@ -17,7 +17,7 @@
 
 *:root
 {
-    margin: 0; padding: 0; /* See § Scene */
+    margin: 0; padding: 0; /* See § scene */
     position: relative; /* To contain the absolutely positioned *offWayScreen*. [ECB]
       Typically one would give this function to its parent (*body* element).
       Better however to size and position the screen to cover the document as a whole,
@@ -28,7 +28,7 @@
 html|body
 {
     display: none; /* Pending layout completion by readable.js */
-    margin: 0; padding: 0; /* See § Scene */
+    margin: 0; padding: 0; /* See § scene */
 
                color: hsl( 0, 0%, var(--textLight) );
     background-color: hsl( 0, 0%, var(--backLight) );
@@ -497,7 +497,7 @@ read|eSTag > eQName > eName[class~='wideCharacterSpace']
 
 
 *[read|presentsShortName]:not([read|presentsShortName*='2']):not([id]) > read|eSTag > eQName > eName
-  /* Presents a name shorter than 2, yet is not styled with a cursor in § Self-hyperlinking. */
+  /* Presents a name shorter than 2, yet is not styled with a cursor in § self-hyperlinking. */
 {
     cursor: default; /* Defeat text cursor to avoid flash on passing, which distracts */
 }
