@@ -15,7 +15,7 @@
   *   -------
   *       surjointScene · (boolean) Set on a subjoining waybit, answers whether this subjoining waybit
   *                       has a surjoint scene.  But this is only temporary; later this property will
-  *           instead point to the *scene* element that encodes the subjoining waybit’s surjoint scene.
+  *           instead point to the `scene` element that encodes the subjoining waybit’s surjoint scene.
   *
   *
   * FORMATION of SESSION HISTORY STATE
@@ -49,7 +49,7 @@
   *           ns:bar      · Child element ‘bar’ †
   *
   *                                       * The namespace defaults to NS_READ
-  *                                       † Where *ns* is declared by an @namespace rule of readable.css
+  *                                       † Where `ns` is declared by an @namespace rule of readable.css
   *
   *   html:html ∙ Document element
   *   ---------
@@ -91,7 +91,7 @@
   *     [hasLeader]         · Has leading, non-whitespace text?  [BA]
   *     [isProperWayscript] · Is an element of Wayscript proper?
   *     [isWaybit]          · Is a waybit?
-  *     [presentsShortName] · Is a non-step presenting an *eQName* no longer than two characters,
+  *     [presentsShortName] · Is a non-step presenting an `eQName` no longer than two characters,
   *                           or a step no longer than one?  The value is one of ‘0’, ‘01’ or ‘012’,
   *                           according to the presented length.
   *
@@ -119,7 +119,7 @@
   *   hyperstyler, presenter of a generic hyperlink trigger or referential jointer (both use it)
   *   -----------
   *     html:a         ∙ (§ q.v.)
-  *         [way:join] · (only if element *a* is a referential jointer) [S]
+  *         [way:join] · (only if element `a` is a referential jointer) [S]
   *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
   *
   *
@@ -375,7 +375,7 @@ window.wayic_read_readable = ( function()
 
 
         /** Returns the same basic URI reference, but without a fragment.
-          * This function is a convenience, a descriptive alias of *absolute*.
+          * This function is a convenience, a descriptive alias of `absolute`.
           *
           *     @param ref (string)
           */
@@ -396,7 +396,7 @@ window.wayic_read_readable = ( function()
 
 
         /** Answers whether the given URI reference is detected to have an abnormal form,
-          * with any detection depending also on whether *toEnforceConstraints*.
+          * with any detection depending also on whether `toEnforceConstraints`.
           *
           *     @param ref (string)
           *     @return (boolean)
@@ -408,7 +408,7 @@ window.wayic_read_readable = ( function()
             if( toEnforceConstraints )
             {
                 try{ return ref !== expo.normalized(ref) }
-                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if *ref* relative
+                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if `ref` relative
             }
             return false;
         };
@@ -444,14 +444,14 @@ window.wayic_read_readable = ( function()
           * which is generally adequate to compare references for equivalence.
           *
           * This is a convenience function.  If you already have an instance of URL,
-          * then a direct call to *normalizedU* will be simpler and more efficient.
+          * then a direct call to `normalizedU` will be simpler and more efficient.
           *
           *     @param ref (string) A URI reference.
           *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          *     @param base (string, optional unless *ref* is relative) The base URI.
+          *     @param base (string, optional unless `ref` is relative) The base URI.
           *       See: Establishing a base URI, https://tools.ietf.org/html/rfc3986#section-5.1
           *
-          *     @throw Error if *ref* is relative and *base* is undefined.
+          *     @throw Error if `ref` is relative and `base` is undefined.
           *
           *     @return (string)
           *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
@@ -466,7 +466,7 @@ window.wayic_read_readable = ( function()
         /** Returns the normal form of the given URI reference,
           * which is generally adequate to compare references for equivalence.
           *
-          *     @param refU (URL) An instance of *URL* from the URL API. [UAU]
+          *     @param refU (URL) An instance of `URL` from the URL API. [UAU]
           *       https://url.spec.whatwg.org/
           *
           *     @return (string)
@@ -528,7 +528,7 @@ window.wayic_read_readable = ( function()
     /** Returns the given node if it looks like an element and has the right name,
       * otherwise returns null.
       *
-      *     @param name (string) The expected value of the *localName* property.
+      *     @param name (string) The expected value of the `localName` property.
       *     @param node (Node)
       */
     function asElementNamed( name, node ) { return name === node.localName? node: null; }
@@ -554,7 +554,7 @@ window.wayic_read_readable = ( function()
       */
     const CAST_ROOT_PATH = ( ()=>
     {
-        // Determining the value from the *script* element that loads the waycaster's
+        // Determining the value from the `script` element that loads the waycaster's
         // personal configuration program.
         const configFileName = 'way_declaration_document.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
@@ -593,7 +593,7 @@ window.wayic_read_readable = ( function()
             }
         }
 
-        tsk( 'Missing ' + configFileName + ' *script* element in document *body*' );
+        tsk( 'Missing ' + configFileName + ' `script` element in document `body`' );
         return '__UNDEFINED_waycast_root_directory__';
     })();
 
@@ -621,7 +621,7 @@ window.wayic_read_readable = ( function()
       *
       *     @param jtrNS (string) The XML namespace of the jointer.
       *     @param jtrN (string) The local part of the jointer's name.
-      *     @param joinV (string) The value of the jointer's *join* attribute.
+      *     @param joinV (string) The value of the jointer's `join` attribute.
       *     @param sbj (Element | SubjointImage) The subjoining waybit, or its cached image.
       *     @param transform (PartTransformC)
       */
@@ -640,10 +640,10 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Configures a bitform referential jointer for a given subjoint *preview* element.
+    /** Configures a bitform referential jointer for a given subjoint `preview` element.
       *
       *     @param jointer (Element) The jointer.
-      *     @param preview (Element) Its *preview* element.
+      *     @param preview (Element) Its `preview` element.
       */
     function configureForSubjointPreview( jointer, preview, previewString )
     {
@@ -662,7 +662,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns the number of Unicode code points in string *str*.
+    /** Returns the number of Unicode code points in string `str`.
       *
       *     @see http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types-string-type
       */
@@ -720,7 +720,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns the CSS *em* length of the given element, which is defined as its *font-size*.
+    /** Returns the CSS `em` length of the given element, which is defined as its `font-size`.
       *
       *     @see https://www.w3.org/TR/css-values/#em
       */
@@ -801,7 +801,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether *ns* identifies a namespace of waybits.
+    /** Answers whether `ns` identifies a namespace of waybits.
       *
       *     @param ns (string) An XML namespace identifier.
       */
@@ -814,7 +814,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Answers whether *subID* is a top sub-identifier that identifies a namespace of waybits.
+    /** Answers whether `subID` is a top sub-identifier that identifies a namespace of waybits.
       *
       *     @param subID (string) A sub-identifier.
       *
@@ -830,11 +830,11 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** If *referent* has a *join* attribute of its own, then this function reports *joinV*
+    /** If `referent` has a `join` attribute of its own, then this function reports `joinV`
       * as double jointing and returns true; else it reports nothing and returns false.
       *
-      *     @param joinV (string) The value of a *join* attribute from a jointer.
-      *     @param referent (Element) The referent of the *join* attribute,
+      *     @param joinV (string) The value of a `join` attribute from a jointer.
+      *     @param referent (Element) The referent of the `join` attribute,
       */
     function isReportedAsDoubleJointing( joinV, referent )
     {
@@ -923,16 +923,16 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns a message (string) that *joinV* yields an incomplete joint because its referent
+    /** Returns a message (string) that `joinV` yields an incomplete joint because its referent
       * is nowhere in the indicated document.
       *
       *     @param docIndication (string) Either "this document" or "that document"
-      *       according to what *joinV* actually refers to.
-      *     @param joinV (string) The value of a *join* attribute from a jointer.
+      *       according to what `joinV` actually refers to.
+      *     @param joinV (string) The value of a `join` attribute from a jointer.
       */
     function makeMessage_incompleteJointTo( docIndication, joinV )
     {
-        return 'Incomplete joint: No such *id* in ' + docIndication + ' (' + a2s('join',joinV) + ')';
+        return 'Incomplete joint: No such `id` in ' + docIndication + ' (' + a2s('join',joinV) + ')';
     }
 
 
@@ -951,7 +951,7 @@ window.wayic_read_readable = ( function()
 
 
     /** @param sbj (Element) A subjoining waybit.
-      * @param sbjID (string) The subjoining waybit's *id* attribute value.
+      * @param sbjID (string) The subjoining waybit's `id` attribute value.
       * @param sbjDocURI (string) The location of the subjoint document in normal URI form.
       * @param leaderReader (LeaderReader) The leader reader to use, if necessary.
       *
@@ -1033,7 +1033,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The CSS *rem* length.
+    /** The CSS `rem` length.
       *
       *     @see https://www.w3.org/TR/css-values/#rem
       */
@@ -1068,11 +1068,11 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Tests whether the given, *id* attribution obeys certain identification constraints.
+    /** Tests whether the given, `id` attribution obeys certain identification constraints.
       * Returns true if it obeys them, otherwise reports the violation and returns false.
       *
-      *     @param e (Element) An element with an *id* attribute.
-      *     @param id (string) The value of the *id* attribute.
+      *     @param e (Element) An element with an `id` attribute.
+      *     @param id (string) The value of the `id` attribute.
       *
       *     @see http://w3c.github.io/html/dom.html#element-attrdef-global-id
       */
@@ -1087,7 +1087,7 @@ window.wayic_read_readable = ( function()
         e.setAttribute( 'id', id );
         if( eOther === null ) return true;
 
-        tsk( 'Duplicate *id* declaration, value not unique, ' + a2s('id',id), doc );
+        tsk( 'Duplicate `id` declaration, value not unique, ' + a2s('id',id), doc );
         return false;
     }
 
@@ -1107,8 +1107,8 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns the top sub-identifier of *ns*; or the empty string if *ns* has no sub-identifier
-      * because it identifies the top namespace of Wayscript; or null if *ns* has no sub-identifier
+    /** Returns the top sub-identifier of `ns`; or the empty string if `ns` has no sub-identifier
+      * because it identifies the top namespace of Wayscript; or null if `ns` has no sub-identifier
       * because it identifies a namespace outside of Wayscript proper.
       *
       *     @param ns (string) An XML namespace identifier.
@@ -1140,7 +1140,7 @@ window.wayic_read_readable = ( function()
         const body = document.body;
         const scene = body.appendChild( document.createElementNS( NS_READ, 'scene' ));
         scene.setAttribute( 'id', DOCUMENT_SCENE_ID );
-        for( ;; ) // Wrap *body* content in *scene*
+        for( ;; ) // Wrap `body` content in `scene`
         {
             const c = body.firstChild;
             if( c === scene ) break;
@@ -1158,12 +1158,12 @@ window.wayic_read_readable = ( function()
         });
         tt: for( ;; )
         {
-            const t = traversal.nextNode(); // Maintaining *t* as the current element of the traversal
+            const t = traversal.nextNode(); // Maintaining `t` as the current element of the traversal
             if( t === null ) break;
 
 
           // ============
-          // General form of element *t*
+          // General form of element `t`
           // ============
             const tN = t.localName;
             const tNS = t.namespaceURI;
@@ -1184,21 +1184,21 @@ window.wayic_read_readable = ( function()
 
 
           // ============
-          // Hyperlinkage by element *t*
+          // Hyperlinkage by element `t`
           // ============
             hyperlinkage: if( isProperHTML && tN === 'a' )
             {
                 let href = t.getAttribute( 'href' );
                 const joinV = t.getAttributeNS( NS_WAY, 'join' );
                 let targetExtradocLocN; // Or empty string, as per TargetWhereabouts.documentURI
-                if( href !== null ) // Then *t* is a generic hyperlink
+                if( href !== null ) // Then `t` is a generic hyperlink
                 {
                     if( joinV !== null )
                     {
-                        tsk( 'An *a* element with both *href* and *join* attributes: '
+                        tsk( 'An `a` element with both `href` and `join` attributes: '
                           + a2s('href',href) + ', ' + a2s('join',joinV) );
                     }
-                    if( !URIs.SCHEMED_PATTERN.test( href )) // Then *href* is not a URI,
+                    if( !URIs.SCHEMED_PATTERN.test( href )) // Then `href` is not a URI,
                     {                                      // but rather a formally intracast reference.
                         const rep = FormallyIntracastReferencing.malformationReportD( href,
                           DOCUMENT_URI, /*toTestScheme*/false/*already tested in guard above*/ );
@@ -1208,7 +1208,7 @@ window.wayic_read_readable = ( function()
                         if( href !== ref ) t.setAttribute( 'href', href = ref );
                     }
                 }
-                else if( joinV !== null ) // Then *t* is a hyperform referential jointer
+                else if( joinV !== null ) // Then `t` is a hyperform referential jointer
                 {
                     let sbjRef;
                     try { sbjRef = new SubjoiningWaybitReference( DOCUMENT_URI, /*jointer*/t, joinV ); }
@@ -1224,15 +1224,15 @@ window.wayic_read_readable = ( function()
                     {
                         const sbjDocURI = whereabouts.documentURI;
                         if( sbjDocURI.length > 0 ) SurjointFinisher.noteSubjoiningDocument( sbjDocURI );
-                        // Else jointer *t* yields a broken (because incomplete) intradocument joint
+                        // Else jointer `t` yields a broken (because incomplete) intradocument joint
                     }
                     else if( isReportedAsDoubleJointing( sbjRef.joinV, target ))
                     {
                         t.removeAttributeNS( NS_WAY, 'join' ); /* Anulling the broken (because double)
-                          joint declaration to present the would-be jointer *t* instead as a generic
+                          joint declaration to present the would-be jointer `t` instead as a generic
                           (yet unbroken) hyperlink. */
                     }
-                    else // Jointer *t* forms an intradocument joint
+                    else // Jointer `t` forms an intradocument joint
                     {
                         const direction = whereabouts.direction;
                         console.assert( direction !== null, A );
@@ -1263,7 +1263,7 @@ window.wayic_read_readable = ( function()
                 if( follower !== null && follower.nodeType === TEXT_NODE )
                 {
                     const offense = ASTERISK_OFFENDING_PATTERN.exec( follower.data );
-                    if( offense !== null ) // Then place the offender before the *triggerMark* asterisk
+                    if( offense !== null ) // Then place the offender before the `triggerMark` asterisk
                     {
                         const offender = offense[1];
                         follower.deleteData( 0, offender.length );
@@ -1297,16 +1297,16 @@ window.wayic_read_readable = ( function()
 
 
           // ================
-          // Bitform jointing by element *t*
+          // Bitform jointing by element `t`
           // ================
-            const joinV = ( ()=> // *join* attribute, non-null if *t* is a jointer
+            const joinV = ( ()=> // `join` attribute, non-null if `t` is a jointer
             {
                 let v = t.getAttributeNS( NS_WAY, 'join' );
                 if( v === null ) return null;
 
                 if( !isBit )
                 {
-                    tsk( 'A non-waybit element with a *join* attribute, ' + a2s('join',v) );
+                    tsk( 'A non-waybit element with a `join` attribute, ' + a2s('join',v) );
                     v = null;
                 }
                 return v;
@@ -1335,7 +1335,7 @@ window.wayic_read_readable = ( function()
                 let previewString;
                 subjoint:
                 {
-                    if( sbjDocURI.length > 0 ) // Then jointer *t* refers to a separate document
+                    if( sbjDocURI.length > 0 ) // Then jointer `t` refers to a separate document
                     {
                         const registration = SurjointFinisher.registerBitformJointer( t,
                           sbjRef.subjointID, sbjDocURI );
@@ -1355,7 +1355,7 @@ window.wayic_read_readable = ( function()
                     }
 
                     const direction = sbjWhereabouts.direction;
-                    if( direction === null ) // Then jointer *t* yields an incomplete joint
+                    if( direction === null ) // Then jointer `t` yields an incomplete joint
                     {
                         previewString = BREAK_SYMBOL;
                         t.setAttributeNS( NS_READ, 'isBroken', 'isBroken' );
@@ -1388,7 +1388,7 @@ window.wayic_read_readable = ( function()
 
 
          // =========
-         // Start tag of element *t*
+         // Start tag of element `t`
          // =========
             if( tTopID === /*top NS*/'' && tN === 'group' )
             {
@@ -1458,7 +1458,7 @@ window.wayic_read_readable = ( function()
 
 
     /** The empty string as a parameter for CSSStyleDeclaration.setProperty,
-      * which instead has the effect of *removeProperty*.
+      * which instead has the effect of `removeProperty`.
       *
       *     @see https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-setproperty
       */
@@ -1642,7 +1642,7 @@ window.wayic_read_readable = ( function()
 
                 if( sbj.hasAttributeNS( NS_WAY, 'join' ) )
                 {
-                    if( doc !== document ) // Else let *isReportedAsDoubleJointing* issue the report
+                    if( doc !== document ) // Else let `isReportedAsDoubleJointing` issue the report
                     {
                         console.info( 'Ignoring a double jointing reference to jointer #' + sbjID
                           + ' by a jointer in document ' + docURI );
@@ -1679,8 +1679,8 @@ window.wayic_read_readable = ( function()
    //   A p p r o a c h e s
 
 
-    /** Dealing with *approaches*.  The *approach* is an inway component that draws vector graphics
-      * for a subjoining waybit and controls the scene switching for it.
+    /** Dealing with approaches.  An *approach* is an inway component that draws vector graphics
+      * for a subjoining waybit and controls its scene switching.
       *
       *             approach path
       *     ● ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1698,7 +1698,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Constructs an inway *approach*.
+        /** Constructs an inway approach.
           */
         expo.makeApproach = function()
         {
@@ -1707,11 +1707,11 @@ window.wayic_read_readable = ( function()
          // approach.addEventListener( 'resize', (_UIEvent)=>{expo.redraw(approach);} );
               // Ensuring it draws when first laid, then redraws as needed.
               //
-              // Except it is not called.  Likewise for event name 'SVGResize' and attribute *onresize*.
+              // Except it is not called.  Likewise for event name 'SVGResize' and attribute `onresize`.
               // Maybe embedded svg elements such as this are not considered "outermost svg elements"?
               // https://www.w3.org/TR/SVG11/interact.html#SVGEvents
               //
-              // As a workaround, Inways calls *redraw* directly.
+              // As a workaround, Inways calls `redraw` directly.
             const edging = approach.appendChild( document.createElementNS( NS_SVG, 'circle' ));
             edging.setAttribute( 'class', 'edging' );
             approach.appendChild( document.createElementNS( NS_SVG, 'path' )); // Approach path
@@ -1720,21 +1720,21 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The smallest width in which an *approach* can correctly draw itself.
+        /** The smallest width in which an approach can correctly draw itself.
           */
         expo.minimumWidth = function() { return MIN_WIDTH; };
 
 
 
-        /** Draws or redraws the given *approach*.
+        /** Draws or redraws the given approach.
           *
           *     @param approach (SVGSVGElement)
           */
         expo.redraw = function( approach, width, height )
         {
          // const bounds = approach.getBBox(); /* The actual bounds within the larger document.
-         //   These define the coordinate system of the drawing because the *approach* (*svg* element)
-         //   declares no *viewBox*.  Therefore the default unit (SVG 'user unit') is pixels. */
+         //   These define the coordinate system of the drawing because the approach (`svg` element)
+         //   declares no `viewBox`.  Therefore the default unit (SVG 'user unit') is pixels. */
          // const width = bounds.width;
          // const height = bounds.height;
          /// That failed, now they're given as parameters instead
@@ -1835,18 +1835,18 @@ window.wayic_read_readable = ( function()
         {
             travelStop.trigger = t;
             dropCrumb_store( definitePath(t) );
-            if( crumbShower === t ) return; // None is showing, or none other than *t*
+            if( crumbShower === t ) return; // None is showing, or none other than `t`
 
-            hideCrumb(); // Removed above and dropped on *t*, it is no longer where it appears to be
+            hideCrumb(); // Removed above and dropped on `t`, it is no longer where it appears to be
         };
 
 
             function dropCrumb_store( p ) // p → statelet property Breadcrumbs.triggerPath
             {
                 const state = history./*copy of*/state;
-                console.assert( state !== null, A ); // Assured by *reorient*
+                console.assert( state !== null, A ); // Assured by `reorient`
                 const statelet = state[NS_READ].Breadcrumbs;
-                console.assert( statelet !== undefined, A ); // Assured by *reorient*
+                console.assert( statelet !== undefined, A ); // Assured by `reorient`
                 if( statelet.triggerPath === p ) return; // Already stored
 
                 statelet.triggerPath = p;
@@ -1858,7 +1858,7 @@ window.wayic_read_readable = ( function()
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
-        /** The element (Element) on which attribute *showsBreadcrumb* is set, or null if there is none.
+        /** The element (Element) on which attribute `showsBreadcrumb` is set, or null if there is none.
           */
         let crumbShower = null;
 
@@ -2022,7 +2022,7 @@ window.wayic_read_readable = ( function()
                 const s = sessionStorage.getItem( SS_KEY_travelLast ); // [FSS]
              // console.assert( s !== null, A ); /* This entry in the session history is revisited
              //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
-             //   But each entry (of ours) stores *s*.  How then could *s* be null?  [OUR] */
+             //   But each entry (of ours) stores `s`.  How then could `s` be null?  [OUR] */
              /// Yet it is null on return from HTTP document to file-scheme document (Firefox 60)
                 const travelLast = Number( s );
                 return travel - travelLast;
@@ -2062,12 +2062,12 @@ window.wayic_read_readable = ( function()
                   ORDERED_NODE_ITERATOR_TYPE, /* XPathResult to reuse*/null );
                 const s = pR.iterateNext(); // Resolved hyperlink trigger
                 console.assert( pR.iterateNext() === null, A ); /* At most there is the one
-                  if *definitePath* is unambiguous, as claimed and required. */
+                  if `definitePath` is unambiguous, as claimed and required. */
                 if( crumbShower === s ) break sC;
 
               // Show crumb
               // ----------
-                hideCrumb(); // Removing it from present *crumbShower*, if any
+                hideCrumb(); // Removing it from present `crumbShower`, if any
                 s.setAttributeNS( NS_READ, 'showsBreadcrumb', 'showsBreadcrumb' );
                 crumbShower = s;
             }
@@ -2077,7 +2077,7 @@ window.wayic_read_readable = ( function()
 
         /** Ordinal (number) of the present entry within the session history,
           *
-          *     @see Statelet property Breadcrumbs.travel
+          *     @see Statelet property `Breadcrumbs.travel`
           */
         let travel;
 
@@ -2108,7 +2108,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Sparse array of stops in session history.  Stored at index *travel* are the present stop
+        /** Sparse array of stops in session history.  Stored at index `travel` are the present stop
           * and, contiguous with it, all other stops accessible to the present load of the document.
           */
         const travelStops = [];
@@ -2128,7 +2128,7 @@ window.wayic_read_readable = ( function()
         {
             if( travelStop.trigger === null )
             {
-                dropCrumb_store( null ); /* Clear any *triggerPath* from the statelet
+                dropCrumb_store( null ); /* Clear any `triggerPath` from the statelet
                   because this exit is not caused by a hyperlink activation. */
                 if( /*might later revisit*/e.persisted ) hideCrumb();
             }
@@ -2270,7 +2270,7 @@ window.wayic_read_readable = ( function()
                 const doc = event.target.response;
                 entry.document = doc;
 
-              // Test *id* declarations
+              // Test `id` declarations
               // ----------------------
                 const traversal = doc.createNodeIterator( doc, SHOW_ELEMENT );
                 for( traversal.nextNode()/*onto the document node itself*/;; )
@@ -2400,7 +2400,7 @@ window.wayic_read_readable = ( function()
           // Initiate memorization of the present document, if yet unmemorized
           // --------
             if( !isPresentDocumentMemorized ) ensureMemorizationPending();
-              // ∵ No call to *noteReadersNotified* is assured for the present document
+              // ∵ No call to `noteReadersNotified` is assured for the present document
         };
 
 
@@ -2500,7 +2500,7 @@ window.wayic_read_readable = ( function()
           * of formally intracast referencing and returns a report of any violation it finds.
           *
           * This is a convenience function.  If you already have an equivalent reference
-          * in parsed form (refU), then a direct call to *malformationReportU* will be more efficient.
+          * in parsed form (refU), then a direct call to `malformationReportU` will be more efficient.
           *
           *     @param ref (string) A URI reference.
           *     @param refDocURI (string) The location of the referring document,
@@ -2545,7 +2545,7 @@ window.wayic_read_readable = ( function()
           *     @param ref (string) A formally intracast reference.
           *
           *     @return (string) An equivalent reference in document context,
-          *       formed as a relative-path reference, possibly equal to the given *ref*.
+          *       formed as a relative-path reference, possibly equal to the given `ref`.
           *
           *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           */
@@ -2572,7 +2572,7 @@ window.wayic_read_readable = ( function()
                 return 'Not formally intracast, contains a dot segment';
             }
 
-            // Any of these tests might be done on string form *ref*, as opposed to parsed form *refU*.
+            // Any of these tests might be done on string form `ref`, as opposed to parsed form `refU`.
             // Yet testing the parsed form has advantages in clarity and robustness.
             const pp = refU.searchParams;
             if( pp.has( 'import' ))
@@ -2675,7 +2675,7 @@ window.wayic_read_readable = ( function()
 
         function hearHashChange/* event handler */( _HashChangeEvent )
         {
-            // † Use of *refresh* may cause redundant calls, as detected and marked below †
+            // † Use of `refresh` may cause redundant calls, as detected and marked below †
 
             const hash = location.hash; // [WDL]
             if( hash.length <= 1 )
@@ -2829,7 +2829,7 @@ window.wayic_read_readable = ( function()
             s.setProperty( 'left', -width + 'px' );
             s.setProperty( 'width', width + 'px' );
 
-          // Clamp down on the *hall* (child)
+          // Clamp down on the `hall` (child)
           // ------------------------
             const hallVpBounds = inway.lastChild/*hall*/.getBoundingClientRect();
             const height = hallVpBounds.height;
@@ -2837,8 +2837,8 @@ window.wayic_read_readable = ( function()
 
             s.setProperty( 'height', height + 'px' );
 
-          // Lay the *approach* (child)
-          // ------------------
+          // Lay the approach (child)
+          // ----------------
             const approach = inway.firstChild;
             s = approach.style;
             const hallX = width - hallVpBounds.width;
@@ -2864,14 +2864,14 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The maximum, nominal gap between the inway *approach* and the *hall* sibling to its right.
-          * The actual visual gap may be wider depending on how the *approach* draws its content.
+        /** The maximum, nominal gap between the inway approach and the `hall` sibling to its right.
+          * The actual visual gap may be wider depending on how the approach draws its content.
           */
         const MAX_GAP = 1.5/*rem*/ * REM; // Within which the pointer style defaults, so indicating
                                          // that the two components have distinct control functions.
 
 
-        /** The minimum, nominal gap between the inway *approach* and the *hall* sibling to its right.
+        /** The minimum, nominal gap between the inway approach and the `hall` sibling to its right.
           */
         const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
 
@@ -2893,7 +2893,7 @@ window.wayic_read_readable = ( function()
       * of the element prior to any forced line break or element of non-inline layout.
       *
       * To learn merely whether an element has a leader of non-zero length, give a maxLength
-      * of zero to the *read* function then inspect *hasLeader* for the answer.
+      * of zero to the `read` function then inspect `hasLeader` for the answer.
       */
     const LeaderReader = ( function()
     {
@@ -2902,7 +2902,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The element whose leader was last read, or null if *read* has yet to be called.
+        /** The element whose leader was last read, or null if `read` has yet to be called.
           *
           *     @see #read
           */
@@ -2992,13 +2992,13 @@ window.wayic_read_readable = ( function()
                       // ---------------
                         switch( d.localName )
                         {
-                            case 'bitformJointing': // For the content of its *preview* element, below
-                            case 'hyperstyler':     // For the content of its HTML *a* child
+                            case 'bitformJointing': // For the content of its `preview` element, below
+                            case 'hyperstyler':     // For the content of its HTML `a` child
                             case 'preview':
-                                continue dive; // Not bypassing *d* content
+                                continue dive; // Not bypassing `d` content
                         }
 
-                        toLastDescendant( dive ); // Bypassing *d* content
+                        toLastDescendant( dive ); // Bypassing `d` content
                         continue;
                     }
 
@@ -3020,7 +3020,7 @@ window.wayic_read_readable = ( function()
                             case 'sub':
                             case 'sup':
                                 toMarkEllipse = true;
-                                toLastDescendant( dive ); // Bypassing *d* content
+                                toLastDescendant( dive ); // Bypassing `d` content
                                 continue dive;
                         }
                     }
@@ -3083,7 +3083,7 @@ window.wayic_read_readable = ( function()
 
            // - o u t p u t - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            /** The inserted start tag element, or null if *run* was not called.
+            /** The inserted start tag element, or null if `run` was not called.
               */
             this.eSTag = null;
 
@@ -3094,7 +3094,7 @@ window.wayic_read_readable = ( function()
         /** Does the partial transformation of the element.  Specifically this method:
           * (a) reads this transform's input/configuration properties and sets its output properties;
           * (b) reads the element's leader and leaves the results in the LeaderReader; and
-          * (c) sets attributes on the element and inserts an *eSTag* child to form its start tag.
+          * (c) sets attributes on the element and inserts an `eSTag` child to form its start tag.
           * Call once only.
           */
         run()
@@ -3110,7 +3110,7 @@ window.wayic_read_readable = ( function()
 
           // Start tag
           // ---------
-            console.assert( this.eSTag === null, AA + 'Method *run* is called once only' );
+            console.assert( this.eSTag === null, AA + 'Method `run` is called once only' );
             const eSTag = this.eSTag = document.createElementNS( NS_READ, 'eSTag' );
   /*[C2]*/  e.insertBefore( eSTag, e.firstChild );
             const eQName = eSTag.appendChild( document.createElementNS( NS_READ, 'eQName' ));
@@ -3287,9 +3287,9 @@ window.wayic_read_readable = ( function()
             if( eClicked.parentNode === eSTag && eClicked.localName === 'div'
              && eClickedNS === NS_HTML ) return; // Inway element itself, as opposed to a descendant
 
-          // ================
-          // Inway *approach* clicked?  Function is scene switching  ◉
-          // ================
+          // ==============
+          // Inway approach clicked?  Function is scene switching  ◉
+          // ==============
             const bit = eSTag.parentNode; // Waybit
             const windowTargetedElement = Hyperlinkage.windowTargetedElement();
             if( eClickedNS === NS_SVG ) // inway approach
@@ -3307,7 +3307,7 @@ window.wayic_read_readable = ( function()
             }
 
           // ==============================
-          // Start tag name or inway *hall* (◉) clicked:  Function is self hyperlinking
+          // Start tag name or inway `hall` (◉) clicked:  Function is self hyperlinking
           // ==============================
             const view = document.scrollingElement; // Within the viewport
             const scrollTopWas = view.scrollTop;
@@ -3386,7 +3386,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** Sets on the given element an *href* attribute that refers to the same subjoining waybit
+        /** Sets on the given element an `href` attribute that refers to the same subjoining waybit
           * as does this reference.
           *
           *     @return (string) The value of the attribute as set.
@@ -3400,14 +3400,14 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The value of the *join* attribute (string) as declared.
+        /** The value of the `join` attribute (string) as declared.
           */
         get joinV() { return this._joinV; }
 
 
 
         /** The location of the subjoint document (string) as a relative-path reference, which is
-          * the empty string if the *join* attribute is a fragment-only, same-document reference.
+          * the empty string if the `join` attribute is a fragment-only, same-document reference.
           *
           *     @see relative-path reference, https://tools.ietf.org/html/rfc3986#section-4.2, -3.3
           *     @see Same-document reference, https://tools.ietf.org/html/rfc3986#section-4.4
@@ -3706,7 +3706,7 @@ window.wayic_read_readable = ( function()
           *
           *     @see URIs#normalized
           */
-        let jointRegistry = new Map(); // Nulled on *start*
+        let jointRegistry = new Map(); // Nulled on `start`
 
 
 
@@ -4288,9 +4288,9 @@ window.wayic_read_readable = ( function()
                                 {
                                     a = a.parentNode;
                                     const aNS = a.namespaceURI;
-                                    if( aNS === null ) // Then *a* is the document node
+                                    if( aNS === null ) // Then `a` is the document node
                                     {
-                                        tsk( 'Malformed document: Missing *body* element: ' + sbjDocPath );
+                                        tsk( 'Malformed document: Missing `body` element: ' + sbjDocPath );
                                         break; // In case of jointing to a non-HTML document
                                     }
 
@@ -4366,7 +4366,7 @@ window.wayic_read_readable = ( function()
 
 /** NOTES
   * -----
-  *  [AEP]  Avoid Element attribute properties *className* and *id*.
+  *  [AEP]  Avoid Element attribute properties `className` and `id`.
   *         They evaluate to an ‘empty string’ in cases where the attribute is absent.
   *         https://dom.spec.whatwg.org/#concept-element-attributes-get-value
   *
@@ -4415,7 +4415,7 @@ window.wayic_read_readable = ( function()
   *  [S]  · http://reluk.ca/project/wayic/script/doc.task
   *
   *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
-  *         such as the *style* attribute.
+  *         such as the `style` attribute.
   *
   *  [SIC]  SubjointImageCache.  The purpose of caching the subjoint images is to stablize the view
   *         within the viewport, especially on the vertical axis.  The vertical layout of the view
@@ -4429,27 +4429,27 @@ window.wayic_read_readable = ( function()
   *  [UAU]  Here employing the URL API to handle URIs in general.  Despite the name "URL API",
   *         it actually covers the forms "URI and IRI" to boot.  https://url.spec.whatwg.org/#goals.
   *
-  *  [UN] · Either *undefined* or null in value.
+  *  [UN] · Either `undefined` or null in value.
   *
-  *  [UZ] · Either *undefined* or zero in value.
+  *  [UZ] · Either `undefined` or zero in value.
   *
   *  [WDL]  ‘window.location’ or ‘window.document.location’?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
   *
   *  [WTP]  Window target positioning.  Normally the browser itself does this, vertically scrolling
   *         the view to ensure the target appears in the viewport.  Firefox 60 was seen to fail however.
-  *         It failed when this program was loaded by a *script* element injected at runtime.
+  *         It failed when this program was loaded by a `script` element injected at runtime.
   *         Probably because then the program ran late and was therefore late in styling the elements
   *         - especially the crucial display style of ‘block’ for the proper Wayscript elements,
   *         which are XML and therefore ‘inline’ by default - which confused the browser.
   *
   *         A remedy might be to make this program load immediately.  The only reliable way, however,
-  *         is to have the wayscribe write the *script* element into every way declaration document,
-  *         which would be too awkward.  To instead write the *script* element programatically
+  *         is to have the wayscribe write the `script` element into every way declaration document,
+  *         which would be too awkward.  To instead write the `script` element programatically
   *         is disallowed for XML documents, and ‘strongly discouraged’ as unreliable for non-XML.
   *         http://w3c.github.io/html/webappapis.html#documentwrite
   *
-  *         That leaves only *eval* or *Function*.  https://stackoverflow.com/a/21730944/2402790
+  *         That leaves only `eval` or `Function`.  https://stackoverflow.com/a/21730944/2402790
   *         Neither seems reliable, especially in the case of debugging.
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure

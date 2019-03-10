@@ -18,8 +18,8 @@
 *:root
 {
     margin: 0; padding: 0; /* See § scene */
-    position: relative; /* To contain the absolutely positioned *offWayScreen*. [ECB]
-      Typically one would give this function to its parent (*body* element).
+    position: relative; /* To contain the absolutely positioned `offWayScreen`. [ECB]
+      Typically one would give this function to its parent (`body` element).
       Better however to size and position the screen to cover the document as a whole,
       including any content that happens to stick outside of the body. */
 }
@@ -39,7 +39,7 @@ html|body > read|offWayScreen
 {
  /* A semi-opaque screen that extends out to cover the document element.  On-way branches rise clear
     of this screen, distinct from any off-way ancestors that are left behind, still dimmed by it.
-    One would rather dim the off-way ancestors with an *opacity* or alpha *filter* property instead,
+    One would rather dim the off-way ancestors with an `opacity` or alpha `filter` property instead,
     except that on-way descendants could not then undo the effect.  Or with semi-opaque colours in
     their foreground properties, except that each distinct colour would then have to be declared twice,
     in off-way and on-way variants, adding a large burden to a style sheet that is already burdened
@@ -56,7 +56,7 @@ html|body > read|offWayScreen
 
 *[read|isOnWayBranch]
 {
-    position: relative; z-index: 1; /* Raised clear of the *offWayScreen*.
+    position: relative; z-index: 1; /* Raised clear of the `offWayScreen`.
       But if an ancestor is already so raising the branch, then this only raises it
       within the ancestor's stacking context, which should have no visual effect. */
 }
@@ -229,10 +229,10 @@ html[read|lighting='paper'] way|group
 read|hyperstyler       > html|a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
-    text-decoration-color: transparent; /* Redundant but for enabling a *transition* effect */
+    text-decoration-color: transparent; /* Redundant but for enabling a `transition` effect */
  /* text-decoration-skip: ink; *//* On one hand, this is already the default in Chrome,
       while it is not recognized at all in Firefox (52.6).  ∴ avoid the console warning in Firefox.
-      On the other, the latest standard replaces it with a *text-decoration-skip-ink-property* which is
+      On the other, the latest standard replaces it with a `text-decoration-skip-ink-property` which is
       enabled by default.  https://www.w3.org/TR/css-text-decor/#text-decoration-skip-ink-property */
 
     animation-duration: 3s;
@@ -265,14 +265,14 @@ read|hyperstyler       > html|a:not([read|showsBreadcrumb])
 read|hyperstyler       > html|a,
 read|hyperstyler       > read|triggerMark
 {
-    position: relative; /* Enabling *z-index* change on hover */
-    z-index: 0; /* So enabling its *transition*, which the default does not */
+    position: relative; /* Enabling `z-index` change on hover */
+    z-index: 0; /* So enabling its `transition`, which the default does not */
 }
 read|hyperstyler:hover > html|a,
 read|hyperstyler       > html|a[read|showsBreadcrumb],
 read|hyperstyler:hover > read|triggerMark
 {
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the `offWayScreen` */
 }
 
 
@@ -323,7 +323,7 @@ read|bitformJointing > a
 {
     color: inherit; /* Defeat colour as unecessary and distracting */
     text-decoration: none; /* Defeat any browser default (Chrome).  Underlines are confusing here.
-      The contained *verticalTruncator* already suffices to indicate hyperlink presence. */
+      The contained `verticalTruncator` already suffices to indicate hyperlink presence. */
 }
 
 
@@ -336,18 +336,18 @@ read|bitformJointing > a > preview:empty + br
 
 read|bitformJointing > a > preview[class~='singleCharacterContent'] /* [C] */
 {
-    display: inline-block; /* Enables *min-width* */
-    min-width: 2em; /* = VT_PAD_L × 2; enables *text-align* */
-    text-align: center; /* Over the left glyph-edge of the *verticalTruncator* */
+    display: inline-block; /* Enables `min-width` */
+    min-width: 2em; /* = VT_PAD_L × 2; enables `text-align` */
+    text-align: center; /* Over the left glyph-edge of the `verticalTruncator` */
 }
 
 
 *:not([read|hasPreviewString]):not([read|imaging='absent']):not([read|presentsShortName]) >
 read|bitformJointing > a > br
 {
-    display: none; /* It happens that no text content precedes the injected *br* element.
+    display: none; /* It happens that no text content precedes the injected `br` element.
       Therefore let it collapse to nothing.  But not when the source node has a short name;
-      then the *br* is wanted to position the *verticalTruncator* below the node's start tag. */
+      then the `br` is wanted to position the `verticalTruncator` below the node's start tag. */
 }
 *:not([read|hasPreviewString]):not([read|imaging='absent']) >
 read|bitformJointing > a > verticalTruncator
@@ -360,7 +360,7 @@ read|bitformJointing > a                       > verticalTruncator
 {
     padding-left: 1em; /* Extra click surface + indentation beneath overlying preview text; VT_PAD_L */
     padding-right: 4em; /* Extra click surface */
-    position: relative; /* Enabling *z-index* change on hover */
+    position: relative; /* Enabling `z-index` change on hover */
 }
 
 
@@ -368,7 +368,7 @@ read|bitformJointing > a:hover                 > verticalTruncator,
 read|bitformJointing > a[read|showsBreadcrumb] > verticalTruncator
 {
     color: var(--hyperlink-color); /* [FIB] */
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the `offWayScreen` */
 }
 
 
@@ -511,7 +511,7 @@ read|eSTag > eQName > eName[class~='wideCharacterSpace']
  *
  * The inlining is done by floating the start tag which allows the leading flow content to fall in line.
  * If this method ever proves too difficult to maintain owing to the complications of the float layout,
- * then consider switching to the simpler, more direct method of the *group* element,
+ * then consider switching to the simpler, more direct method of the `group` element,
  * namely shipping the leading flow content into the start tag.  A drawback would be the loss
  * of uniform left alignment of the first line of flow content from one waybit to another.
  */
@@ -658,7 +658,7 @@ html[read|lighting='paper'] step|* > eSTag > eQName
 .inway > svg.approach
 {
     display: unset; /* Allowing it to show */
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the `offWayScreen` */
 }
 
 
@@ -696,7 +696,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 .inway > hall
 {
     cursor: url('trigger_cursor/base.svg') 13 2 /* = TRIGGER_CURSOR */, pointer; /* [CVU]
-      For self-hyperlinking, as per function *handleClick* in readable.js SelfHyperlinking */
+      For self-hyperlinking, as per function `handleClick` in readable.js SelfHyperlinking */
 
     position: absolute;
     top: 0; right: 0;
@@ -714,7 +714,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 
 
 [read|isWaybit] way|group >
-[read|isWaybit] > eSTag >  /* When also it is a *group* child */
+[read|isWaybit] > eSTag >  /* When also it is a `group` child */
 .inway > hall
 {
     width: 2.0em; /* ∴ GROUP_L ≥ 2.0em; no wider, as there is no suprabutting content */
@@ -765,20 +765,20 @@ html[read|lighting='paper'] .inway > svg.approach
     animation-duration: var(--inflightDuration);
     animation-timing-function: step-start;
     opacity: var(--iconicOpacity);
-    position: relative; /* Enabling *z-index* change */
+    position: relative; /* Enabling `z-index` change */
 }
 eSTag:hover > /* For self-hyperlinking */
 .inway > hall > icon > span
 {
     opacity: var(--iconicOpacity-hover);
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the `offWayScreen` */
 }
 
 
 [read|isSubjoining='window targeted']/*[FT]*/ > eSTag >
 .inway > hall > icon > span
 {
-    z-index: 1; /* Raised clear of the *offWayScreen* */
+    z-index: 1; /* Raised clear of the `offWayScreen` */
 }
 [read|isSubjoining='window targeted']/*[FT]*/ > eSTag       >
 .inway > hall > icon > span,
@@ -843,7 +843,7 @@ html[read|lighting='paper']
     border: 0.5px/* = BBW */ solid transparent; /* Actualized only to enable effect of border-radius */
     border-radius: 50%; /* Rounding fully to force the animated shadow into a circular form */
     opacity: 0.2; /* Dimming the missile while retaining its basic colour.
-      The *contrast* filter proves inadequate here, maybe because the missile is a box shadow. */
+      The `contrast` filter proves inadequate here, maybe because the missile is a box shadow. */
 
     position: absolute;
     width: 0; height: 0; /* Declares no inner content, rather a position for outer shadowing. */
@@ -868,7 +868,7 @@ html[read|animatedShow][read|travelDelta='1'] /* Forward one position [NMP] */
 
 @keyframes inflightMissile_constants /* Held constant for the duration of the flight */
 {
-     0% { z-index: 1 } /* Raised clear of the *offWayScreen* */
+     0% { z-index: 1 } /* Raised clear of the `offWayScreen` */
    100% { z-index: 1 }
 }
 
@@ -1008,11 +1008,11 @@ html[read|animatedShow]
  *
  *         The standard form was seen to fail on Chrome 65.0.  It failed during relatively fast
  *         (∼1 s interval) back-and-forth travel.  Otherwise no workaround would be necessary
- *         and attribute *isSubjoining* would need only a boolean value [BA in readable.js].
+ *         and attribute `isSubjoining` would need only a boolean value [BA in readable.js].
  *
- *  [HSP]  HTML-embedded styling property.  The SVG standard appears to grant the *svg* element
+ *  [HSP]  HTML-embedded styling property.  The SVG standard appears to grant the `svg` element
  *         no such styling property.  Nevertheless the browsers are obeying it,
- *         at least when the *svg* element is embedded in HTML.
+ *         at least when the `svg` element is embedded in HTML.
  *         https://www.w3.org/TR/SVG11/struct.html#SVGElement
  *         https://www.w3.org/TR/SVG11/styling.html#SVGStylingProperties
  *         http://w3c.github.io/html/semantics-embedded-content.html#svg
