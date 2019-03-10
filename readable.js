@@ -120,7 +120,7 @@
   *   -----------
   *     html:a         ∙ (§ q.v.)
   *         [way:join] · (only if element `a` is a referential jointer) [S]
-  *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.
+  *     triggerMark    ∙ Hyperlink trigger indicator.  It contains ‘*’.  [TMB]
   *
   *
   *   * (as a) Bitform referential jointer
@@ -1270,7 +1270,7 @@ window.wayic_read_readable = ( function()
                         hyperstyler.appendChild( document.createTextNode( offender ));
                     }
                 }
-                hyperstyler.appendChild( document.createElementNS( NS_READ, 'triggerMark' ))
+                hyperstyler.appendChild( document.createElementNS( NS_READ, 'triggerMark' )) // [TMB]
                   .appendChild( document.createTextNode( '*' )); // '*' is Unicode 2a (asterisk)
                     // which needs no superscript styling because the font takes care of it.
             }
@@ -4422,6 +4422,22 @@ window.wayic_read_readable = ( function()
   *         depends on subjoint imaging.  If an image for an extradocument joint loads asynchronously,
   *         then it may deflect the view vertically.  Image caching and pre-caching will prevent this,
   *         stabilizing the view in all but a few edge cases.
+  *
+  *  [TML]  `triggerMark` layout bug.  A layout engine on the client side may judge the `triggerMark` a
+  *         soft wrap opportunity, introducing a line break that puts its asterisk on a separate line.
+  *         https://www.w3.org/TR/css-text-3/#soft-wrap-opportunity
+  *
+  *         I can think of no clean, robust correction for this bug.  A style rule might *over*rule
+  *         the soft wrap opportunity, but to declare it would require moving into a common parent
+  *         both the `triggerMark` and its preceding characters (at least some of them), which in turn
+  *         would require either the `triggerMark` being moved into the preceding `a` element
+  *         or the characters moved out of it.  This presents a dilemma in regard to the `a` element:
+  *         the first move forcing `a` styling on the `triggerMark` where it looks terrible and is hard
+  *         to defeat (if I recall); the second removing from the `a` element and its styling characters
+  *         which are proper to it.
+  *
+  *         Given the difficulty in dealing with this bug, I think it rather proper
+  *         to the layout engines.  It might be reported as such.
   *
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
