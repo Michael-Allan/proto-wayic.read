@@ -83,18 +83,20 @@ wayic.read/manual.task - Usage instructions
               malformed content or any other problem that an author might be able to remedy
         * limitations
             - when the user requests a way declaration document from a ‘file’ scheme URI,
-              intracast, interdocument referential jointers may fail to resolve their references  [EFL]
+              intracast, interdocument referential jointers may fail to resolve their references
             - in that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
               and generally the transformation will be incomplete and the way definition harder to view
             - security constraints enforced by the browser are the underlying cause of this
             * workaround for Chrome
                 - its ‘--allow-file-access-from-files’ option  [AFA]
             * workaround for Firefox
-                - first request the way root document from the waycast root directory
-                - then follow the links from there  [SPF]
-                - travel by other means (e.g. bookmark or address bar) will break the workaround
-                - travel by any means to the directory index, which for file scheme
-                  the browser itself generates, will also break the workaround
+                - first request a way declaration document from the waycast root directory
+                    - instead first requesting a subdirectory document would disallow subsequent travel
+                      to root documents [SPF]
+                - then follow the hyperlinks from there
+                    - travel by other means (e.g. bookmark or address bar) would break the workaround
+                    - travel by any means to a directory index, which for file scheme
+                      the browser itself generates, would also break the workaround
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,17 +115,10 @@ wayic.read/manual.task - Usage instructions
           Discussion of the underlying problem:
           https://bugs.chromium.org/p/chromium/issues/detail?id=47416
 
-   [EFL]  Extent of file-scheme limitations.  They will extend where the ‘file’ scheme itself extends;
-          across all relative references, that is, and throughout the waycast.
-          However they will not extend across any intercast reference; the referring document
-          may be loaded on a ‘file’ scheme URI, but still its intercast references will resolve
-          because waycasts serve with a response header of ‘Access-Control-Allow-Origin: *’.
-          http://reluk.ca/project/wayic/intercast/doc.task § Design constraints § waycast publication
-
    [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
           if the parent directory of the originating file is an ancestor directory of the target file.”
           https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
 
 
 
-                                     Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT.
+                                     Copyright © 2017-2019 Michael Allan and contributors.  Licence MIT.
