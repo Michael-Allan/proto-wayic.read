@@ -11,7 +11,7 @@ wayic.read/manual.task - Usage instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Installation`
-    - see also http://reluk.ca/project/wayic/cast/doc.task § Configuration of a waycast
+    - see also http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
     - for a working example of an installation, see:
         < http://reluk.ca/project/waycast/way_declaration_document.css
         < http://reluk.ca/project/waycast/way_declaration_document.js
@@ -53,7 +53,7 @@ wayic.read/manual.task - Usage instructions
              wayic_read_readable.start();
           });
 
-    - the available configuration options are detailed in readable.js § Public interface
+    - the available configuration options are detailed in readable.js § public interface
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,39 +62,39 @@ wayic.read/manual.task - Usage instructions
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Anonymous element and prefix declarations`
     - the presenter takes as anonymous any Wayscript element in which the local part of the name
-      is encoded by a single underscore ‘_’
+      is encoded by a single underscore '_'
     - it transforms and presents the element accordingly
-    - likewise it gives an element with a namespace prefix of ‘_’ the same form as an element
+    - likewise it gives an element with a namespace prefix of '_' the same form as an element
       that has no prefix
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Sectioning`
-    - the presenter adds vertical margins to HTML *section* elements
+    - the presenter adds vertical margins to HTML `section` elements
     - it adds the same margins to Wayscript elements that are *direct children of the body*
-    - to defeat this addition for a given group of *body* children
-        - put them together in a single *section* element
+    - to defeat this addition for a given group of `body` children
+        - put them together in a single `section` element
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Troubleshooting`
     < see also readable.js § toEnforceConstraints
     + console reporting
-      - the presenter reports problems it detects to the browser’s debugging console
+      - the presenter reports problems it detects to the browser's debugging console
         ( https://console.spec.whatwg.org/
-    + requests by ‘file’ scheme
-        - when the user requests a way declaration document from a ‘file’ scheme URI
+    + requests by 'file' scheme
+        - when the user requests a way declaration document from a 'file' scheme URI
         * alert reporting
-            - when the user requests a way declaration document from a ‘file’ scheme URI,
+            - when the user requests a way declaration document from a 'file' scheme URI,
               the presenter assumes that the user is the author of that document
-            - then, in addition to console reporting, it opens an *alert* window to report
+            - then, in addition to console reporting, it opens an `alert` window to report
               malformed content or any other problem that an author might be able to remedy
         * limitations
-            - when the user requests a way declaration document from a ‘file’ scheme URI,
+            - when the user requests a way declaration document from a 'file' scheme URI,
               intracast, interdocument referential jointers may fail to resolve their references
-            - in that case, any bitform referential jointers that fail to resolve will be marked ‘⋯?⋯’,
+            - in that case, any bitform referential jointers that fail to resolve will be marked '⋯?⋯',
               and generally the transformation will be incomplete and the way definition harder to view
             - security constraints enforced by the browser are the underlying cause of this
             * workaround for Chrome
-                - its ‘--allow-file-access-from-files’ option  [AFA]
+                - its `--allow-file-access-from-files` option  [AFA]
             * workaround for Firefox
                 - first request a way declaration document from the waycast root directory
                     - instead first requesting a subdirectory document would disallow subsequent travel
@@ -108,24 +108,24 @@ wayic.read/manual.task - Usage instructions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // N o t e s
 /
-   [AFA]  Chrome option ‘--allow-file-access-from-files’.
+   [AFA]  Chrome option `--allow-file-access-from-files`.
           https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
           https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
 
           Caveats: https://stackoverflow.com/questions/29371600
 
           Without this option, when such file access is disallowed,
-          Chrome (59) logs the reason in the console as ‘Cross origin requests are only supported
-          for protocol schemes: http, data, chrome, chrome-extension, https.’
+          Chrome (59) logs the reason in the console as "Cross origin requests are only supported
+          for protocol schemes: http, data, chrome, chrome-extension, https."
 
           Discussion of the underlying problem:
           https://bugs.chromium.org/p/chromium/issues/detail?id=47416
 
-   [COR]  Cross origin request to `reluk.ca`.  Depends on the stipulation that “cross origin requests
-          are enabled”.  http://reluk.ca/project/wayic/intercast/doc.task § publication of the waycasts
+   [COR]  Cross origin request to `reluk.ca`.  Depends on the stipulation that "cross origin requests
+          are enabled".  http://reluk.ca/project/wayic/intercast/doc.task § publication of the waycasts
 
-   [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
-          if the parent directory of the originating file is an ancestor directory of the target file.”
+   [SPF]  Same-origin policy for file scheme requests.  In Firefox, "a file can read another file only
+          if the parent directory of the originating file is an ancestor directory of the target file."
           https://developer.mozilla.org/en-US/docs/Same-origin_policy_for_file%3a_URIs
 
 
