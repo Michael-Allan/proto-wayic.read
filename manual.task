@@ -20,9 +20,13 @@ wayic.read/manual.task - Usage instructions
 
               @import 'http://reluk.ca/project/wayic/read/readable.css';
 
+            ( [COR]
+
         - optionally add this:
 
               @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+
+            ( [COR]
 
     + personal configuration program, way_declaration_document.js
         - there insert the equivalent of this:
@@ -34,6 +38,8 @@ wayic.read/manual.task - Usage instructions
               {
                  wayic_read_readable.start();
               });
+
+            ( [COR]
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Configuration`
@@ -114,6 +120,9 @@ wayic.read/manual.task - Usage instructions
 
           Discussion of the underlying problem:
           https://bugs.chromium.org/p/chromium/issues/detail?id=47416
+
+   [COR]  Cross origin request to `reluk.ca`.  Depends on the stipulation that “cross origin requests
+          are enabled”.  http://reluk.ca/project/wayic/intercast/doc.task § publication of the waycasts
 
    [SPF]  Same-origin policy for file scheme requests.  In Firefox, “a file can read another file only
           if the parent directory of the originating file is an ancestor directory of the target file.”
