@@ -1,15 +1,15 @@
 /** readable.js - Document programming on the client side
   *
-  *   Summoned by the waycaster’s personal configuration program (see manual.task § installation),
+  *   Summoned by the waycaster’s personal configuration program (see `./manual.task` § installation),
   *   this presentation program runs on the client side — in the waycast reader’s Web browser —
   *   where it manipulates the DOM of each way declaration document.
   *
-  *   See manual.task for usage instructions.  The sections below are for programmers.
+  *   See `./manual.task` for usage instructions.  The sections below are for programmers.
   *
   *
   * EXTENSION of HTML DOM
   * ---------------------
-  *   This program adds one property to the Element interface, for internal purposes only.
+  *   This program adds one property to the `Element` interface, for internal purposes only.
   *
   *   Element
   *   -------
@@ -20,8 +20,8 @@
   *
   * FORMATION of SESSION HISTORY STATE
   * ----------------------------------
-  *   This program alters the value of History.state.  There it maintains a hierarchy
-  *   of Object properties which it calls ‘statelets’:
+  *   This program alters the value of `History.state`.  There it maintains a hierarchy
+  *   of `Object` properties which it calls ‘statelets’:
   *
   *       Formal name            Informal name
   *       --------------------   --------------------
@@ -36,20 +36,20 @@
   * MARKUP INSERTIONS
   * -----------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
-  *   Most of the introduced markup is namespaced ‘data:,wayic.read’.
+  *   Most of the introduced markup is namespaced `data:,wayic.read`.
   *
   *   Key to the outlines below:
   *
   *       *          ∙ Any element in any XML namespace
-  *       foo         ∙ Element ‘foo’ in namespace ‘data:,wayic.read’ *
+  *       foo         ∙ Element ‘foo’ in namespace `data:,wayic.read` *
   *       ns:foo       ∙ Element ‘foo’ in a given namespace †
-  *           [attrib]   · Attribute of the element in namespace ‘data:,wayic.read’ *
+  *           [attrib]   · Attribute of the element in namespace `data:,wayic.read` *
   *           [:attrib]   · Attribute in no namespace
   *           [ns:attrib] · Attribute in a given namespace †
   *           ns:bar      · Child element ‘bar’ †
   *
-  *                                       * The namespace defaults to NS_READ
-  *                                       † Where `ns` is declared by an @namespace rule of readable.css
+  *                                 * The namespace defaults to `NS_READ`
+  *                                 † Where `ns` is declared by an `@namespace` rule of `./readable.css`
   *
   *   html:html ∙ Document element
   *   ---------
@@ -78,7 +78,7 @@
   *         [:class] · ‘surjoint’
   *       ⋮
   *
-  *     offWayScreen · Overlay screen for off-way styling, q.v. in readable.css
+  *     offWayScreen · Overlay screen for off-way styling, q.v. in `./readable.css`
   *
   *
   *   *
@@ -111,7 +111,7 @@
   *     [showsBreadcrumb] · Holds and prominently shows the breadcrumb for this entry of the session
   *                         history?  Set after travelling back in history onto this element,
   *                         it reorients the user by highlighting his original point of departure.
-  *                         Appears at most on one element. [BA, readable.css FIB]
+  *                         Appears at most on one element. [BA, `./readable.css` FIB]
   *     [targetDirection] · Direction to the target: one of ‘self’, ‘up’ or ‘down’ (see § html:html).
   *                         Present only for a complete (target exists) intradocument hyperlink.
   *
@@ -146,7 +146,7 @@
   *
   *   * (as a) Subjoining waybit
   *   ----------------------------
-  *     [isSubjoining]   · Either ‘window targeted’ or ‘window untargeted’ [FT in readable.css]
+  *     [isSubjoining]   · Either ‘window targeted’ or ‘window untargeted’ [FT in `./readable.css`]
   *     [:id]             ·
   *     [showsBreadcrumb] · (q.v. under § html:a)
   *
@@ -184,7 +184,7 @@ window.wayic_read_readable = ( function()
 /// ====================================================================================================
 
 
-    /** The lighting style (aka ‘theme’) of the display, or null if none is yet set.  By default,
+    /** The lighting style (aka ‘theme’) of the display, or `null` if none is yet set.  By default,
       * this program will set one of two lighting styles: either a black-on-white style called ‘paper’,
       * or a reverse video style called ‘neon’.  The choice it bases on what it can detect
       * of the browser’s settings, which it takes to be the user’s preference.
@@ -290,7 +290,7 @@ window.wayic_read_readable = ( function()
 
 
     /** A copy of the statelet root for the present load of the document as captured at load time,
-      * just prior to any initialization or modification of it.  Its value may be null.
+      * just prior to any initialization or modification of it.  Its value may be `null`.
       */
     const loadTimeHistoryState = history./*copy of*/state;
 
@@ -526,7 +526,7 @@ window.wayic_read_readable = ( function()
 
 
     /** Returns the given node if it looks like an element and has the right name,
-      * otherwise returns null.
+      * otherwise returns `null`.
       *
       *     @param name (string) The expected value of the `localName` property.
       *     @param node (Node)
@@ -543,7 +543,7 @@ window.wayic_read_readable = ( function()
 
 
     const BREAK_SYMBOL = '\u{1f5d9}';
-      // Unicode 1f5d9 (cancellation X).  Changing? sync'd → readable.css.
+      // Unicode 1f5d9 (cancellation X).  Changing? sync'd → `./readable.css`.
 
 
 
@@ -769,7 +769,7 @@ window.wayic_read_readable = ( function()
 
       // Enable display of the document
       // --------------
-        body.style.setProperty( 'display', 'block' ); // Overriding readable.css 'none'
+        body.style.setProperty( 'display', 'block' ); // Overriding `./readable.css` `none`
 
       // Run page-show animations on load
       // ------------------------
@@ -855,7 +855,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Returns the last descendant of the given node, or null if the node is empty.
+    /** Returns the last descendant of the given node, or `null` if the node is empty.
       *
       *     @see #toLastDescendant
       */
@@ -891,6 +891,8 @@ window.wayic_read_readable = ( function()
       */
     function makeDocumentRequestor( uri )
     {
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+
         const isSchemed = URIs.SCHEMED_PATTERN.test( uri );
         if( !isSchemed ) throw MALFORMED_PARAMETER;
 
@@ -1018,7 +1020,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    const NULL_PARAMETER = 'Null parameter';
+    const NULL_PARAMETER = '`null` parameter';
 
 
 
@@ -1108,7 +1110,7 @@ window.wayic_read_readable = ( function()
 
 
     /** Returns the top sub-identifier of `ns`; or the empty string if `ns` has no sub-identifier
-      * because it identifies the top namespace of Wayscript; or null if `ns` has no sub-identifier
+      * because it identifies the top namespace of Wayscript; or `null` if `ns` has no sub-identifier
       * because it identifies a namespace outside of Wayscript proper.
       *
       *     @param ns (string) An XML namespace identifier.
@@ -1299,7 +1301,7 @@ window.wayic_read_readable = ( function()
           // ================
           // Bitform jointing by element `t`
           // ================
-            const joinV = ( ()=> // `join` attribute, non-null if `t` is a jointer
+            const joinV = ( ()=> // `join` attribute, not `null` if `t` is a jointer
             {
                 let v = t.getAttributeNS( NS_WAY, 'join' );
                 if( v === null ) return null;
@@ -1452,12 +1454,12 @@ window.wayic_read_readable = ( function()
         }
 
         console.warn( report );
-        if( isUserEditor ) alert( report ); // See readable.css § TROUBLESHOOTING
+        if( isUserEditor ) alert( report ); // See `./manual.task` § troubleshooting
     }
 
 
 
-    /** The empty string as a parameter for CSSStyleDeclaration.setProperty,
+    /** The empty string as a parameter for `CSSStyleDeclaration.setProperty`,
       * which instead has the effect of `removeProperty`.
       *
       *     @see https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-setproperty
@@ -1466,7 +1468,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** The configuration of the present waycast (XMLDocument).
+    /** The configuration of the present waycast (`XMLDocument`).
       * Set once only by `wayic_read_readable.start`, do not modify it.
       *
       *     @see http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
@@ -1784,7 +1786,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → readable.css
+        const MIN_CLICK_WIDTH_REM = 0.8; // Changing? sync'd → `./readable.css`
 
 
 
@@ -1813,8 +1815,8 @@ window.wayic_read_readable = ( function()
       *
       *     triggerPath · Identifier (string in XPath form) of the nominal hyperlink trigger
       *                   whose activation caused the latest exit from the present entry
-      *                   of the session history.  It is null if the present entry was never exited,
-      *                   and null if the latest exit had some other cause.
+      *                   of the session history.  It is `null` if the present entry was never exited,
+      *                   and `null` if the latest exit had some other cause.
       *                       or its last exit had some other cause.
       *     targetDirection · Q.v. under § MARKUP INSERTS § html:html
       *     travel          · Ordinal (number) of the present entry within the session history,
@@ -1858,7 +1860,8 @@ window.wayic_read_readable = ( function()
        // - P r i v a t e ------------------------------------------------------------------------------
 
 
-        /** The element (Element) on which attribute `showsBreadcrumb` is set, or null if there is none.
+        /** The element (`Element`) on which attribute `showsBreadcrumb` is set,
+          * or `null` if there is none.
           */
         let crumbShower = null;
 
@@ -1982,7 +1985,7 @@ window.wayic_read_readable = ( function()
 
               // Initialize the subprogram statelet
               // ----------------------------------
-                statelet.triggerPath = null; // Properly formed, as per Breadcrumbs contract
+                statelet.triggerPath = null; // Properly formed, as per `Breadcrumbs` contract
                 statelet.travel = travel;
                 statelet.targetDirection = ( ()=>
                 {
@@ -2022,8 +2025,8 @@ window.wayic_read_readable = ( function()
                 const s = sessionStorage.getItem( SS_KEY_travelLast ); // [FSS]
              // console.assert( s !== null, A ); /* This entry in the session history is revisited
              //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
-             //   But each entry (of ours) stores `s`.  How then could `s` be null?  [OUR] */
-             /// Yet it is null on return from HTTP document to file-scheme document (Firefox 60)
+             //   But each entry (of ours) stores `s`.  How then could `s` be `null`?  [OUR] */
+             /// Yet it is `null` on return from HTTP document to file-scheme document (Firefox 60)
                 const travelLast = Number( s );
                 return travel - travelLast;
             })();
@@ -2096,8 +2099,8 @@ window.wayic_read_readable = ( function()
 
 
             /** The nominal hyperlink trigger (Element) whose activation caused the latest exit
-              * from this stop.  It is null if the stop was never exited during the present load
-              * of the document, and null if the latest exit had some other cause.
+              * from this stop.  It is `null` if the stop was never exited during the present load
+              * of the document, and `null` if the latest exit had some other cause.
               *
               *     @see Statelet property Breadcrumbs.triggerPath
               */
@@ -2145,6 +2148,7 @@ window.wayic_read_readable = ( function()
 
         class DocumentCacheEntry
         {
+            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
 
 
             /** Constructs a DocumentCacheEntry.
@@ -2162,7 +2166,7 @@ window.wayic_read_readable = ( function()
 
 
 
-            /** The cached document, or null if document storage is pending or failed.
+            /** The cached document, or `null` if document storage is pending or failed.
               *
               *     @return (Document)
               */
@@ -2227,10 +2231,10 @@ window.wayic_read_readable = ( function()
 
 
         /** Gives the indicated document to the reader.  If already the document is stored,
-          * then immediately it calls reader.read, followed by reader.close.
+          * then immediately it calls `reader.read`, followed by `reader.close`.
           *
           * Otherwise this function starts a storage process and returns.  If the process eventually
-          * succeeds, then it calls reader.read.  Regardless it ends by calling reader.close.
+          * succeeds, then it calls `reader.read`.  Regardless it ends by calling `reader.close`.
           *
           *     @param docURI (string) The document location in normal URI form.
           *     @param reader (DocumentReader)
@@ -2456,6 +2460,7 @@ window.wayic_read_readable = ( function()
       */
     class DocumentReader
     {
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
 
         /** Closes this reader.
           *
@@ -2508,7 +2513,7 @@ window.wayic_read_readable = ( function()
           *     @param toTestScheme (boolean, optional) Whether to test for the presence
           *       of a scheme component.  The default value is true.
           *
-          *     @return (string) The violation report, or null if no violation was found.
+          *     @return (string) The violation report, or `null` if no violation was found.
           *
           *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *     @see URI,           https://tools.ietf.org/html/rfc3986#section-3
@@ -2528,7 +2533,7 @@ window.wayic_read_readable = ( function()
           *     @param toTestScheme (boolean, optional) Whether to test for the presence
           *       of a scheme component.  The default value is true.
           *
-          *     @return (string) The violation report, or null if no violation was found.
+          *     @return (string) The violation report, or `null` if no violation was found.
           *
           *     @see URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           */
@@ -2611,8 +2616,8 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The window targeted element, or null if there is none.  This is the element indicated
-          * by the value of window.location.hash, or null if that value is an empty string
+        /** The window targeted element, or `null` if there is none.  This is the element indicated
+          * by the value of window.location.hash, or `null` if that value is an empty string
           * or it indicates an element does not exist.
           *
           *     @return (Element)
@@ -2656,8 +2661,8 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The window targeted identifier, or null if there is none.  This is the value
-          * of window.location.hash without a preceding delimiter character '#', or null
+        /** The window targeted identifier, or `null` if there is none.  This is the value
+          * of window.location.hash without a preceding delimiter character '#', or `null`
           * if that value is an empty string.
           *
           *     @return (string)
@@ -2789,7 +2794,7 @@ window.wayic_read_readable = ( function()
                   // Lay the inway and show it
                   // -------------------------
                     lay( inway, tagVpBounds );
-                    inway.style.setProperty( 'visibility', 'visible' ); // Overriding readable.css
+                    inway.style.setProperty( 'visibility', 'visible' ); // Overriding `./readable.css`
 
                   // Ensure it re-lays itself as needed
                   // ------------------------
@@ -2853,7 +2858,7 @@ window.wayic_read_readable = ( function()
             const gap = availableGap > MAX_GAP? MAX_GAP: availableGap;
               // Allowing it to expand up to MAX_GAP, if that much is available
             const lineWidth = hallX - gap;
-            s.setProperty( 'width', lineWidth + 'px' ); // [HSP in readable.css]
+            s.setProperty( 'width', lineWidth + 'px' ); // [HSP in `./readable.css`]
             s.setProperty( 'height',   height + 'px' );
          // approach.setAttribute( 'width', lineWidth );
          // approach.setAttribute( 'height',   height );
@@ -2873,7 +2878,7 @@ window.wayic_read_readable = ( function()
 
         /** The minimum, nominal gap between the inway approach and the `hall` sibling to its right.
           */
-        const MIN_GAP_REM = 0.6; // Changing? sync'd → readable.css
+        const MIN_GAP_REM = 0.6; // Changing? sync'd → `./readable.css`
 
         const MIN_GAP = MIN_GAP_REM * REM;
 
@@ -2902,7 +2907,7 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The element whose leader was last read, or null if `read` has yet to be called.
+        /** The element whose leader was last read, or `null` if `read` has yet to be called.
           *
           *     @see #read
           */
@@ -3076,14 +3081,14 @@ window.wayic_read_readable = ( function()
 
 
             /** The altered string to show for the local part of the element's qualified name,
-              * or null to leave it unaltered.
+              * or `null` to leave it unaltered.
               */
             this.localPartOverride = null;
 
 
            // - o u t p u t - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            /** The inserted start tag element, or null if `run` was not called.
+            /** The inserted start tag element, or `null` if `run` was not called.
               */
             this.eSTag = null;
 
@@ -3191,7 +3196,7 @@ window.wayic_read_readable = ( function()
             if( eNS === NS_STEP )
             {
                 presentedName = isAnonymous && !isPrefixAnonymousOrAbsent? prefix: lp;
-                maxShort = 1; // Less to allow room for extra padding that readable.css adds
+                maxShort = 1; // Less to allow room for extra padding that `./readable.css` adds
             }
             else
             {
@@ -3455,7 +3460,7 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether this image equals another.
           *
-          *     @param other (SubjointImage) The other image, which may be null.
+          *     @param other (SubjointImage) The other image, which may be `null`.
           */
         equals( other )
         {
@@ -3505,7 +3510,7 @@ window.wayic_read_readable = ( function()
         /** Retrieves the image of the indicated subjoining waybit.
           *
           *     @param sbjURI (string) The location of the subjoining waybit in normal URI form.
-          *     @return (SubjointImage) The cached image, or null if none is cached.
+          *     @return (SubjointImage) The cached image, or `null` if none is cached.
           *
           *     @see URIs#normalized
           */
@@ -3595,7 +3600,7 @@ window.wayic_read_readable = ( function()
 
 
                 /** The image of the subjoining waybit (SubjointImage) as retrieved from the cache,
-                  * or null if none was cached.
+                  * or `null` if none was cached.
                   */
                 get subjointImage() { return this._subjointImage; }
 
@@ -3936,7 +3941,7 @@ window.wayic_read_readable = ( function()
 
         /** The relative direction to the target element if it exists in the present document.
           *
-          *     @return (string) Null if the target element is null;
+          *     @return (string) `null` if the target element is `null`;
           *       otherwise one of TARGET_SELF, TARGET_UP or TARGET_DOWN.
           *     @see #element
           */
@@ -3953,8 +3958,8 @@ window.wayic_read_readable = ( function()
 
 
 
-        /** The target element within the present document, or null if there is none.
-          * This property is null in the case of an extradocument or incomplete hyperlink.
+        /** The target element within the present document, or `null` if there is none.
+          * This property is `null` in the case of an extradocument or incomplete hyperlink.
           */
         get element() { return this._element; }
 
@@ -4366,28 +4371,28 @@ window.wayic_read_readable = ( function()
 
 /** NOTES
   * -----
-  *  [AEP]  Avoid Element attribute properties `className` and `id`.
+  *  [AEP]  Avoid `Element` attribute properties `className` and `id`.
   *         They evaluate to an ‘empty string’ in cases where the attribute is absent.
   *         https://dom.spec.whatwg.org/#concept-element-attributes-get-value
   *
-  *         Rather use Element.getAttribute.  It returns null in those cases, as one would expect.
+  *         Rather use `Element.getAttribute`.  It returns `null` in those cases, as one would expect.
   *         https://dom.spec.whatwg.org/#dom-element-getattribute.
   *
-  *         See also Element.classList.
+  *         See also `Element.classList`.
   *
   *  [BA] · Boolean attribute.  A boolean attribute such as [read:isFoo] either has the same value
   *         as the local part of its name (‘isFoo’), which makes it true, or it is absent
   *         and thereby false.  cf. http://w3c.github.io/html/infrastructure.html#sec-boolean-attributes
   *
-  *  [C2] · The constructor of PartTransformC2 must remove all such markup.
+  *  [C2] · The constructor of `PartTransformC2` must remove all such markup.
   *
-  *  [FHS]  Firefox (52.2) has the wrong History.state after travelling over entries E → E+2 → E+1,
+  *  [FHS]  Firefox (52.2) has the wrong `History.state` after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
   *
   *  [FSS]  Session storage for a document requested from a ‘file’ scheme URI.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
   *         by D2 may, after travelling back, be unreadable by D1, as though it had not been stored.
-  *         Affects Firefox 52.6.  Does not affect Chrome under option ‘--allow-file-access-from-files’.
+  *         Affects Firefox 52.6.  Does not affect Chrome under option `--allow-file-access-from-files`.
   *
   *  [NPR]  Network-path reference.  https://tools.ietf.org/html/rfc3986#section-4.2
   *
@@ -4400,7 +4405,7 @@ window.wayic_read_readable = ( function()
   *         An entry’s document might not run this program, or its session store might be inaccessible
   *         to this program.  Such an entry would not be *ours* in the present sense of the term.
   *
-  *  [PD] · Path data.  It could instead be defined using the new SVGPathData interface, but this
+  *  [PD] · Path data.  It could instead be defined using the new `SVGPathData` interface, but this
   *         (array-form instead of string-form definition) wouldn’t help enough to outweigh the bother
   *         of using a polyfill.  https://github.com/jarek-foksa/path-data-polyfill.js
   *
@@ -4417,7 +4422,7 @@ window.wayic_read_readable = ( function()
   *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
   *         such as the `style` attribute.
   *
-  *  [SIC]  SubjointImageCache.  The purpose of caching the subjoint images is to stablize the view
+  *  [SIC]  `SubjointImageCache`.  The purpose of caching the subjoint images is to stablize the view
   *         within the viewport, especially on the vertical axis.  The vertical layout of the view
   *         depends on subjoint imaging.  If an image for an extradocument joint loads asynchronously,
   *         then it may deflect the view vertically.  Image caching and pre-caching will prevent this,
@@ -4445,11 +4450,11 @@ window.wayic_read_readable = ( function()
   *  [UAU]  Here employing the URL API to handle URIs in general.  Despite the name "URL API",
   *         it actually covers the forms "URI and IRI" to boot.  https://url.spec.whatwg.org/#goals.
   *
-  *  [UN] · Either `undefined` or null in value.
+  *  [UN] · Either `undefined` or `null` in value.
   *
   *  [UZ] · Either `undefined` or zero in value.
   *
-  *  [WDL]  ‘window.location’ or ‘window.document.location’?  One may use either, they are identical.
+  *  [WDL]  `window.location` or `window.document.location`?  One may use either, they are identical.
   *         https://www.w3.org/TR/html5/browsers.html#the-location-interface
   *
   *  [WTP]  Window target positioning.  Normally the browser itself does this, vertically scrolling
@@ -4469,8 +4474,8 @@ window.wayic_read_readable = ( function()
   *         Neither seems reliable, especially in the case of debugging.
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
-  *         of the 'file' scheme workaround on Firefox (52), even for intra-directory requests.
-  *         <./manual.xht § troubleshooting § requests by ‘file’ scheme § limitations>
+  *         of the 'file' scheme workaround under Firefox (52), even for intra-directory requests.
+  *         <./manual.xht § installation § personal configuration program § limitations>
   */
 
 
