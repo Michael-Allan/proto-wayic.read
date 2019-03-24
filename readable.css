@@ -1,10 +1,10 @@
-/* readable.css - Document styling on the client side
+/* readable.css - Style sheet for way declaration documents
  *
- *   Summoned by the waycaster’s personal configuration program (see manual.task § installation),
- *   this style sheet runs on the client side — in the waycast reader’s Web browser —
- *   where it formats the presentation of each way declaration document.
+ *   Summoned by the waycaster’s personal presentation program, this style sheet
+ *   works on the client side — in the waycast reader’s Web browser — where it formats
+ *   the presentation of each way declaration document.
  *
- *   See manual.task for usage instructions.
+ *   See `./manual.task` for installation and usage instructions.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
 @namespace read 'data:,wayic.read';
@@ -1029,4 +1029,4 @@ html[read|animatedShow]
  */
 
 
-/* Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT. */
+/* Copyright © 2017-2019 Michael Allan and contributors.  Licence MIT. */
