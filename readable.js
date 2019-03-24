@@ -1,10 +1,11 @@
-/** readable.js - Document programming on the client side
+/** readable.js - Presentation program for way declaration documents
   *
-  *   Summoned by the waycaster’s personal configuration program (see `./manual.task` § installation),
-  *   this presentation program runs on the client side — in the waycast reader’s Web browser —
-  *   where it manipulates the DOM of each way declaration document.
+  *   Summoned by the waycaster’s personal presentation program, this presentation program
+  *   runs on the client side — in the waycast reader’s Web browser — where it manipulates
+  *   the DOM of each way declaration document.
   *
-  *   See `./manual.task` for usage instructions.  The sections below are for programmers.
+  *   See `./manual.task` for installation and usage instructions.
+  *   The sections below are for programmers.
   *
   *
   * EXTENSION of HTML DOM
@@ -555,7 +556,7 @@ window.wayic_read_readable = ( function()
     const CAST_ROOT_PATH = ( ()=>
     {
         // Determining the value from the `script` element that loads the waycaster's
-        // personal configuration program.
+        // personal presentation program.
         const configFileName = 'way_declaration_document.js';
         const traversal = document.createTreeWalker( document.body, SHOW_ELEMENT );
         for( let t = traversal.lastChild(); t !== null; t = traversal.previousSibling() )
@@ -4475,7 +4476,7 @@ window.wayic_read_readable = ( function()
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
   *         of the 'file' scheme workaround under Firefox (52), even for intra-directory requests.
-  *         <./manual.xht § installation § personal configuration program § limitations>
+  *         <./manual.xht § installation § personal presentation program § limitations>
   */
 
 
