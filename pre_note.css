@@ -1,10 +1,10 @@
-/* pre_note.css - Informal note styling on the client side
+/* pre_note.css - Style sheet for informal, way declaration notes
  *
- *   Summoned by the waycaster’s personal configuration program (see manual.task § Installation),
- *   this style sheet runs on the client side — in the waycast reader’s Web browser —
- *   where it formats the presentation of informal, way declaration notes.
+ *   Summoned by the waycaster’s personal presentation program, this style sheet
+ *   works on the client side — in the waycast reader’s Web browser — where it formats
+ *   the presentation of each note.
  *
- *   See manual.task for usage instructions.
+ *   See `./manual.task` for installation and usage instructions.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
 
@@ -12,7 +12,13 @@
 html|pre
 {
     margin: 0;
+    margin-top: -1em; /* Lift the content by the font height, which is likely near to the line height,
+      and so force the first line out the top of the `pre` box. */
     opacity: 0.5; /* Subdue it */
+
+    /* Have it slide *beneath* the preceding element, not to interfere with its cursoring */
+    position: relative;
+    z-index: -1; /* Causes loss of text-specific cursor, an unwanted side effect, but mild enough */
 }
 
 
@@ -20,19 +26,10 @@ html|pre
 html|pre::first-line /* Where the start tag is declared, and no note is expected */
 {
     /* Apparently Firefox excludes the line termination characters from this pseudo-element.
-       Therefore the empty first line cannot be collapsed by zeroing the line-height
-       or the font-size properties.  Workaround: */
+       Therefore the empty first line cannot be collapsed by zeroing the `line-height`
+       or `font-size` properties.  Workaround: */
     color: transparent; /* In case it contains text, prevent it obscuring the preceding content */
 }
-html|pre
-{
-    margin-top: -1em; /* Lift the content by the font height, which is likely near to the line height,
-      and so force the first line out the top of the *pre* box */
-
-    /* Have it slide *beneath* preceding element, not to interfere with element's cursoring */
-    position: relative;
-    z-index: -1; /* Causes loss of text-specific cursor, an unwanted side effect, but mild enough */
-}
 
 
-/* Copyright © 2017-2018 Michael Allan and contributors.  Licence MIT. */
+/* Copyright © 2017-2019 Michael Allan and contributors.  Licence MIT. */
