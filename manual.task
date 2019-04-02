@@ -1,64 +1,101 @@
-wayic.read/manual.task - Usage instructions
+wayic/read/manual.task - Instructions
 
-    - instructions to the waycaster on using wayic.read
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────────
-    Requirements`
-    * a waycast
-    * a recent version of Chrome or Firefox
-        ( changing?  sync'd → README.html
-        - though any recent browser should work, only Chrome and Firefox are tested
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────────
-    Installation`
-    - see also http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
-    - for a working example of an installation, see:
+    Basic use`
+    - instructions to the waycaster on how basically to use `wayic.read` -
+    - requirements
+        * a waycast
+        * a recent version of Chrome or Firefox
+            ( changing?  sync'd → README.html
+            - though any recent browser should work, only Chrome and Firefox are tested
+    - working example
+        < http://reluk.ca/project/waycast/waycast.xml
         < http://reluk.ca/project/waycast/way_declaration_document.css
         < http://reluk.ca/project/waycast/way_declaration_document.js
-    + personal style sheet, way_declaration_document.css
-        - atop the style sheet, insert this:
+    + waycast configuration file
+        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        - above the first element of your `waycast.xml`, insert this processing instruction:
 
-              @import 'http://reluk.ca/project/wayic/read/readable.css';
+            │  <?xml-stylesheet href='http://reluk.ca/project/wayic/read/waycast_configuration_file.xslt'
+            │    type='application/xml'?>
 
             ( [COR]
+            - re `href`: avoid any whitespace before or after the '='
+                ( the correct function of `./waycast_configuration_file.xslt` depends on this
+            - re `type`: the standard "application/xslt+xml" is not among those recognized by Chrome
+                ( https://www.codingforums.com/xml/343437-xslt-chrome.html
+        - limitations under 'file' scheme
+            - when viewing the waycast configuration file by loading it from a 'file' scheme URI
+            * Chrome
+                ( version 69
+                - fails with an error message about an "unsafe attempt" to load `waycast_configuration_file.xslt`:
+                  "'file:' URLs are treated as unique security origins"
+                - workaround
+                    < cf. http://reluk.ca/project/waycast/_/waycast_configuration_file.xslt.README
+                    1 download from `http://reluk.ca/project/wayic/read/` to the waycast a copy each of
+                      `waycast_configuration_file.css`,
+                      `waycast_configuration_file.js` and
+                      `waycast_configuration_file.xslt` -
+                    2 refer to the downloaded `waycast_configuration_file.xslt` -
+                      from the `xml-stylesheet` processing instruction of `waycast.xml`, e.g.:
 
+                        │  <?xml-stylesheet href='waycast_configuration_file.xslt' type='application/xml'?>
+
+                    3 run Chrome with the `--allow-file-access-from-files` option  [AFA]
+    + personal style sheet
+        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        - atop your `way_declaration_document.css` insert this:
+
+            │  @import 'http://reluk.ca/project/wayic/read/readable.css';
+
+            ( [COR]
         - optionally add this:
 
-              @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+            │  @import 'http://reluk.ca/project/wayic/read/pre_note.css';
 
             ( [COR]
+    + personal presentation program
+        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        - in your `way_declaration_document.js` insert the equivalent of this:
 
-    + personal configuration program, way_declaration_document.js
-        - there insert the equivalent of this:
-
-              const s = document.body.appendChild(
-                document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
-              s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
-              s.addEventListener( 'load', ( _Event ) =>
-              {
-                 wayic_read_readable.start();
-              });
+            │  const s = document.body.appendChild(
+            │    document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
+            │  s.setAttribute( 'src', 'http://reluk.ca/project/web/client_side.js' );
+            │  s.addEventListener( 'load', ( _Event ) =>
+            │  {
+            │      const s = document.body.appendChild(
+            │        document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
+            │      s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
+            │      s.addEventListener( 'load', ( _Event ) =>
+            │      {
+            │          ca_reluk_wayic_read_wayDecDoc.start();
+            │      });
+            │  });
 
             ( [COR]
+        - limitations under 'file' scheme
+            - when viewing a way declaration document by loading it from a 'file' scheme URI
+            * Chrome
+                ( version 69
+                - fails with an error message about loading `waycast.xml`,
+                  "Cross origin requests are only supported for protocol schemes:
+                  http, data, chrome, chrome-extension, https"
+                - workaround
+                    - run Chrome with the `--allow-file-access-from-files` option  [AFA]
+            * Firefox
+                ( version unknown, ≤ 60
+                - when the way declaration document is located in a waycast *sub*directory
+                  and was loaded as the "originating file" [SPF]
+                - bitform referential jointers to ancestor and sister directories fail to show
+                  subjoint previews, instead showing '?'
+                - and generally the presentation is incomplete and the way model harder to view
+                - security constraints enforced by the browser are the underlying cause [SPF]
+                - workaround
+                    - first load a document from the waycast *root* directory
+                        ( first, thus the "originating file" [SPF]
+                    - then follow its hyperlinks to other documents
+                        - any travel by means other than a document's hyperlinks
+                          (say bookmark or address bar) will break this workaround
 
-    ────────────────────────────────────────────────────────────────────────────────────────────────────
-    Configuration`
-    - optionally configure wayic.read before starting it
-    - for example: (extending the example above)
-
-          ⋮
-          s.addEventListener( 'load', ( _Event ) =>
-          {
-             wayic_read_readable.setEnforceConstraints( true );
-             wayic_read_readable.start();
-          });
-
-    - the available configuration options are detailed in readable.js § public interface
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  L e x i c a l l y   o r d e r e d   § §
-/
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Anonymous element and prefix declarations`
     - the presenter takes as anonymous any Wayscript element in which the local part of the name
@@ -66,6 +103,41 @@ wayic.read/manual.task - Usage instructions
     - it transforms and presents the element accordingly
     - likewise it gives an element with a namespace prefix of '_' the same form as an element
       that has no prefix
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Configuration`
+    - instructions to the waycaster on how to configure `wayic.read` before starting it
+    + personal presentation program
+        - change your `way_declaration_document.js` to include the equivalent of this:
+            ( extending the example of § basic use § personal presentation program
+
+            │  ⋮
+            │  s.addEventListener( 'load', ( _Event ) =>
+            │  {
+            │      const wayDecDoc = ca_reluk_wayic_read_wayDecDoc;
+            │      wayDecDoc.setEnforceConstraints( true );
+            │      wayDecDoc.start();
+            │  });
+
+        - for the available configuration options of `wayDecDoc`, see `./readable.js` § PUBLIC INTERFACE
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    Publication`
+    - instructions to the project provider: how to Web serve this project
+    + programmatic resource files
+        - these are the files named with an extension of `.css`, `.js` or `.xslt` -
+        - they are served to the Web each with a special response header as detailed below
+        - working example of a suitable header configuration for Apache HTTP Server
+            < http://reluk.ca/sys/host/server/etc/apache2/7_domain/reluk.ca/public/5_in_project_wayic_read.conf
+        * cross origin responses are enabled
+            - the programmatic resource files of this project are served to the Web
+              each with a response header of `Access-Control-Allow-Origin: *` -
+                ( https://fetch.spec.whatwg.org/#http-access-control-allow-origin
+            - this header grants to programmatic requesters originating from all network domains (`*`)
+              permission to read the files
+                ( https://www.w3.org/TR/cors/
+            - such requesters include those of the waycasts that use this project
+                ( § basic use
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Sectioning`
@@ -77,32 +149,14 @@ wayic.read/manual.task - Usage instructions
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Troubleshooting`
     < see also readable.js § toEnforceConstraints
-    + console reporting
+    * console reporting
       - the presenter reports problems it detects to the browser's debugging console
         ( https://console.spec.whatwg.org/
-    + requests by 'file' scheme
-        - when the user requests a way declaration document from a 'file' scheme URI
-        * alert reporting
-            - when the user requests a way declaration document from a 'file' scheme URI,
-              the presenter assumes that the user is the author of that document
-            - then, in addition to console reporting, it opens an `alert` window to report
-              malformed content or any other problem that an author might be able to remedy
-        * limitations
-            - when the user requests a way declaration document from a 'file' scheme URI,
-              intracast, interdocument referential jointers may fail to resolve their references
-            - in that case, any bitform referential jointers that fail to resolve will be marked '⋯?⋯',
-              and generally the transformation will be incomplete and the way definition harder to view
-            - security constraints enforced by the browser are the underlying cause of this
-            * workaround for Chrome
-                - its `--allow-file-access-from-files` option  [AFA]
-            * workaround for Firefox
-                - first request a way declaration document from the waycast root directory
-                    - instead first requesting a subdirectory document would disallow subsequent travel
-                      to root documents [SPF]
-                - then follow the hyperlinks from there
-                    - travel by other means (e.g. bookmark or address bar) would break the workaround
-                    - travel by any means to a directory index, which for file scheme
-                      the browser itself generates, would also break the workaround
+    * alert reporting under 'file' scheme
+        - when the user requests a way declaration document from a 'file' scheme URI,
+          the presenter assumes that the user is the author of that document
+        - then, in addition to console reporting, it opens an `alert` window to report
+          malformed content or any other problem that an author might be able to remedy
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,17 +166,10 @@ wayic.read/manual.task - Usage instructions
           https://peter.sh/experiments/chromium-command-line-switches/#allow-file-access-from-files
           https://code.google.com/p/chromium/codesearch#chromium/src/content/public/common/content_switches.cc&q=kAllowFileAccessFromFiles&sq=package:chromium&type=cs
 
-          Caveats: https://stackoverflow.com/questions/29371600
+          Security implications: https://stackoverflow.com/questions/29371600
 
-          Without this option, when such file access is disallowed,
-          Chrome (59) logs the reason in the console as "Cross origin requests are only supported
-          for protocol schemes: http, data, chrome, chrome-extension, https."
-
-          Discussion of the underlying problem:
-          https://bugs.chromium.org/p/chromium/issues/detail?id=47416
-
-   [COR]  Cross origin request to `reluk.ca`.  Depends on the stipulation that "cross origin requests
-          are enabled".  http://reluk.ca/project/wayic/intercast/doc.task § publication of the waycasts
+   [COR]  Each request to `reluk.ca` requires that "cross origin responses are enabled".  § publication
+                                                  http://reluk.ca/project/web/manual.task § publication
 
    [SPF]  Same-origin policy for file scheme requests.  In Firefox, "a file can read another file only
           if the parent directory of the originating file is an ancestor directory of the target file."
