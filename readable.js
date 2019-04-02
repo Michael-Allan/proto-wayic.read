@@ -4,8 +4,14 @@
   *   runs on the client side — in the waycast reader’s Web browser — where it manipulates
   *   the DOM of each way declaration document.
   *
-  *   See `./manual.task` for installation and usage instructions.
+  *   See `./manual.task` for usage and other instructions.
   *   The sections below are for programmers.
+  *
+  *
+  * PUBLIC INTERFACE
+  * ----------------
+  *   This program publishes its interface (aka API) to `window.ca_reluk_wayic_read_wayDecDoc`.
+  *   For the details of the interface, see the assignments to `expo` atop the source code below.
   *
   *
   * EXTENSION of HTML DOM
@@ -173,7 +179,7 @@ console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'),
   'Failed assertion: Strict mode is in effect' );
   // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
   // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-window.wayic_read_readable = ( function()
+window.ca_reluk_wayic_read_wayDecDoc = ( function()
 {
 
     const expo = {}; // The public interface of this program
@@ -303,7 +309,7 @@ window.wayic_read_readable = ( function()
 
 
 
-    /** Identifier of the XML namespace of wayic.read markup.
+    /** Identifier of the XML namespace of `wayic.read` markup.
       */
     const NS_READ = 'data:,wayic.read';
 
@@ -361,7 +367,8 @@ window.wayic_read_readable = ( function()
 
         /** Returns the absolute form of the given URI reference; without a fragment, that is.
           *
-          *     @param ref (string)
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *
           *     @see Absolute URI, https://tools.ietf.org/html/rfc3986#section-4.3
           *     @see #defragmented
@@ -378,7 +385,8 @@ window.wayic_read_readable = ( function()
         /** Returns the same basic URI reference, but without a fragment.
           * This function is a convenience, a descriptive alias of `absolute`.
           *
-          *     @param ref (string)
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           */
         expo.defragmented = function( ref ) { return expo.absolute( ref ); }
 
@@ -399,7 +407,8 @@ window.wayic_read_readable = ( function()
         /** Answers whether the given URI reference is detected to have an abnormal form,
           * with any detection depending also on whether `toEnforceConstraints`.
           *
-          *     @param ref (string)
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *     @return (boolean)
           *
           *     @see #normalized
@@ -418,7 +427,8 @@ window.wayic_read_readable = ( function()
 
         /** Answers whether the given URI reference is a relative reference with an absolute path.
           *
-          *     @param ref (string)
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *
           *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
           *     @see path-absolute,      https://tools.ietf.org/html/rfc3986#section-3.3
@@ -434,7 +444,8 @@ window.wayic_read_readable = ( function()
 
         /** Returns a message (string) that the given URI reference is not in normal form.
           *
-          *     @param ref (string)
+          *     @param ref (string) A URI reference.
+          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
           *     @see #normalized
           */
         expo.makeMessage_abnormal = function( ref ) { return 'Not in normal form: ' + ref; };
@@ -467,8 +478,8 @@ window.wayic_read_readable = ( function()
         /** Returns the normal form of the given URI reference,
           * which is generally adequate to compare references for equivalence.
           *
-          *     @param refU (URL) An instance of `URL` from the URL API. [UAU]
-          *       https://url.spec.whatwg.org/
+          *     @param refU (URL) A URI reference modelled as a instance of `URL`
+          *       from the URL API. [UAU]  https://url.spec.whatwg.org/
           *
           *     @return (string)
           *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
@@ -500,7 +511,6 @@ window.wayic_read_readable = ( function()
   /// ==================================================================================================
  ///  S i m p l e   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
 /// ====================================================================================================
-
 
 
     /** The default message for console assertions.
@@ -1470,7 +1480,7 @@ window.wayic_read_readable = ( function()
 
 
     /** The configuration of the present waycast (`XMLDocument`).
-      * Set once only by `wayic_read_readable.start`, do not modify it.
+      * Set once only by `ca_reluk_wayic_read_wayDecDoc.start`, do not modify it.
       *
       *     @see http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
       */
@@ -4476,7 +4486,7 @@ window.wayic_read_readable = ( function()
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
   *         of the 'file' scheme workaround under Firefox (52), even for intra-directory requests.
-  *         <./manual.xht § installation § personal presentation program § limitations>
+  *         <./manual.xht § basic use § personal presentation program § limitations>
   */
 
 
