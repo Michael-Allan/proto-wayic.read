@@ -1,5 +1,7 @@
 wayic/read/manual.task - Instructions
 
+    < see also http://reluk.ca/project/web/manual.task
+
     Basic use`
     - instructions to the waycaster on how basically to use `wayic.read` -
     - requirements
@@ -27,7 +29,7 @@ wayic/read/manual.task - Instructions
             - when viewing the waycast configuration file by loading it from a 'file' scheme URI
             * Chrome
                 ( version 69
-                - fails with an error message about an "unsafe attempt" to load `waycast_configuration_file.xslt`:
+                - fails complaining of an "unsafe attempt" to load `waycast_configuration_file.xslt`:
                   "'file:' URLs are treated as unique security origins"
                 - workaround
                     < cf. http://reluk.ca/project/waycast/_/waycast_configuration_file.xslt.README
@@ -67,7 +69,7 @@ wayic/read/manual.task - Instructions
             │      s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
             │      s.addEventListener( 'load', ( _Event ) =>
             │      {
-            │          ca_reluk_wayic_read_wayDecDoc.start();
+            │          ca_reluk_wayic_read_WayDecDoc.start();
             │      });
             │  });
 
@@ -106,20 +108,21 @@ wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Configuration`
+    < see also http://reluk.ca/project/web/manual.task § configuration
     - instructions to the waycaster on how to configure `wayic.read` before starting it
     + personal presentation program
-        - change your `way_declaration_document.js` to include the equivalent of this:
+        - edit your `way_declaration_document.js` to include the equivalent of this:
             ( extending the example of § basic use § personal presentation program
 
             │  ⋮
             │  s.addEventListener( 'load', ( _Event ) =>
             │  {
-            │      const wayDecDoc = ca_reluk_wayic_read_wayDecDoc;
-            │      wayDecDoc.setEnforceConstraints( true );
-            │      wayDecDoc.start();
+            │      const WayDecDoc = ca_reluk_wayic_read_WayDecDoc;
+            │      WayDecDoc.setLightingStyle( 'neon' );
+            │      WayDecDoc.start();
             │  });
 
-        - for the available configuration options of `wayDecDoc`, see `./readable.js` § PUBLIC INTERFACE
+        - for the available configuration options, see <./readable.js § PUBLIC INTERFACE>
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Publication`
@@ -148,7 +151,7 @@ wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Troubleshooting`
-    < see also readable.js § toEnforceConstraints
+    < see also http://reluk.ca/project/web/manual.task § troubleshooting
     * console reporting
       - the presenter reports problems it detects to the browser's debugging console
         ( https://console.spec.whatwg.org/

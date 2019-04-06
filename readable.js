@@ -10,8 +10,8 @@
   *
   * PUBLIC INTERFACE
   * ----------------
-  *   This program publishes its interface (aka API) to `window.ca_reluk_wayic_read_wayDecDoc`.
-  *   For the details of the interface, see the assignments to `expo` atop the source code below.
+  *   This program publishes its interface (aka API) to `window.ca_reluk_wayic_read_WayDecDoc`.
+  *   For the details, see the `expo` assignments in <§ Public interface> of the source code.
   *
   *
   * EXTENSION of HTML DOM
@@ -179,109 +179,18 @@ console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'),
   'Failed assertion: Strict mode is in effect' );
   // http://www.ecma-international.org/ecma-262/6.0/#sec-strict-mode-code
   // Credit Noseratio, https://stackoverflow.com/a/18916788/2402790
-window.ca_reluk_wayic_read_wayDecDoc = ( function()
+window.ca_reluk_wayic_read_WayDecDoc = ( function()
 {
 
-    const expo = {}; // The public interface of this program
+    const CSide = ca_reluk_web_CSide; // Imports from the general Web library
 
-
-
-  /// ==================================================================================================
- ///  P u b l i c   i n t e r f a c e
-/// ====================================================================================================
-
-
-    /** The lighting style (aka ‘theme’) of the display, or `null` if none is yet set.  By default,
-      * this program will set one of two lighting styles: either a black-on-white style called ‘paper’,
-      * or a reverse video style called ‘neon’.  The choice it bases on what it can detect
-      * of the browser’s settings, which it takes to be the user’s preference.
-      *
-      *     @return (string)
-      *
-      *     @see #setLightingStyle
-      */
-    expo.lightingStyle = function()
-    {
-        return document.documentElement/*html*/.getAttributeNS( NS_READ, 'lighting' );
-    };
-
-
-
-    /** Sets whether to enforce program constraints whose violations are expensive to detect.
-      *
-      *     @param to (boolean)
-      *
-      *     @see #toEnforceConstraints
-      */
-    expo.setEnforceConstraints = function( to ) { toEnforceConstraints = to? true: false; };
-
-
-
-    /** Whether to enforce program constraints whose violations are expensive to detect.
-      * The default is not to enforce them.  When enforced, a violation that is detected will cause
-      * an exception to be thrown.
-      *
-      *     @return (boolean)
-      *
-      *     @see #setEnforceConstraints
-      */
-    expo.toEnforceConstraints = function() { return toEnforceConstraints; };
-
-
-        let toEnforceConstraints = false;
-
-
-
-    /** Sets the lighting style of the display, overriding the default.
-      *
-      *     @param lighting (string)
-      *
-      *     @see #lightingStyle
-      */
-    expo.setLightingStyle = function( lighting )
-    {
-        if( lighting === null ) throw NULL_PARAMETER;
-
-        document.documentElement/*html*/.setAttributeNS( NS_READ, 'lighting', lighting )
-    };
-
-
-
-    /** Starts this program.
-      */
-    expo.start = function()
-    {
-      // 1. Read the configuration of the present waycast
-      // -------------------------
-        const requestor = makeDocumentRequestor( CAST_ROOT_URI + 'waycast.xml' )
-        requestor.onload = ( event ) => // not by `addEventListener` [XHR]
-        {
-            WAYCAST_CONFIG = event.target.response;
-
-          // 2. Transform the document
-          // -------------------------
-            transform();
-
-          // 3. Show the document
-          // --------------------
-            ensureDocumentWillShow();
-            if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
-
-          // 4. Launch the processes, the document will hold steady "in all but a few edge cases" [SIC]
-          // -----------------------
-            DocumentCachePersistor.start();
-            AlldocScanner.start();
-            SurjointFinisher.start();
-            WayTracer.start();
-        };
-        requestor.send();
-    };
+        const MALFORMED_PARAMETER = CSide.MALFORMED_PARAMETER;
 
 
 
   /// ==================================================================================================
  ///  P r e l i m i n a r y   d e c l a r a t i o n s
-/// ====================================================================================================
+/// ==================================================================================================
 
 
     /** Whether the present document was requested from a 'file' scheme URI.
@@ -359,36 +268,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
     const URIs = ( function()
     {
 
-        const expo = {}; // The public interface of URIs
-
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
-
-
-
-        /** Returns the absolute form of the given URI reference; without a fragment, that is.
-          *
-          *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          *
-          *     @see Absolute URI, https://tools.ietf.org/html/rfc3986#section-4.3
-          *     @see #defragmented
-          */
-        expo.absolute = function( ref )
-        {
-            const c = ref.lastIndexOf( '#' );
-            if( c >= 0 ) ref = ref.slice( 0, c ); // Defragmented
-            return ref;
-        };
-
-
-
-        /** Returns the same basic URI reference, but without a fragment.
-          * This function is a convenience, a descriptive alias of `absolute`.
-          *
-          *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          */
-        expo.defragmented = function( ref ) { return expo.absolute( ref ); }
+        const expo = CSide.URIs; // The public interface of URIs
 
 
 
@@ -404,31 +284,10 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
 
-        /** Answers whether the given URI reference is detected to have an abnormal form,
-          * with any detection depending also on whether `toEnforceConstraints`.
-          *
-          *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          *     @return (boolean)
-          *
-          *     @see #normalized
-          */
-        expo.isDetectedAbnormal = function( ref )
-        {
-            if( toEnforceConstraints )
-            {
-                try{ return ref !== expo.normalized(ref) }
-                catch( x ) { console.warn( 'Suppressed exception: ' + x ); } // E.g. if `ref` relative
-            }
-            return false;
-        };
-
-
-
         /** Answers whether the given URI reference is a relative reference with an absolute path.
           *
           *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
+          *       See `URI-reference`, https://tools.ietf.org/html/rfc3986#section-4.1
           *
           *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
           *     @see path-absolute,      https://tools.ietf.org/html/rfc3986#section-3.3
@@ -442,66 +301,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
 
-        /** Returns a message (string) that the given URI reference is not in normal form.
-          *
-          *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          *     @see #normalized
-          */
-        expo.makeMessage_abnormal = function( ref ) { return 'Not in normal form: ' + ref; };
-
-
-
-        /** Returns the normal form of the given URI reference,
-          * which is generally adequate to compare references for equivalence.
-          *
-          * This is a convenience function.  If you already have an instance of URL,
-          * then a direct call to `normalizedU` will be simpler and more efficient.
-          *
-          *     @param ref (string) A URI reference.
-          *       See: URI-reference, https://tools.ietf.org/html/rfc3986#section-4.1
-          *     @param base (string, optional unless `ref` is relative) The base URI.
-          *       See: Establishing a base URI, https://tools.ietf.org/html/rfc3986#section-5.1
-          *
-          *     @throw Error if `ref` is relative and `base` is undefined.
-          *
-          *     @return (string)
-          *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
-          */
-        expo.normalized = function( ref, base )
-        {
-            return expo.normalizedU( new URL( ref, base )); // [UAU]
-        };
-
-
-
-        /** Returns the normal form of the given URI reference,
-          * which is generally adequate to compare references for equivalence.
-          *
-          *     @param refU (URL) A URI reference modelled as a instance of `URL`
-          *       from the URL API. [UAU]  https://url.spec.whatwg.org/
-          *
-          *     @return (string)
-          *     @see Normalization and comparison, https://tools.ietf.org/html/rfc3986#section-6
-          */
-        expo.normalizedU = function( refU ) { return refU.href; };
-          // URL.href is the same "serialization" by which the URL API determines equivalence.
-          // https://url.spec.whatwg.org/#dom-url-href
-          // https://url.spec.whatwg.org/#url-equivalence
-
-
-
-        /** The pattern of a schemed URI reference, one that includes a scheme component,
-          * which would make it a URI as opposed to a relative reference.
-          *
-          *     @see URI reference,      https://tools.ietf.org/html/rfc3986#section-4.1
-          *     @see URI,                https://tools.ietf.org/html/rfc3986#section-3
-          *     @see Relative reference, https://tools.ietf.org/html/rfc3986#section-4.2
-          */
-        expo.SCHEMED_PATTERN = new RegExp( '^[A-Za-z0-9][A-Za-z0-9+.-]*:' );
-
-
-
+        Object.freeze( expo );
         return expo;
 
     }() );
@@ -509,8 +309,85 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
   /// ==================================================================================================
+ ///  P u b l i c   i n t e r f a c e
+/// ==================================================================================================
+
+    const WayDecDoc_expo = {}; // Exports to the public interface of this program
+
+
+
+    /** The lighting style (aka ‘theme’) of the display, or `null` if none is yet set.  By default,
+      * this program will set one of two lighting styles: either a black-on-white style called ‘paper’,
+      * or a reverse video style called ‘neon’.  The choice it bases on what it can detect
+      * of the browser’s settings, which it takes to be the user’s preference.
+      *
+      *     @return (string)
+      *
+      *     @see #setLightingStyle
+      */
+    WayDecDoc_expo.lightingStyle = function()
+    {
+        return document.documentElement/*html*/.getAttributeNS( NS_READ, 'lighting' );
+    };
+
+
+
+    /** Sets the lighting style of the display, overriding the default.
+      *
+      *     @param lighting (string)
+      *
+      *     @see #lightingStyle
+      */
+    WayDecDoc_expo.setLightingStyle = function( lighting )
+    {
+        if( lighting === null ) throw NULL_PARAMETER;
+
+        document.documentElement/*html*/.setAttributeNS( NS_READ, 'lighting', lighting )
+    };
+
+
+
+    /** Starts this program.
+      */
+    WayDecDoc_expo.start = function()
+    {
+      // 1. Read the configuration of the present waycast
+      // -------------------------
+        const requestor = makeDocumentRequestor( CAST_ROOT_URI + 'waycast.xml' )
+        requestor.onload = ( event ) => // not by `addEventListener` [XHR]
+        {
+            WAYCAST_CONFIG = event.target.response;
+
+          // 2. Transform the document
+          // -------------------------
+            transform();
+
+          // 3. Show the document
+          // --------------------
+            ensureDocumentWillShow();
+            if( LOAD_BREAKS_GROUND ) Viewporting.ensureTargetWillShow();
+
+          // 4. Launch the processes, the document will hold steady "in all but a few edge cases" [SIC]
+          // -----------------------
+            DocumentCachePersistor.start();
+            AlldocScanner.start();
+            SurjointFinisher.start();
+            WayTracer.start();
+        };
+        requestor.send();
+    };
+
+
+
+   // ==============
+
+    Object.freeze( WayDecDoc_expo );
+
+
+
+  /// ==================================================================================================
  ///  S i m p l e   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
-/// ====================================================================================================
+/// ==================================================================================================
 
 
     /** The default message for console assertions.
@@ -707,7 +584,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
       */
     const DOCUMENT_URI = ( ()=>
     {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
         const ref = URIs.defragmented( location.toString() ); // [WDL]
         return URIs.normalized( ref ); // To be certain
     })();
@@ -860,9 +737,9 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
 
-    /** Whether it appears that the user would be unable to correct faults in this program.
+    /** Whether it appears that the user would be able to correct faults in this program.
       */
-    const isUserNonProgrammer = !wasRequestFileSchemed;
+    const isUserProgrammer = wasRequestFileSchemed;
 
 
 
@@ -902,7 +779,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
       */
     function makeDocumentRequestor( uri )
     {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
 
         const isSchemed = URIs.SCHEMED_PATTERN.test( uri );
         if( !isSchemed ) throw MALFORMED_PARAMETER;
@@ -982,10 +859,6 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
         leaderReader.read( sbj );
         return leaderReader.leader;
     }
-
-
-
-    const MALFORMED_PARAMETER = 'Malformed parameter';
 
 
 
@@ -1298,7 +1171,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
             if( isBit )
             {
                 t.setAttributeNS( NS_READ, 'isWaybit', 'isWaybit' );
-                if( toEnforceConstraints && tN.startsWith('_')
+                if( CSide.toEnforceConstraints() && tN.startsWith('_')
                  && tN !== ELEMENT_NAME_NONE
                  && tN !== ELEMENT_NAME_UNCHANGED ) tsk( 'A waybit with a reserved name: ' + tN );
                 if( tTopID === TOP_ID_STEP )
@@ -1480,7 +1353,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
     /** The configuration of the present waycast (`XMLDocument`).
-      * Set once only by `ca_reluk_wayic_read_wayDecDoc.start`, do not modify it.
+      * Set once only by `ca_reluk_wayic_read_WayDecDoc.start`, do not modify it.
       *
       *     @see http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
       */
@@ -1557,7 +1430,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
   /// ==================================================================================================
  ///  C o m p o u n d   d e c l a r a t i o n s   i n   l e x i c a l   o r d e r
-/// ====================================================================================================
+/// ==================================================================================================
 
 
    //   A l l d o c   S c a n n e r
@@ -2159,7 +2032,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
         class DocumentCacheEntry
         {
-            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
 
 
             /** Constructs a DocumentCacheEntry.
@@ -2215,7 +2088,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
         const expo = {}; // The public interface of DocumentCache
 
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
 
 
 
@@ -2471,7 +2344,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
       */
     class DocumentReader
     {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/reader.js
+        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
 
         /** Closes this reader.
           *
@@ -3535,7 +3408,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
                 catch( x )
                 {
-                    if( isUserNonProgrammer || x !== MALFORMED_PARAMETER ) throw x;
+                    if( !isUserProgrammer || x !== MALFORMED_PARAMETER ) throw x;
 
                     console.warn( 'Suppressing an exception expected only while programming: ' + x );
                 }
@@ -4113,7 +3986,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
         {
          // console.debug( 'Trace run starting' ); // TEST
             const id = ROOT_LEG_ID;
-            console.assert( !(toEnforceConstraints && wasOpened(id)), A );
+            console.assert( !(CSide.toEnforceConstraints() && wasOpened(id)), A );
             openLeg( id );
             DocumentCache.readNowOrLater( ROOT_DOCUMENT_URI, new class extends DocumentReader
             {
@@ -4373,9 +4246,9 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
 
 
 
-   // ==============
+////////////////////
 
-    return expo;
+    return WayDecDoc_expo;
 
 }() );
 
@@ -4458,8 +4331,8 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
   *  [SVS]  Surrogate of viewport size.  Here using the size of the viewport including its scrollbar
   *         (if any) as a rough surrogate for the viewport size alone, which is harder to obtain.
   *
-  *  [UAU]  Here employing the URL API to handle URIs in general.  Despite the name "URL API",
-  *         it actually covers the forms "URI and IRI" to boot.  https://url.spec.whatwg.org/#goals.
+  *  [UAU]  Here employing the URL API to handle URIs in general.  Despite the name “URL API”,
+  *         it actually covers the forms “URI and IRI” to boot.  <https://url.spec.whatwg.org/#goals>
   *
   *  [UN] · Either `undefined` or `null` in value.
   *
@@ -4485,7 +4358,7 @@ window.ca_reluk_wayic_read_wayDecDoc = ( function()
   *         Neither seems reliable, especially in the case of debugging.
   *
   *  [XHR]  Registering the event handler instead by `addEventListener` has caused failure
-  *         of the 'file' scheme workaround under Firefox (52), even for intra-directory requests.
+  *         of the ‘file’ scheme workaround under Firefox (52), even for intra-directory requests.
   *         <./manual.xht § basic use § personal presentation program § limitations>
   */
 
