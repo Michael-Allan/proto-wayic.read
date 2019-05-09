@@ -1823,12 +1823,21 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
         /** Reorient after travel.
           *
-          *     @param state (Object) The value of History.state subsequent to the change.
+          *     @param state (Object) The value of `History.state` subsequent to the change.
           */
         function reorient( state )
         {
-            // Copied in part to https://stackoverflow.com/a/49329267/2402790
+            // Based in part on the test code, http://reluk.ca/project/web/test/travel_direction/
 
+            const travelLast = ( ()=>
+            {
+                const s = sessionStorage.getItem( SS_KEY_travelLast ); // [FSS]
+             // console.assert( s !== null, A ); /* This entry in the session history is revisited
+             //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
+             //   But each entry (of ours) stores `s`.  How then could `s` be `null`?  [OUR] */
+             /// Yet it is `null` on return from HTTP document to file-scheme document (Firefox 60)
+                return Number( s );
+            })();
             const statelet = ( ()=> // state[NS_READ].Breadcrumbs
             {
               // Create this subprogram statelet, if necessary
@@ -1847,12 +1856,11 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
             travel = statelet.travel;
             if( travel === undefined ) // Then this entry is new to the session history
             {
-                const historyLength = history.length;
-                travel = historyLength - 1; // Last entry of session history
+                travel = travelLast + 1; // Last entry of full session history [FSH]
 
               // Sync → travelStops
               // ------------------
-                travelStops.length = historyLength;
+                travelStops.length = travel + 1;
                 travelStops[travel] = travelStop = new TravelStop();
 
               // Initialize the subprogram statelet
@@ -1892,16 +1900,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
           // Mark the travel delta
           // ---------------------
             const html = document.documentElement;
-            const delta = ( ()=>
-            {
-                const s = sessionStorage.getItem( SS_KEY_travelLast ); // [FSS]
-             // console.assert( s !== null, A ); /* This entry in the session history is revisited
-             //   ∵ travel !== undefined.  ∴ at least one entry of ours was previously visited.
-             //   But each entry (of ours) stores `s`.  How then could `s` be `null`?  [OUR] */
-             /// Yet it is `null` on return from HTTP document to file-scheme document (Firefox 60)
-                const travelLast = Number( s );
-                return travel - travelLast;
-            })();
+            const delta = travel - travelLast;
             html.setAttributeNS( NS_READ, 'travelDelta', delta );
 
           // Stamp the session with the ordinal of the last entry shown, which is now this entry
@@ -4260,6 +4259,10 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
   *
   *  [FHS]  Firefox (52.2) has the wrong `History.state` after travelling over entries E → E+2 → E+1,
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
+  *
+  *  [FSH]  Full session history.  One might expect `History.length` to reliably measure its extent,
+  *         but some browsers set an upper limit on `History.length` (50 in Chrome and Firefox).
+  *         See Mesqalito's comment at <https://stackoverflow.com/a/49329267/2402790>.
   *
   *  [FSS]  Session storage for a document requested from a ‘file’ scheme URI.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
