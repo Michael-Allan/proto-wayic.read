@@ -184,6 +184,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
     const CSide = ca_reluk_web_CSide; // Imports from the general Web library
 
+        const DOCUMENT_URI = CSide.DOCUMENT_URI;
         const MALFORMED_PARAMETER = CSide.MALFORMED_PARAMETER;
 
 
@@ -575,19 +576,6 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
 
     const DOCUMENT_SCENE_ID = NS_READ + '.document_scene';
-
-
-
-    /** The location of present document (string) in normal URI form.
-      *
-      *     @see URIs#normalized
-      */
-    const DOCUMENT_URI = ( ()=>
-    {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
-        const ref = URIs.defragmented( location.toString() ); // [WDL]
-        return URIs.normalized( ref ); // To be certain
-    })();
 
 
 
