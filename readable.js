@@ -4261,8 +4261,11 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
   *         at least if E and E+1 differ only in fragment: it has state E, but should have E+1.
   *
   *  [FSH]  Full session history.  One might expect `History.length` to reliably measure its extent,
-  *         but some browsers set an upper limit on `History.length` (50 in Chrome and Firefox).
-  *         See Mesqalito's comment at <https://stackoverflow.com/a/49329267/2402790>.
+  *         but browsers “may limit the number of state objects added to the session history”
+  *         thus imposing an upper limit on `History.length` (50 in Chrome and Firefox).
+  *         http://w3c.github.io/html/browsers.html#the-history-interface
+  *
+  *         See also Mesqalito's comment at <https://stackoverflow.com/a/49329267/2402790>.
   *
   *  [FSS]  Session storage for a document requested from a ‘file’ scheme URI.  On moving from document
   *         D1 to new document D2 by typing in the address bar (not activating a link), an item stored
