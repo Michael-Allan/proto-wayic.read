@@ -15,12 +15,17 @@ console.assert( (eval('var _tmp = null'), typeof _tmp === 'undefined'),
 
     const CSide = ca_reluk_web_CSide; // Imports from the general Web library
 
+        const DOCUMENT_URI = CSide.DOCUMENT_URI;
+
 
 
     /** Runs this program.
       */
     function run()
     {
+      // 1. Read the waycast configuration file
+      // --------------------------------------
+ //     const requestor = makeDocumentRequestor( DOCUMENT_URI ) // FIX to 'file' requestor
     }
 
 
