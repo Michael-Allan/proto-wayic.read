@@ -1,23 +1,23 @@
-wayic/read/manual.task - Instructions
+proto-wayic/read/manual.task - Instructions
 
-    < see also http://reluk.ca/project/web/manual.task
+    < see also http://reluk.ca/project/proto-web/manual.task
 
     Basic use`
-    - instructions to the waycaster on how basically to use `wayic.read` -
+    - instructions to the waycaster on how basically to use `proto-wayic.read` -
     - requirements
         * a waycast
         * a recent version of Chrome or Firefox
             ( changing?  sync'd → README.html
             - though any recent browser should work, only Chrome and Firefox are tested
     - working example
-        < http://reluk.ca/project/waycast/waycast.xml
-        < http://reluk.ca/project/waycast/way_declaration_document.css
-        < http://reluk.ca/project/waycast/way_declaration_document.js
+        < http://reluk.ca/project/proto-waycast/waycast.xml
+        < http://reluk.ca/project/proto-waycast/way_declaration_document.css
+        < http://reluk.ca/project/proto-waycast/way_declaration_document.js
     + waycast configuration file
-        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        ( http://reluk.ca/project/proto-wayic/cast/doc.task § configuration of a waycast
         - above the first element of your `waycast.xml`, insert this processing instruction:
 
-            │  <?xml-stylesheet href='http://reluk.ca/project/wayic/read/waycast_configuration_file.xslt'
+            │  <?xml-stylesheet href='http://reluk.ca/project/proto-wayic/read/waycast_configuration_file.xslt'
             │    type='application/xml'?>
 
             ( [COR]
@@ -32,8 +32,8 @@ wayic/read/manual.task - Instructions
                 - fails complaining of an "unsafe attempt" to load `waycast_configuration_file.xslt`:
                   "'file:' URLs are treated as unique security origins"
                 - workaround
-                    < cf. http://reluk.ca/project/waycast/_/waycast_configuration_file.xslt.README
-                    1 download from `http://reluk.ca/project/wayic/read/` to the waycast a copy each of
+                    < cf. http://reluk.ca/project/proto-waycast/_/waycast_configuration_file.xslt.README
+                    1 download from `http://reluk.ca/project/proto-wayic/read/` to the waycast a copy each of
                       `waycast_configuration_file.css`,
                       `waycast_configuration_file.js` and
                       `waycast_configuration_file.xslt` -
@@ -44,29 +44,29 @@ wayic/read/manual.task - Instructions
 
                     3 run Chrome with the `--allow-file-access-from-files` option  [AFA]
     + personal style sheet
-        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        ( http://reluk.ca/project/proto-wayic/cast/doc.task § configuration of a waycast
         - atop your `way_declaration_document.css` insert this:
 
-            │  @import 'http://reluk.ca/project/wayic/read/readable.css';
+            │  @import 'http://reluk.ca/project/proto-wayic/read/readable.css';
 
             ( [COR]
         - optionally add this:
 
-            │  @import 'http://reluk.ca/project/wayic/read/pre_note.css';
+            │  @import 'http://reluk.ca/project/proto-wayic/read/pre_note.css';
 
             ( [COR]
     + personal presentation program
-        ( http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+        ( http://reluk.ca/project/proto-wayic/cast/doc.task § configuration of a waycast
         - in your `way_declaration_document.js` insert the equivalent of this:
 
             │  const s = document.body.appendChild(
             │    document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
-            │  s.setAttribute( 'src', 'http://reluk.ca/project/web/client_side.js' );
+            │  s.setAttribute( 'src', 'http://reluk.ca/project/proto-web/client_side.js' );
             │  s.addEventListener( 'load', ( _Event ) =>
             │  {
             │      const s = document.body.appendChild(
             │        document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
-            │      s.setAttribute( 'src', 'http://reluk.ca/project/wayic/read/readable.js' );
+            │      s.setAttribute( 'src', 'http://reluk.ca/project/proto-wayic/read/readable.js' );
             │      s.addEventListener( 'load', ( _Event ) =>
             │      {
             │          ca_reluk_wayic_read_WayDecDoc.start();
@@ -108,8 +108,8 @@ wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Configuration`
-    < see also http://reluk.ca/project/web/manual.task § configuration
-    - instructions to the waycaster on how to configure `wayic.read` before starting it
+    < see also http://reluk.ca/project/proto-web/manual.task § configuration
+    - instructions to the waycaster on how to configure `proto-wayic.read` before starting it
     + personal presentation program
         - edit your `way_declaration_document.js` to include the equivalent of this:
             ( extending the example of § basic use § personal presentation program
@@ -131,7 +131,7 @@ wayic/read/manual.task - Instructions
         - these are the files named with an extension of `.css`, `.js` or `.xslt` -
         - they are served to the Web each with a special response header as detailed below
         - working example of a suitable header configuration for Apache HTTP Server
-            < http://reluk.ca/sys/computer/server/etc/apache2/7_domain/reluk.ca/public/5_in_project_wayic_read.conf
+            < http://reluk.ca/sys/computer/server/etc/apache2/7_domain/reluk.ca/public/5_in_project_proto-wayic_read.conf
         * cross origin responses are enabled
             - the programmatic resource files of this project are served to the Web
               each with a response header of `Access-Control-Allow-Origin: *` -
@@ -151,7 +151,7 @@ wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Troubleshooting`
-    < see also http://reluk.ca/project/web/manual.task § troubleshooting
+    < see also http://reluk.ca/project/proto-web/manual.task § troubleshooting
     * console reporting
       - the presenter reports problems it detects to the browser's debugging console
         ( https://console.spec.whatwg.org/
@@ -172,7 +172,7 @@ wayic/read/manual.task - Instructions
           Security implications: https://stackoverflow.com/questions/29371600
 
    [COR]  Each request to `reluk.ca` requires that "cross origin responses are enabled".  § publication
-                                                  http://reluk.ca/project/web/manual.task § publication
+                                                  http://reluk.ca/project/proto-web/manual.task § publication
 
    [SPF]  Same-origin policy for file scheme requests.  In Firefox, "a file can read another file only
           if the parent directory of the originating file is an ancestor directory of the target file."

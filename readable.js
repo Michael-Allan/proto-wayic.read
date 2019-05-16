@@ -34,7 +34,7 @@
   *       --------------------   --------------------
   *       History
   *         state                Statelet root
-  *           data:,wayic.read   Program statelet
+  *           data:,proto-wayic.read   Program statelet
   *             *                Subprogram statelets
   *             *
   *             ⋮                         * Formal names and sub-hierarchies omitted
@@ -43,14 +43,14 @@
   * MARKUP INSERTIONS
   * -----------------
   *   This program introduces its own markup to the document as outlined in the subsections below.
-  *   Most of the introduced markup is namespaced `data:,wayic.read`.
+  *   Most of the introduced markup is namespaced `data:,proto-wayic.read`.
   *
   *   Key to the outlines below:
   *
   *       *          ∙ Any element in any XML namespace
-  *       foo         ∙ Element ‘foo’ in namespace `data:,wayic.read` *
+  *       foo         ∙ Element ‘foo’ in namespace `data:,proto-wayic.read` *
   *       ns:foo       ∙ Element ‘foo’ in a given namespace †
-  *           [attrib]   · Attribute of the element in namespace `data:,wayic.read` *
+  *           [attrib]   · Attribute of the element in namespace `data:,proto-wayic.read` *
   *           [:attrib]   · Attribute in no namespace
   *           [ns:attrib] · Attribute in a given namespace †
   *           ns:bar      · Child element ‘bar’ †
@@ -80,7 +80,7 @@
   *   html:body
   *   ---------
   *     scene      ∙ Document scene
-  *         [:id]   · ‘wayic.read.document_scene’
+  *         [:id]   · ‘data:,proto-wayic.read.document_scene’
   *     scene        ∙ Surjoint scene(s), if any.  There may be any number of these.
   *         [:class] · ‘surjoint’
   *       ⋮
@@ -219,9 +219,9 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
 
 
-    /** Identifier of the XML namespace of `wayic.read` markup.
+    /** Identifier of the XML namespace of `proto-wayic.read` markup.
       */
-    const NS_READ = 'data:,wayic.read';
+    const NS_READ = 'data:,proto-wayic.read';
 
 
 
@@ -767,7 +767,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
       */
     function makeDocumentRequestor( uri )
     {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
+        // Changing?  sync'd → http://reluk.ca/project/proto-wayic/lex/_/term_document_2.js
 
         const isSchemed = URIs.SCHEMED_PATTERN.test( uri );
         if( !isSchemed ) throw MALFORMED_PARAMETER;
@@ -1343,7 +1343,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
     /** The configuration of the present waycast (`XMLDocument`).
       * Set once only by `ca_reluk_wayic_read_WayDecDoc.start`, do not modify it.
       *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § configuration of a waycast
+      *     @see http://reluk.ca/project/proto-wayic/cast/doc.task § configuration of a waycast
       */
     let WAYCAST_CONFIG;
 
@@ -1827,7 +1827,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
           */
         function reorient( state )
         {
-            // Based in part on the test code, http://reluk.ca/project/web/test/travel_direction/
+            // Based in part on the test code, http://reluk.ca/project/proto-web/test/travel_direction/
 
             const travelLast = ( ()=>
             {
@@ -2019,7 +2019,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
         class DocumentCacheEntry
         {
-            // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
+            // Changing?  sync'd → http://reluk.ca/project/proto-wayic/lex/_/term_document_2.js
 
 
             /** Constructs a DocumentCacheEntry.
@@ -2075,7 +2075,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
         const expo = {}; // The public interface of DocumentCache
 
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
+        // Changing?  sync'd → http://reluk.ca/project/proto-wayic/lex/_/term_document_2.js
 
 
 
@@ -2331,7 +2331,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
       */
     class DocumentReader
     {
-        // Changing?  sync'd → http://reluk.ca/project/wayic/lex/_/term_document_2.js
+        // Changing?  sync'd → http://reluk.ca/project/proto-wayic/lex/_/term_document_2.js
 
         /** Closes this reader.
           *
@@ -2363,7 +2363,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
     /** Dealing with formally intracast references.
       *
-      *     @see http://reluk.ca/project/wayic/cast/doc.task § formally intracast reference
+      *     @see http://reluk.ca/project/proto-wayic/cast/doc.task § formally intracast reference
       */
     const FormallyIntracastReferencing = ( function()
     {
@@ -2492,7 +2492,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
           * or it indicates an element does not exist.
           *
           *     @return (Element)
-          *     @see http://reluk.ca/project/wayic/web/target
+          *     @see http://reluk.ca/project/proto-wayic/web/target
           */
         expo.windowTargetedElement = function() { return windowTargetedElement; };
 
@@ -2537,7 +2537,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
           * if that value is an empty string.
           *
           *     @return (string)
-          *     @see http://reluk.ca/project/wayic/web/target
+          *     @see http://reluk.ca/project/proto-wayic/web/target
           */
         expo.windowTargetedID = function() { return windowTargetedID; };
 
@@ -4044,7 +4044,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
 
         /** The identifier of the root leg of the trace, from which all other legs are traced.
           *
-          *     @see http://reluk.ca/project/wayic/script/way_root_element
+          *     @see http://reluk.ca/project/proto-wayic/script/way_root_element
           */
         const ROOT_LEG_ID = makeLegID( ROOT_DOCUMENT_URI, 'root' );
 
@@ -4295,7 +4295,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
   *  [RPP]  Restricted public property.  Despite its exposure in the public interface,
   *         this property is not intended for general use.
   *
-  *  [S]  · http://reluk.ca/project/wayic/script/doc.task
+  *  [S]  · http://reluk.ca/project/proto-wayic/script/doc.task
   *
   *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
   *         such as the `style` attribute.

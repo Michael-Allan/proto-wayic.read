@@ -7,7 +7,7 @@
  *   See `./manual.task` for usage and other instructions.
  */
 @namespace html 'http://www.w3.org/1999/xhtml';
-@namespace read 'data:,wayic.read';
+@namespace read 'data:,proto-wayic.read';
 @namespace  way 'data:,wayscript';
 @namespace step 'data:,wayscript.bit.step'; /*
               ↗ 'data:,wayscript.bit' covers waybits proper.  They have no styling of their own;
@@ -460,7 +460,7 @@ read|scene
 }
 
 
-read|scene#data\:\,wayic\.read\.document_scene
+read|scene#data\:\,proto-wayic\.read\.document_scene
 {
     --section-margin: 3em;
     margin: var(--section-margin) auto 5em auto; /* TRBL */
@@ -470,8 +470,8 @@ read|scene#data\:\,wayic\.read\.document_scene
 }
 
 
-read|scene#data\:\,wayic\.read\.document_scene html|section,
-read|scene#data\:\,wayic\.read\.document_scene > *[read|isProperWayscript]
+read|scene#data\:\,proto-wayic\.read\.document_scene html|section,
+read|scene#data\:\,proto-wayic\.read\.document_scene > *[read|isProperWayscript]
 {
     margin-top:    var(--section-margin);
     margin-bottom: var(--section-margin);
