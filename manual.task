@@ -1,6 +1,6 @@
 proto-wayic/read/manual.task - Instructions
 
-    < see also http://reluk.ca/project/proto-web/manual.task
+    < see also http://reluk.ca/project/proto-Web/manual.task
 
     Basic use`
     - instructions to the waycaster on how basically to use `proto-wayic.read` -
@@ -61,7 +61,7 @@ proto-wayic/read/manual.task - Instructions
 
             │  const s = document.body.appendChild(
             │    document.createElementNS( 'http://www.w3.org/1999/xhtml', 'script' ));
-            │  s.setAttribute( 'src', 'http://reluk.ca/project/proto-web/client_side.js' );
+            │  s.setAttribute( 'src', 'http://reluk.ca/project/proto-Web/client_side.js' );
             │  s.addEventListener( 'load', ( _Event ) =>
             │  {
             │      const s = document.body.appendChild(
@@ -108,7 +108,7 @@ proto-wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Configuration`
-    < see also http://reluk.ca/project/proto-web/manual.task § configuration
+    < see also http://reluk.ca/project/proto-Web/manual.task § configuration
     - instructions to the waycaster on how to configure `proto-wayic.read` before starting it
     + personal presentation program
         - edit your `way_declaration_document.js` to include the equivalent of this:
@@ -151,7 +151,7 @@ proto-wayic/read/manual.task - Instructions
 
     ────────────────────────────────────────────────────────────────────────────────────────────────────
     Troubleshooting`
-    < see also http://reluk.ca/project/proto-web/manual.task § troubleshooting
+    < see also http://reluk.ca/project/proto-Web/manual.task § troubleshooting
     * console reporting
       - the presenter reports problems it detects to the browser's debugging console
         ( https://console.spec.whatwg.org/
@@ -172,7 +172,7 @@ proto-wayic/read/manual.task - Instructions
           Security implications: https://stackoverflow.com/questions/29371600
 
    [COR]  Each request to `reluk.ca` requires that "cross origin responses are enabled".  § publication
-                                                  http://reluk.ca/project/proto-web/manual.task § publication
+                                                  http://reluk.ca/project/proto-Web/manual.task § publication
 
    [SPF]  Same-origin policy for file scheme requests.  In Firefox, "a file can read another file only
           if the parent directory of the originating file is an ancestor directory of the target file."

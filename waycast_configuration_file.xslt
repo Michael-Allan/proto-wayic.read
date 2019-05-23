@@ -28,7 +28,7 @@
                 <html:link rel='stylesheet' href='{$static-base-ref}/waycast_configuration_file.css'/>
                 </html:head>
             <html:body>
-                <html:script src='{$reluk-dir}/proto-web/client_side.js'/>
+                <html:script src='{$reluk-dir}/proto-Web/client_side.js'/>
                 <html:script src='{$static-base-ref}/waycast_configuration_file.js'/>
                 </html:body>
             </html:html>

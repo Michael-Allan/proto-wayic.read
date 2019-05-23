@@ -1827,7 +1827,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
           */
         function reorient( state )
         {
-            // Based in part on the test code, http://reluk.ca/project/proto-web/test/travel_direction/
+            // Based in part on the test code, http://reluk.ca/project/proto-Web/test/travel_direction/
 
             const travelLast = ( ()=>
             {
