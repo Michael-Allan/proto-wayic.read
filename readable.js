@@ -4295,7 +4295,7 @@ window.ca_reluk_wayic_read_WayDecDoc = ( function()
   *  [RPP]  Restricted public property.  Despite its exposure in the public interface,
   *         this property is not intended for general use.
   *
-  *  [S]  · http://reluk.ca/project/proto-wayic/script/doc.task
+  *  [S] ·· http://reluk.ca/project/proto-wayic/script/doc.task
   *
   *  [SH] · Standard HTML.  Here deliberately using standard HTML for sake of its proper DOM features,
   *         such as the `style` attribute.
