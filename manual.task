@@ -131,7 +131,7 @@ proto-wayic/read/manual.task - Instructions
         - these are the files named with an extension of `.css`, `.js` or `.xslt` -
         - they are served to the Web each with a special response header as detailed below
         - working example of a suitable header configuration for Apache HTTP Server
-            < http://reluk.ca/sys/computer/server/etc/apache2/7_domain/reluk.ca/public/5_in_project_proto-wayic_read.conf
+            < http://reluk.ca/sys/computer/server/etc/apache2/7_domain/reluk.ca/public/5_in_project_proto.conf
         * cross origin responses are enabled
             - the programmatic resource files of this project are served to the Web
               each with a response header of `Access-Control-Allow-Origin: *` -
